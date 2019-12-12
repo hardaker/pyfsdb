@@ -1,0 +1,720 @@
+#/usr/bin/python
+
+"""
+pyfsdb.Fsdb - class for reading and writing Fsdb files
+
+# creating a Fsdb object attached to a file to read:
+f = pyfsdb.Fsdb("data.fsdb")
+
+# Getting column numbers for named columns:
+name_col = f.get_column_number('name')
+time_col = f.get_column_number('time')
+
+# iterating over a fsdb file:
+for data in f:
+    print(data[name_col] + ".." + data[time_col])
+
+# iterating over a fsdb file with dictionaries:
+# (slower)
+f = pyfsdb.Fsdb("data.fsdb", return_type=fsdb.RETURN_AS_DICTIONARY)
+for data in f:
+    print(data['name'] + ".." + data['time'])
+
+# writing FSDB formatted data out
+# (note: a single Fsdb object can be set up for both reading and writing)
+f = pyfsdb.Fsdb(output_file = "my.fsdb")
+f.out_column_names = ['foo','bar','baz']
+f.out_separator = "\t"
+f.append(["a", "b", "c"])
+f.write_finish() # closes and writes trailing comments
+
+# (if the FSDB object is also reading a file, default values
+# for out_column_names and out_separator will be taken from the input file).
+
+"""
+
+import sys
+if sys.version_info[0] < 3:
+    raise Exception("Must be using Python 3")
+
+RETURN_AS_ARRAY = 1
+RETURN_AS_DICTIONARY = 2
+
+class Fsdb(object):
+    """Reads FSDB files from the perl FSDB module.
+
+       (see the fsdb module documentation for full details)
+       """
+
+    fileh = None
+    _header_line = None
+    current_line = None
+    _separator = "\t"
+    _separator_token = "t"
+    _headers = None
+    _column_names = {}
+    _pass_comments = True
+
+    _out_file = None
+    _out_file_handle = None
+    _out_header_line = None
+    _out_column_names = []
+    _out_column_names_set = False
+    _out_separator = "\t"
+    _out_separator_token = "t"
+    _out_command_line = "____BROKEN____" # ick, magic
+
+    def __init__(self, filename = None, file_handle = None, return_type=RETURN_AS_ARRAY, out_file = None, out_file_handle = None, pass_comments = 'y', out_command_line = "____INTERNAL____", write_nones_as_blanks = True):
+        """Returns a Fsdb class that can be used as an iterator.
+
+           return_type can be fsdb.RETURN_AS_ARRAY (default) or
+           RETURN_AS_DICTIONARY to return dictionary based rows with 
+           indexes as columns (this is slower).
+
+           If `pass_comments` is True and both an input and output file
+           handle are available, any comments read in while reading
+           are printed to the output.
+        """
+
+        self.return_type = return_type
+        self.file_handle = file_handle
+        self.filename = filename
+        self._pass_comments = pass_comments
+        self._write_nones_as_blanks = write_nones_as_blanks
+        self._header_written = False
+
+        if pass_comments not in ['y', 'n', 'e']:
+            raise ValueError("pass_comments must be y/n/e")
+
+        if out_file:
+            self.out_file = out_file
+        elif out_file_handle:
+            self._out_file_handle = out_file_handle
+        self._maybe_open_out()
+
+        if out_command_line == "____INTERNAL____":
+            self.out_command_line = " ".join(sys.argv)
+        else:
+            self.out_command_line = out_command_line
+
+
+        self._comments = []
+
+    @property
+    def file_handle(self):
+        "The input file handle being read."
+        return self.fileh
+
+    @file_handle.setter
+    def file_handle(self, fileh):
+        self.fileh = fileh
+
+        if not fileh:
+            return None
+
+        if self.return_type == RETURN_AS_DICTIONARY:
+            self.__next__ = self._next_as_dict
+        else:
+            self.__next__ = self._next_as_array
+
+        self.header_line = next(self.fileh).rstrip()
+        self.headers = self.read_header(self.header_line)
+
+        return self.fileh
+
+    @property
+    def headers(self):
+        "Headers for the file handle being read."
+        self.maybe_open_filehandle()
+        return self._headers
+
+    @headers.setter
+    def headers(self, value):
+        self._headers = value
+
+    @property
+    def header_line(self):
+        "The top #fsdb header line in the file being read."
+        self.maybe_open_filehandle()
+        return self._header_line
+
+    @header_line.setter
+    def header_line(self, value):
+        self._header_line = value
+
+    @property
+    def column_names(self):
+        "An array of column names for the file being read"
+        self.maybe_open_filehandle()
+        return list(self._column_names.keys())
+
+    def __create_column_name_mapping__(self, columns):
+        "Internal"
+        mapping = {'names': {}, 'numbers': {},
+                   'header': { 'separator': self.separator}}
+
+        argn = 0
+        for token in columns:
+            mapping['names'][token] = argn
+            mapping['numbers'][argn] = token
+            argn += 1
+
+        self._column_names = mapping['names']
+        self.column_nums = mapping['numbers']
+
+        if not self._out_column_names_set:
+            self._out_column_names = self._column_names.keys()
+
+        return mapping
+
+    @column_names.setter
+    def column_names(self, values):
+        mapping = self.__create_column_name_mapping__(values)
+        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+
+    @property
+    def separator(self):
+        """The 'separator_token' is the argument that comes after -F in the 
+           fsdb header and the separator is it's translation;
+           eg, for tab-based separator the separator_token would 
+           be the 't' character and the separator would be '\t'.
+
+           Changing this will also change the stored separator_token value."""
+        self.maybe_open_filehandle()
+        return self._separator
+
+    @separator.setter
+    def separator(self, value):
+        self._separator = value
+        self._separator_token = self.convert_separator_token(value)
+        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+
+    @property
+    def separator_token(self):
+        """The separator_token character for the file being read or written.
+
+           The 'separator_token' is the argument that comes after -F in the 
+           fsdb header; eg, for a tab-based separator the separator_token would 
+           be the 't' character and the separator would be '\t'.
+
+           Changing this will also change the stored separator value."""
+        self.maybe_open_filehandle()
+        return self._separator_token
+
+    @separator_token.setter
+    def separator_token(self, value):
+        self._separator_token = value
+        self._separator = self.parse_separator(self.separator_token)
+        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+
+    #
+    # output properties
+    #
+    @property
+    def out_file(self):
+        """The output file being written to (if one is being written)"""
+        return self._out_file
+
+    @out_file.setter
+    def out_file(self, value):
+        self._out_file = value
+        self._out_file_handle = None
+        self._maybe_open_out()
+
+    @property
+    def out_file_handle(self):
+        """The output file being written to (if one is being written)"""
+        return self._out_file_handle
+
+    @out_file_handle.setter
+    def out_file_handle(self, value):
+        self._out_file_handle = value
+        self._out_file = None
+        self._maybe_open_out()
+
+    def _maybe_open_out(self):
+        if (self.out_file):
+            self._out_file_handle = open(self.out_file, "w")
+        elif (self.out_file_handle):
+            try:
+                self._out_file = self._out_file_handle.name
+            except:
+                pass
+        
+    @property
+    def out_file_handle(self):
+        """The output file hnadle being written to (if one is being written)"""
+        return self._out_file_handle
+    
+    @property
+    def out_separator(self):
+        """The separator for the output.
+
+           Changing this will also change the stored
+           out_separator_taken value.
+
+           This should not be changed after the header has 
+           already been written.
+        """
+        return self._out_separator
+
+    @out_separator.setter
+    def out_separator(self, value):
+        self._out_separator = value
+        self._out_separator_token = self.convert_separator_token(value)
+        self._out_header_line = self.create_header_line()
+
+    @property
+    def out_separator_token(self):
+        """The separator for the output.
+
+           Changing this will also change the stored
+           out_separator value.
+
+           This should not be changed after the header has 
+           already been written.
+        """
+        return self._out_separator_token
+
+    @out_separator_token.setter
+    def out_separator_token(self, value):
+        self._out_separator_token = value
+        self._out_separator = self.parse_separator(self._out_separator_token)
+        self._out_header_line = self.create_header_line()
+
+    @property
+    def out_header_line(self):
+        "The top #fsdb header line to write to the output."
+        self.maybe_open_filehandle()
+        self._out_header_line = self.create_header_line()
+        return self._out_header_line
+
+    @out_header_line.setter
+    def out_header_line(self, value):
+        """The output header line to print when writing.
+
+        This must be set prior to writing the first row for it to
+        be written"""
+        self._out_header_line = value
+
+    @property
+    def out_command_line(self):
+        """The output trailing command to print as the last line.
+
+         The out_command_line is printed with a '#   | ' prefix 
+         to preserve the history of the command run.  It defaults
+         to " ".join(sys.argv).  Set to None if you wish to surpress
+         printing of the line entirely."""
+        return self._out_command_line
+
+    @out_command_line.setter
+    def out_command_line(self, value):
+        self._out_command_line = value
+
+    @property
+    def out_column_names(self):
+        """An array of column names for the output file being written.
+
+        This must be set prior to writing the first row, and modifies
+        the internal output_header_line too."""
+        if len(self._out_column_names) == 0:
+            self._out_column_names = self.column_names
+        return self._out_column_names
+
+    @out_column_names.setter
+    def out_column_names(self, values):
+        mapping = self.__create_column_name_mapping__(values)
+        self.out_column_names_set = True
+        self._out_header_line = self.create_header_line(values)
+
+    # support functions
+        
+    def create_header_line(self, columns = None, separator_token = None):
+        "Returns a header string for the stored column_names and separator/separator_token."
+           
+        if not columns:
+            columns = self.out_column_names
+
+        if separator_token is None:
+            separator_token = self.out_separator_token
+
+        if separator_token is None:
+            separator_token = self.separator_token
+
+        # create the header line
+        header_line = "#fsdb -F " + separator_token + " " + " ".join(columns) + "\n"
+        return header_line
+
+    # column accessor helpers
+    def get_column_number(self, column_name):
+        "Given a column_name, returns its integer index into an array of values."
+        self.maybe_open_filehandle()
+        return self._column_names[column_name]
+
+    def get_column_numbers(self, column_names):
+        "Given a list of column_names, returns a list of integer index into an array of values."
+        self.maybe_open_filehandle()
+        column_numbers = []
+        for name in column_names:
+            column_numbers.append(self.get_column_number(name))
+        return column_numbers
+
+    def get_column_name(self, column_number):
+        "Given an integer column number, returns its column name."
+        self.maybe_open_filehandle()
+        return self.column_nums[column_number]
+
+    def set_iterator_function(self):
+        "XXX: change this to an property"
+        if self.return_type == RETURN_AS_DICTIONARY:
+            self.__next__ = self._next_as_dict
+        else:
+            self.__next__ = self._next_as_array
+
+    def __iter__(self):
+        """Returns an iterator object for looping over an fsdb file."""
+        if not self.filename and not self.file_handle:
+            raise ValueError("No filename or handle currently available for reading")
+        # XXX: throw error on -1 parse
+        return self
+
+    def maybe_open_filehandle(self, mode="r"):
+        "Internal"
+        if self.file_handle:
+            return self.file_handle
+
+        if self.filename:
+            self.file_handle = open(self.filename, mode)
+        else:
+            return None
+
+        return self.file_handle
+        
+
+    def __next__(self):
+        """Returns the next array of data from an fsdb file.
+           Returns an array by default, or a dictionary if return_type 
+           was set to fsdb.RETURN_AS_DICTIONARY."""
+        
+        fh = self.maybe_open_filehandle()
+        if not fh:
+            return None
+        
+        return self.__next__()
+
+    def _handle_comment(self, line):
+        """Handle a comment by printing it, possibly with header init first,
+        and then returning the next line in the file"""
+        if self._pass_comments != 'n' and self._out_file_handle:
+
+            if self.append != self._append_really:
+                # we haven't printed anything yet, so we haven't written
+                # the fsdb_header yet
+
+                self._write_header_line()
+
+            if self._pass_comments == 'y':
+                self._out_file_handle.write(line)
+            else:
+                self._comments.append(line)
+        return next(self.fileh)
+
+    def _next_as_array(self):
+        """Return the next object as an array of columns."""
+        
+        line = next(self.fileh)
+        while line and line[0] == '#':
+            line = self._handle_comment(line)
+
+        # return an array of data
+        self.current_line = line
+        self._current_row = line.rstrip("\n\r").split(self.separator)
+        return self._current_row
+
+    def _next_as_dict(self):
+        """Return the next object as a dictionary, with column 
+        names as the indexes.  
+
+        Note: This is less efficient than returning data as an
+        array using the normal __next__() routine."""
+
+        array = self._next_as_array()
+
+        return_dict = {}
+        for index in range(0, len(array)):
+            return_dict[self.column_nums[index]] = array[index]
+
+        return return_dict
+        
+    # generator type function for returning a row as an array
+    def next_as_array(self):
+        """Generator function to return a row as an array.
+
+        Using a generator is faster than using the Fsdb object
+        as a iterator."""
+        
+        fh = self.maybe_open_filehandle()
+
+        try:
+            line = next(self.fileh)
+            while line:
+                while line and line[0] == '#':
+                    line = self._handle_comment(line)
+
+                # return an array of data
+                self.current_line = line
+                self._current_row = line.rstrip("\n\r").split(self.separator)
+                yield self._current_row
+                line = next(self.fileh)
+        except StopIteration as e:
+            return
+
+    def next_as_dict(self):
+        """Generator function to return an array row.
+
+        Using a generator is faster than using the Fsdb object
+        as a iterator."""
+        
+        fh = self.maybe_open_filehandle()
+
+        try:
+            line = next(self.fileh)
+            while line:
+                while line and line[0] == '#':
+                    line = self._handle_comment(line)
+
+                # return an array of data
+                self.current_line = line
+                self._current_row = line.rstrip("\n\r").split(self.separator)
+
+                return_dict = {}
+                for index in range(0, len(self._current_row)):
+                    return_dict[self.column_nums[index]] = self._current_row[index]
+
+                yield return_dict
+                line = next(self.fileh)
+        except StopIteration as e:
+            return
+
+    def parse_separator(self, separator = None):
+        """Converts a separator ("t") into a separator_token ("\t") """
+        if separator == "t":
+            return "\t"
+        elif separator == "S":
+            return "  "
+        elif separator == "s":
+            return " "
+        elif separator[0] == "C":
+            return separator[1:] # not sure this is right
+        elif separator[0] == "X":
+            # 
+            raise ValueError("XN hexcode splitting not supported")
+        elif separator == "D":
+            # ""
+            raise ValueError("generic whitespace splitting not supported")
+
+        # unknown
+        raise ValueError("Unknown separator value: " + separator)
+
+    def convert_separator_token(self, separator_token = None):
+        """Converts a separator ("\t") into a separator_token ("t") """
+        if separator_token == "\t":
+            return "t"
+        elif separator_token == "  ":
+            return "S"
+        elif separator_token == " ":
+            return "s"
+        elif len(separator_token) == 1:
+            return "C" + separator_token
+        elif separator_token[0:1] == "0x":
+            # XXX
+            raise ValueError("XN hexcode splitting not supported")
+        elif separator == "D":
+            # XXX
+            raise ValueError("generic whitespace splitting not supported")
+
+        # unknown
+        raise ValueError("Unknown separator token value: " + separator_token)
+
+    def read_header(self, line):
+        """Internal
+
+        Returns a dict of header -> column numbers.
+
+        The header line should be in the form:
+
+            #fsdb -option value column1(separator)column2...
+
+        Returns:
+           [0, {
+                  names: { colname: colnum, ...},
+                  numbers: { colnum: colname, ...}
+                  header: { separator: separator_string}
+               }]    on success
+           [-1, "error description"]         on failure
+        """
+
+        args = line.split(" ")
+        if args[0] != "#fsdb":
+            return [-1, "failed to find expected #fsdb header"]
+        
+        # should we use argparse here?
+        argn = 1
+        separator=" "
+        while args[argn][0] == '-':
+            if args[argn] == "-F":
+                argn += 1
+                self.separator_token = args[argn]
+            else:
+                return [-1, "Unown option: " + args[argn]]
+
+            argn += 1
+
+        # join the remainder of the arguments back together to split
+        # by the correct separator
+
+        # XXX: allow other separators in the header
+        remainder = " ".join(args[argn:]).rstrip()
+        args = remainder.split(" ")
+
+        mapping = self.__create_column_name_mapping__(args)
+        self.separator = mapping['header']['separator']
+
+        return [0, mapping]
+
+    def read_fsdb(self, fileh):
+        """DO NOT USE
+
+        Returns a dict of all data from an fsdb file
+
+        Note: This reads all the data into memory.  Instead of 
+        using this function, you should use the Fsdb class as 
+        an iterator instead.
+
+        The header line should be in the form:
+
+            #fsdb -option value column1(separator)column2...
+
+        Returns:
+           [0, {
+                  names: { colname: colnum, ...},
+                  numbers: { colnum: colname, ...}
+                  header: { separator: separator_string}
+                  data: [[row1_col1, row1_col2, ...],
+                         [row2_col1, row2_col2, ...]]
+               }]    on success
+           [-1, "error description"]         on failure
+
+        """
+
+        header = next(fileh)
+        data = self.read_header(header)
+        if data[0] != 0:
+            return data
+
+        data = data[1]
+        separator = data['header']['separator']
+        data['data'] = []
+        for line in fileh:
+            if line[0] == '#':
+                continue
+            data['data'].append(line.rstrip().split(separator))
+
+        return [0, data]
+
+    def row_as_string(self, row = None):
+        """Converts an array row to an FSDB output line."""
+        if not row:
+            row = self._current_row
+        return self.separator.join(row) + "\n"
+
+    def get_pandas(self, usecols=None):
+        """Returns a pandas dataframe for the given data"""
+        import pandas
+        column_names = self.column_names # forces opening and reading headers
+        print("-------------------------------------")
+        print(column_names)
+        return pandas.read_csv(self.file_handle, sep='\t', comment="#",
+                               names=self.column_names,
+                               usecols=usecols)
+
+    #
+    # writing functions
+    #
+
+    def append(self, row = None):
+        """Writes a passed in row (or the one previously read) to the output file."""
+        self._append_init(row)
+
+    def extend(self, rows = None):
+        """Writes multiple rows to the output FSDB"""
+        for row in rows:
+            self.append(row)
+
+    def _write_header_line(self):
+        if self._out_header_line:
+            self._out_file_handle.write(self._out_header_line)
+        elif self._header_line:
+            # assuming copy the original
+            self._out_file_handle.write(self._header_line)
+        
+        # if we write the header line,
+        #    it's now ok to set the output function to the right function
+        self.append = self._append_really
+        self._header_written = True
+
+    def _append_init(self, row = None):
+        # internallly, if we haven't written the header out we do that first
+        # then switch our operator for speed
+
+        self._write_header_line()
+
+        self.append(row)
+
+    def _append_really(self, row = None):
+        if not row:
+            row = self._current_row
+        if self._write_nones_as_blanks:
+            for i in range(0,len(row)):
+                if row[i] == None:
+                    row[i] = ''
+        self._out_file_handle.write(self._out_separator.join(map(str,row)) + "\n")
+    # backwards compatible ... don't use
+    def write_row(self, row = None):
+        self.append(row)
+
+    def write_finish(self):
+        self.close()
+        
+    def close(self):
+        """Writes final processing command comment to the output file and closes it."""
+        if self._out_file_handle:
+            # ignore closing errors
+            try:
+                if not self._header_written:
+                    self._write_header_line()
+                if self.out_command_line:
+                    for comment_line in self._comments:
+                        self._out_file_handle.write(comment_line)
+                    self._out_file_handle.write("#   | " + self.out_command_line + "\n")
+                self._out_file_handle.close()
+            except:
+                pass
+            self._out_file_handle = None
+
+    def __del__(self):
+        self.write_finish()
+        if self.fileh:
+            self.fileh.close()
+            self.fileh = None
+
+def main():
+    print("at top")
+    fsdb = Fsdb()
+    line = sys.stdin.next()
+    result = fsdb.read_header(line)
+    print(result)
+    
+if __name__ == "__main__":
+    main()
+    
