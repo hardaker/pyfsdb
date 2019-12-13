@@ -43,6 +43,73 @@ db.append([4, 'hello world'])
 db.close()
 ```
 
+Read below for further usage details.
+
+# Installation
+
+```
+pip3 install pyfsdb
+```
+
+# Additional Usage Details
+
+The real power of the FSDB comes from the build up of tool-suites that
+all interchange FSDB formatted files.  This allows chaining multiple
+commands together to achieve a goal.  Though the original base set of
+tools are in perl, you don't need to know perl for most of them.
+
+## Let's create a ./mydemo command:
+
+``` python
+import sys, pyfsdb
+
+db = pyfsdb.Fsdb(file_handle=sys.stdin, out_file_handle=sys.stdout)
+value_column = db.get_column_number('value')
+
+for row in db:     # reads a row from the input stream
+    row[value_column] = float(row[value_column]) * 2
+    db.append(row) # sends the row to the output stream
+
+db.close()
+```
+
+And then feed it this file:
+
+```
+#fsdb -F t col1 value
+1	42.0
+2	123.0
+```
+
+We can run it thus'ly:
+
+
+``` sh
+# cat test.fsdb | ./mydemo
+#fsdb -F t col1 value
+1	84.0
+2	246.0
+#   | ./test.py
+```
+
+Or chain it together with multiple FSDB commands:
+
+```
+# cat test.fsdb | ./mydemo | dbcolstats valueq
+cat test.fsdb | PYTHONPATH=pyfsdb python3 ./test.py | dbcolstats value | dbcol mean stddev sum min max | dbfilealter -R C
+#fsdb -R C mean stddev sum min max
+mean: 165
+stddev: 114.55
+sum: 330
+min: 84
+max: 246
+
+#   | ./test.py
+#   | dbcolstats value
+#   | dbcol mean stddev sum min max
+#   | dbfilealter -R C
+```
+
 # See also
 
 The FSDB website and manual page for the original perl module: 
