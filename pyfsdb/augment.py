@@ -1,11 +1,5 @@
 #!/usr/bin/python3
 
-import argparse
-import sys
-import os
-
-import pyfsdb
-
 """This script expects to augment a FSDB stream (or file) with
    additional information found in another FSDB file.  The second file
    is loaded entirely into memory in order to accomplish this.  Any
@@ -17,6 +11,12 @@ import pyfsdb
    when one side is small because it avoids sorting.  dbaugment can
    also operate on streaming data, since sorting isn't required.
 """
+
+import argparse
+import sys
+import os
+
+import pyfsdb
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
