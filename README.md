@@ -4,6 +4,23 @@ A python implementation of the [FSDB] flat-file streaming database.
 
 [FSDB]: https://www.isi.edu/~johnh/SOFTWARE/FSDB/
 
+# Installation
+
+Using pip:
+
+```
+pip3 install pyfsdb
+```
+
+Or manually:
+
+```
+git clone git@github.com:gawseed/pyfsdb.git
+cd pyfsdb
+python3 setup.py build
+python3 setup.py install
+```
+
 # Example Usage
 
 The FSDB file format contains headers and footers that supplement the
