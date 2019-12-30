@@ -26,7 +26,7 @@ f = pyfsdb.Fsdb(output_file = "my.fsdb")
 f.out_column_names = ['foo','bar','baz']
 f.out_separator = "\t"
 f.append(["a", "b", "c"])
-f.write_finish() # closes and writes trailing comments
+f.close() # closes and writes trailing comments
 
 # (if the FSDB object is also reading a file, default values
 # for out_column_names and out_separator will be taken from the input file).
