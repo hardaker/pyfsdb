@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-import sysimport argparse
+import sys
+import argparse
 import pyfsdb
 
 def parse_args():
