@@ -1,13 +1,15 @@
 pipeline {
   agent {
     docker {
-      image 'docker.io/python:current'
+      image 'docker.io/python:3'
     }
   }
   stages {
     stage('Preparation') {
       steps {
-        sh 'rm -rf build'
+        withEnv(["HOME=${env.WORKSPACE}"]) {
+	  sh 'pip install --user pandas'
+	}
       }
     }
     stage ('Build') {
@@ -17,7 +19,9 @@ pipeline {
     }
     stage ('Test') {
       steps {
-        sh 'python3 setup.py test'
+        withEnv(["HOME=${env.WORKSPACE}"]) {
+          sh 'python3 setup.py test'
+	}
       }
     }
   }
