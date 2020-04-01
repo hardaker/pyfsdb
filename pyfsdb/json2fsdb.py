@@ -26,7 +26,7 @@ def parse_args():
 def handle_rows(out_fsdb, rows):
     "Output each row in an array to the output fsdb file"
     for row in rows:
-        out_fsdb.append(list(row.values()))
+        out_fsdb.append([val for (key, val) in sorted(row.items())])
 
 def json_to_fsdb(input_file, output_file):
     """A function that converts an input file stream of json dictionary
@@ -39,7 +39,7 @@ def json_to_fsdb(input_file, output_file):
         rows = [rows]
 
     out_fsdb = pyfsdb.Fsdb(out_file_handle=output_file)
-    out_fsdb.out_column_names = list(rows[0].keys())
+    out_fsdb.out_column_names = sorted(list(rows[0].keys()))
     handle_rows(out_fsdb, rows)
 
     for line in input_file:
