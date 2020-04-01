@@ -24,6 +24,7 @@ setuptools.setup(
             'dbkeyedsort = pyfsdb.keyedsort:main',
             'dbsplitter = pyfsdb.splitter:main',
             'json2fsdb = pyfsdb.json2fsdb:main',
+            'fsdb2json = pyfsdb.fsdb2json:main',
         ]
     },
     classifiers=[
