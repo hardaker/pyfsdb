@@ -16,7 +16,7 @@ for data in f:
 
 # iterating over a fsdb file with dictionaries:
 # (slower)
-f = pyfsdb.Fsdb("data.fsdb", return_type=fsdb.RETURN_AS_DICTIONARY)
+f = pyfsdb.Fsdb("data.fsdb", return_type=pyfsdb.RETURN_AS_DICTIONARY)
 for data in f:
     print(data['name'] + ".." + data['time'])
 
@@ -67,7 +67,7 @@ class Fsdb(object):
     def __init__(self, filename = None, file_handle = None, return_type=RETURN_AS_ARRAY, out_file = None, out_file_handle = None, pass_comments = 'y', out_command_line = "____INTERNAL____", write_nones_as_blanks = True):
         """Returns a Fsdb class that can be used as an iterator.
 
-           return_type can be fsdb.RETURN_AS_ARRAY (default) or
+           return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
            RETURN_AS_DICTIONARY to return dictionary based rows with 
            indexes as columns (this is slower).
 
@@ -394,7 +394,7 @@ class Fsdb(object):
     def __next__(self):
         """Returns the next array of data from an fsdb file.
            Returns an array by default, or a dictionary if return_type 
-           was set to fsdb.RETURN_AS_DICTIONARY."""
+           was set to pyfsdb.RETURN_AS_DICTIONARY."""
         
         fh = self.maybe_open_filehandle()
         if not fh:
