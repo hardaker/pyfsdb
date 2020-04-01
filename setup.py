@@ -23,6 +23,7 @@ setuptools.setup(
             'dbzerofill = pyfsdb.zerofill:main',
             'dbkeyedsort = pyfsdb.keyedsort:main',
             'dbsplitter = pyfsdb.splitter:main',
+            'json2fsdb = pyfsdb.json2fsdb:main',
         ]
     },
     classifiers=[
