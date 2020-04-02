@@ -448,7 +448,18 @@ class FsdbTest(TestCase):
         self.assertTrue(file2.startswith(file1), # ignore added trailers
                          "file contents with headers are the same")
 
+    def test_with_usage(self):
+        DATA_FILE = "pyfsdb/tests/tests.fsdb"
+        with pyfsdb.Fsdb(DATA_FILE) as f:
+            row = next(f)
+            self.assertTrue(row, 'row one is returned')
+
+            self.assertTrue(row[0] == 'rowone')
+            self.assertTrue(row[1] == 'info')
+            self.assertTrue(row[2] == 'data')
+
 if __name__ == "__main__":
     unittest.main()
+        
 
 

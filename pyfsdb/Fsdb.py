@@ -688,6 +688,10 @@ class Fsdb(object):
         
     def close(self):
         """Writes final processing command comment to the output file and closes it."""
+        if self.fileh:
+            self.fileh.close()
+            self.fileh = None
+
         if self._out_file_handle:
             # ignore closing errors
             try:
@@ -703,10 +707,15 @@ class Fsdb(object):
             self._out_file_handle = None
 
     def __del__(self):
-        self.write_finish()
-        if self.fileh:
-            self.fileh.close()
-            self.fileh = None
+        self.close()
+        
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.close()
+        
+
 
 def main():
     print("at top")
