@@ -6,12 +6,13 @@ class test_json_functions(unittest.TestCase):
         from pyfsdb.json2fsdb import json_to_fsdb
         self.assertTrue(json_to_fsdb, "loaded")
 
-        inp = StringIO('{"d":"f", "a":"c"}' + "\n" + '{"a":"b", "d":"e"}')
+        inp = StringIO('{"d":"f", "a":"c"}' + "\n" + '{"a":"b", "d":"e"}' + "\n" +
+                       '{"d": "x", "c": "2", "a": "y"}')
         output = StringIO() # don't require converting to a string
         json_to_fsdb(inp, output)
 
         self.assertEqual(output.getvalue(),
-                         "#fsdb -F t a d\nc\tf\nb\te\n",
+                         "#fsdb -F t a d\nc\tf\nb\te\ny\tx\n",
                          "output of json_to_fsdb is correct")
         
     def test_fsdb_to_json(self):
