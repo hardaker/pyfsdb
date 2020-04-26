@@ -26,7 +26,13 @@ def parse_args():
 def handle_rows(out_fsdb, rows, columns):
     "Output each row in an array to the output fsdb file"
     for row in rows:
-        out_fsdb.append([row[column] for column in columns])
+        out=[]
+        for column in columns:
+            if column in row:
+                out.append(row[column])
+            else:
+                out.append('')
+        out_fsdb.append(out)
 
 def json_to_fsdb(input_file, output_file):
     """A function that converts an input file stream of json dictionary
