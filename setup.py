@@ -20,6 +20,7 @@ setuptools.setup(
             'bro2fsdb = pyfsdb.pro2fsdb:main',
             'dbcoluniq = pyfsdb.coluniq:main',
             'dbfullpivot = pyfsdb.fullpivot:main',
+            'dbreversepivot = pyfsdb.reversepivot:main',
             'dbzerofill = pyfsdb.zerofill:main',
             'dbkeyedsort = pyfsdb.keyedsort:main',
             'dbsplitter = pyfsdb.splitter:main',
