@@ -26,6 +26,7 @@ setuptools.setup(
             'dbsplitter = pyfsdb.splitter:main',
             'json2fsdb = pyfsdb.json2fsdb:main',
             'fsdb2json = pyfsdb.fsdb2json:main',
+            'fsdb2many = pyfsdb.fsdb2many:main',
         ]
     },
     classifiers=[
