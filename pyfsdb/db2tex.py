@@ -17,6 +17,9 @@ def parse_args():
     parser.add_argument("-c", "--columns", type=str, nargs="*",
                         help="Column names to include; will use all if not specified")
 
+    parser.add_argument("-C", "--caption", type=str,
+                        help="Use this as the caption for the table")
+
     parser.add_argument("input_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input FSDB file")
@@ -69,7 +72,10 @@ def main():
                 outh.write(" & %s" % (latex_escape(row[column])))
         outh.write(" \\\\\n")
 
+
     outh.write("  \\end{tabular}\n")
+    if args.caption:
+        outh.write("  \\caption{%s}\n" % (args.caption))
     outh.write("\\end{table}\n")
 
 if __name__ == "__main__":
