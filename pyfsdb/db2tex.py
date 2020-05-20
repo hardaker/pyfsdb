@@ -8,7 +8,7 @@ import pyfsdb
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description="db2tex converts any FSDB file into a latex table.",
+                                     description="db2tex converts any FSDB file into a latex table.  WARNING: very little escaping is done -- watch out for mallicious input files.",
                                      epilog="Exmaple Usage: db2tex -c col1 col2 -p cc input.fsdb")
 
     parser.add_argument("-p", "--tabular-profile", type=str,
@@ -27,6 +27,9 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
+def latex_escape(value):
+    return str(value).replace("_", "\\_").replace("&","\\&")
 
 def main():
     args = parse_args()
@@ -53,17 +56,17 @@ def main():
 
     for num, column in enumerate(columns):
         if num == 0:
-            outh.write("    \\textbf{%s}" % (column))
+            outh.write("    \\textbf{%s}" % (latex_escape(column)))
         else:
-            outh.write(" & \\textbf{%s}" % (column))
+            outh.write(" & \\textbf{%s}" % (latex_escape(column)))
     outh.write(" \\\\\n")
 
     for row in inh:
         for num, column in enumerate(column_numbers):
             if num == 0:
-                outh.write("    %s" % (row[column]))
+                outh.write("    %s" % (latex_escape(row[column])))
             else:
-                outh.write(" & %s" % (row[column]))
+                outh.write(" & %s" % (latex_escape(row[column])))
         outh.write(" \\\\\n")
 
     outh.write("  \\end{tabular}\n")
