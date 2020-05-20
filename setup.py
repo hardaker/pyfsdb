@@ -27,6 +27,7 @@ setuptools.setup(
             'json2fsdb = pyfsdb.json2fsdb:main',
             'fsdb2json = pyfsdb.fsdb2json:main',
             'fsdb2many = pyfsdb.fsdb2many:main',
+            'db2tex = pyfsdb.db2tex:main',
         ]
     },
     classifiers=[
