@@ -20,6 +20,9 @@ def parse_args():
     parser.add_argument("-C", "--caption", type=str,
                         help="Use this as the caption for the table")
 
+    parser.add_argument("-l", "--label", type=str,
+                        help="Add a label to the table (eg: tab:foo)")
+
     parser.add_argument("input_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input FSDB file")
@@ -76,6 +79,8 @@ def main():
     outh.write("  \\end{tabular}\n")
     if args.caption:
         outh.write("  \\caption{%s}\n" % (args.caption))
+    if args.label:
+        outh.write("  \\label{%s}\n" % (args.label))
     outh.write("\\end{table}\n")
 
 if __name__ == "__main__":
