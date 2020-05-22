@@ -35,7 +35,7 @@ def parse_args():
     return args
 
 def latex_escape(value):
-    return str(value).replace("\\","\\\\")replace("_", "\\_").replace("&","\\&")
+    return str(value).replace("\\","\\\\").replace("_", "\\_").replace("&","\\&")
 
 def main():
     args = parse_args()
