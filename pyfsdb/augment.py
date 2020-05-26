@@ -47,7 +47,7 @@ def main():
 
     # read in the augument file entirely first
     augh = pyfsdb.Fsdb(file_handle = args.augment_file,
-                     return_type=fsdb.RETURN_AS_DICTIONARY)
+                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
     savestruct = {}
     for row in augh:
         current = savestruct
