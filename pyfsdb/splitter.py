@@ -7,7 +7,7 @@ import sys
 import pyfsdb
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-c", "--columns", type=str, nargs="*",
                         help="Columns to use when splitting the file.  If not specified, all columns are split individually.  If specified, multiple columns per file can be specified using comma separated COL1,COL2 column groupings.")

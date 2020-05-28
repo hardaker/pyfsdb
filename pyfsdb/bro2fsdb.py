@@ -9,7 +9,7 @@ import argparse
 import sys
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-l", "--leave-bro-headers", action="store_true",
                         help="Leave the bro headers in place right after the new FSDB header")

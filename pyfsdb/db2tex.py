@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-"""Converts a FSDB file to a latex table."""
+"""db2tex converts any FSDB file into a latex table.
+WARNING: very little escaping is done -- watch out for mallicious input files."
 
 import argparse
 import sys
@@ -8,7 +9,7 @@ import pyfsdb
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description="db2tex converts any FSDB file into a latex table.  WARNING: very little escaping is done -- watch out for mallicious input files.",
+                                     description=__doc__,
                                      epilog="Exmaple Usage: db2tex -c col1 col2 -p cc input.fsdb")
 
     parser.add_argument("-p", "--tabular-profile", type=str,

@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+"""fsdb2many converts a single FSDB file into many, by creating
+other file names based on a column of the original."""
+
 import sys
 import argparse
 import pyfsdb
@@ -7,7 +10,7 @@ import re
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description="fsdb2many converts a single FSDB file into many, by creating other file names based on a column of the original.",
+                                     description=__doc__,
                                      epilog="fsdb2many -c key -o outputdir/%s.fsdb mybigfile.fsdb")
 
     parser.add_argument("-c", "--column", default="key", type=str,

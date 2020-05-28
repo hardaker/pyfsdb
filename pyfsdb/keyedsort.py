@@ -19,7 +19,7 @@ import argparse
 import pyfsdb
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-c", "--column", type=str, 
                         help="The column to sort by")

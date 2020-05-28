@@ -19,7 +19,7 @@ import os
 import pyfsdb
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-k", "--keys", default=['timestamp', 'key'], type=str, nargs="+",
                         help="Keys to match against")

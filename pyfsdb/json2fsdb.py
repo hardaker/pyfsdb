@@ -10,7 +10,7 @@ import pyfsdb
 
 def parse_args():
     """Parse command line arguments"""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("input_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,

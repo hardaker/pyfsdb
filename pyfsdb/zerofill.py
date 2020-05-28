@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
+"""Fills a column with zeros if it was otherwise blank"""
+
 import sys
 import argparse
 import pyfsdb
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-v", "--value", default="0", type=str,
                         help="Fill columns with this value")

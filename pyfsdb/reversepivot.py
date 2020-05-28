@@ -26,7 +26,7 @@ import argparse
 import pyfsdb
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
 
     parser.add_argument("-k", "--key-column", default="key", type=str,
                         help="The key column to use in the output for column names to store in")
