@@ -10,7 +10,7 @@ import pyfsdb
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-	                        epilog="dbformat -f 'I can print {col1} and {col2}'")
+	                        epilog="Example: dbformat -f 'I can print {col1} and {col2}'")
 
     parser.add_argument("-f", "--format", type=str,
                         help="The python-based format string to use")
