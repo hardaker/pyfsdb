@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyfsdb",
-    version="0.9.7",
+    version="0.9.8",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A python implementation of the flat-file streaming database",
@@ -29,6 +29,7 @@ setuptools.setup(
             'fsdb2many = pyfsdb.fsdb2many:main',
             'db2tex = pyfsdb.db2tex:main',
             'dbformat = pyfsdb.dbformat:main',
+            'dbreescape = pyfsdb.dbreescape:main',
         ]
     },
     classifiers=[
