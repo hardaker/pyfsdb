@@ -458,6 +458,23 @@ class FsdbTest(TestCase):
             self.assertTrue(row[1] == 'info')
             self.assertTrue(row[2] == 'data')
 
+    def test_missing_columns(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\n"
+        datah = StringIO(data)
+        with pyfsdb.Fsdb(file_handle=datah) as f:
+            r1 = next(f)
+
+            self.assertEqual(f.column_names, ['a', 'b', 'c'],
+                             "column names are right")
+            self.assertEqual(r1, ['1','2','3'],
+                             "column values for row 1 are correct")
+
+            r2 = next(f)
+            self.assertEqual(r2, ['4', '5', ''],
+                             "column values for row 2 are correct")
+            
+
 if __name__ == "__main__":
     unittest.main()
         

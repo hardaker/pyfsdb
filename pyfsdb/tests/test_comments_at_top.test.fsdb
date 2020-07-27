@@ -1,5 +1,5 @@
 #fsdb -F t one two
 # another comment
-1 2
+1	2
 # done
-#   | setup.py test
+#   | /usr/bin/pytest-3 pyfsdb/tests/test_fsdb_class.py
