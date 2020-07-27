@@ -429,6 +429,9 @@ class Fsdb(object):
         # return an array of data
         self.current_line = line
         self._current_row = line.rstrip("\n\r").split(self.separator)
+        if len(self._current_row) < len(self._column_names):
+            n = (len(self._column_names))-len(self._current_row)
+            self._current_row.extend([''] * n)
         return self._current_row
 
     def _next_as_dict(self):
