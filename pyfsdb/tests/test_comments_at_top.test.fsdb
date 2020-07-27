@@ -2,4 +2,4 @@
 # another comment
 1	2
 # done
-#   | /usr/bin/pytest-3 pyfsdb/tests/test_fsdb_class.py
+#   | setup.py test
