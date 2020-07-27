@@ -24,8 +24,11 @@ def parse_args():
     parser.add_argument("-k", "--keys", default=['timestamp', 'key'], type=str, nargs="+",
                         help="Keys to match against")
 
-    parser.add_argument("-v", "--values", type=str, nargs="+",
+    parser.add_argument("-v", "--values", type=str, nargs="*",
                         help="Value columns to insert on a match")
+
+    parser.add_argument("-V", "--include-all-values", action="store_true",
+                        help="Include all the value columns from the matching row")
 
     parser.add_argument("stream_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
@@ -40,6 +43,12 @@ def parse_args():
                         help="")
 
     args = parser.parse_args()
+
+    if (not args. values or len(args.values) == 0) \
+       and not args.include_all_values:
+            sys.stderr.write("Either -v or -V is required\n")
+            exit(1)
+
     return args
 
 def main():
@@ -48,6 +57,11 @@ def main():
     # read in the augument file entirely first
     augh = pyfsdb.Fsdb(file_handle = args.augment_file,
                      return_type=pyfsdb.RETURN_AS_DICTIONARY)
+
+    # store each row based on its list of keys, but storing
+    # each additional key as a deeper layer of dictionaries.
+    # the final key used is 'data' to store the data itself
+    # XXX: technically the 'data' layer/key isn't needed
     savestruct = {}
     for row in augh:
         current = savestruct
@@ -60,6 +74,14 @@ def main():
 
     # read in stream file, and augment each row with the new columns
     streamh = pyfsdb.Fsdb(file_handle = args.stream_file)
+
+    if not args.values or len(args.values) == 0:
+        columns = augh.column_names
+        args.values = []
+        for column in columns:
+            if column not in args.keys:
+                args.values.append(column)
+
     outh = pyfsdb.Fsdb(out_file_handle = args.output_file)
     outh.out_column_names = streamh.column_names + args.values
 
