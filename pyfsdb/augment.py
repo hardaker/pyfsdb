@@ -30,6 +30,10 @@ def parse_args():
     parser.add_argument("-V", "--include-all-values", action="store_true",
                         help="Include all the value columns from the matching row")
 
+    parser.add_argument("-i", "--include-unmatched-augment-rows", action="store_true",
+                        help="Include (at the bottom) any rows from the augment file that failed to match any stream rows.")
+
+
     parser.add_argument("stream_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="")
@@ -51,17 +55,44 @@ def parse_args():
 
     return args
 
+def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
+    """Adds remaining unseen records in the stored augment file into the
+    output handle.  Recursion used to descend a deep-encoded
+    structure.
+    """
+    if 'data' in struct:
+        # end condition
+        if 'used' not in struct:
+            # unused row found,
+            # construct the output row, consisting of keys
+            # followed by blanks, followed by values
+            # XXX: this breaks when the keys aren't the first columns
+            row = []
+            for key in key_cols:
+                row.append(struct['data'][key])
+            row.extend([''] * empty_num)
+            for value in value_cols:
+                row.append(struct['data'][value])
+
+            # append the created row
+            fsh.append(row)
+        return
+    else:
+        # we're not fully deep in the tree, keep diving
+        for item in struct:
+            dump_remaining(fsh, struct[item], empty_num,
+                           key_cols, value_cols)
+
 def main():
     args = parse_args()
 
     # read in the augument file entirely first
     augh = pyfsdb.Fsdb(file_handle = args.augment_file,
-                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
+                       return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
     # store each row based on its list of keys, but storing
     # each additional key as a deeper layer of dictionaries.
     # the final key used is 'data' to store the data itself
-    # XXX: technically the 'data' layer/key isn't needed
     savestruct = {}
     for row in augh:
         current = savestruct
@@ -75,6 +106,7 @@ def main():
     # read in stream file, and augment each row with the new columns
     streamh = pyfsdb.Fsdb(file_handle = args.stream_file)
 
+    # determine which columns need to be added on (potentially all)
     if not args.values or len(args.values) == 0:
         columns = augh.column_names
         args.values = []
@@ -82,6 +114,7 @@ def main():
             if column not in args.keys:
                 args.values.append(column)
 
+    # create the output stream to store the data
     outh = pyfsdb.Fsdb(out_file_handle = args.output_file)
     outh.out_column_names = streamh.column_names + args.values
 
@@ -96,12 +129,17 @@ def main():
                 break
             current = current[row[key]]
     
+        # on a deep match finding
         if current:
+            current['used'] = 1
             current = current['data']
             for value in args.values:
                 row.append(current[value])
 
         outh.append(row)
+
+    # Now loop through all data adding any rows 
+    dump_remaining(outh, savestruct, 2, args.keys, args.values)
 
 if __name__ == "__main__":
     main()
