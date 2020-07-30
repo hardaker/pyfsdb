@@ -169,8 +169,14 @@ class Fsdb(object):
 
     @column_names.setter
     def column_names(self, values):
+        try:
+            self.maybe_open_filehandle()
+        except ValueError:
+            pass # expected if there is no header
+            
         mapping = self.__create_column_name_mapping__(values)
         self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+        self.headers = self._header_line
 
     @property
     def separator(self):
@@ -559,7 +565,7 @@ class Fsdb(object):
 
         args = line.split(" ")
         if args[0] != "#fsdb":
-            return [-1, "failed to find expected #fsdb header"]
+            raise ValueError("failed to find expected #fsdb header")
         
         # should we use argparse here?
         argn = 1

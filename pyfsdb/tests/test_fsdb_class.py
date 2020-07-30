@@ -66,14 +66,16 @@ class FsdbTest(TestCase):
         self.check_data(rows)
         
     def test_broken_header(self):
-        HEADER_FILE = "pyfsdb/tests/tests_broken.fsdb"
-        f = pyfsdb.Fsdb()
-        fileh = open(HEADER_FILE, "r")
-        line = next(fileh)
-        headers = f.read_header(line)
-
-        # the headers should fail
-        self.assertTrue(headers[0] == -1, "header parse is -1 on failure")
+        from io import StringIO
+        data = "a,b,c" # pretend we're a csv
+        datah = StringIO(data)
+        try:
+            with pyfsdb.Fsdb(file_handle=datah) as f:
+                self.assertTrue(False, "shouldn't have gotten here")
+        except ValueError:
+            self.assertTrue(True, "proper exception thrown")
+        except Exception as e:
+            self.assertTrue(False, "wrong exception thrown: " + str(e))
 
     def test_reading_as_iterator(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -474,6 +476,17 @@ class FsdbTest(TestCase):
             self.assertEqual(r2, ['4', '5', ''],
                              "column values for row 2 are correct")
             
+    def test_broken_data(self):
+        from io import StringIO
+        data = "a,b,c" # pretend we're a csv
+        datah = StringIO(data)
+        try:
+            with pyfsdb.Fsdb(file_handle=datah) as f:
+                self.assertTrue(False, "shouldn't have gotten here")
+        except ValueError:
+            self.assertTrue(True, "proper exception thrown")
+        except Exception as e:
+            self.assertTrue(False, "wrong exception thrown: " + str(e))
 
 if __name__ == "__main__":
     unittest.main()
