@@ -40,9 +40,15 @@ def json_to_fsdb(input_file, output_file):
     from the first record keys."""
     first_line = next(input_file)
 
-    rows = json.loads(first_line)
-    if type(rows) is not list:
-        rows = [rows]
+    try:
+        rows = json.loads(first_line)
+        if type(rows) is not list:
+            rows = [rows]
+    except:
+        sys.stderr.write("failed to parse the first line as json:\n")
+        sys.stderr.write(first_line)
+        exit(1)
+        
 
     columns = sorted(list(rows[0].keys()))
     out_fsdb = pyfsdb.Fsdb(out_file_handle=output_file)
@@ -50,10 +56,13 @@ def json_to_fsdb(input_file, output_file):
     handle_rows(out_fsdb, rows, columns)
 
     for line in input_file:
-        rows = json.loads(line)
-        if type(rows) is not list:
-            rows = [rows]
-        handle_rows(out_fsdb, rows, columns)
+        try:
+            rows = json.loads(line)
+            if type(rows) is not list:
+                rows = [rows]
+            handle_rows(out_fsdb, rows, columns)
+        except:
+            sys.stderr.write("failed to parse: " + line)
 
 def main():
     "CLI wrapper around json_to_fsdb"
