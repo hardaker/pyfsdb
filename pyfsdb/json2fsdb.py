@@ -4,19 +4,20 @@
 individual  dictionary lines into an FSDB file"""
 
 import sys
-import argparse
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import json
 import pyfsdb
 
 def parse_args():
     """Parse command line arguments"""
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            description=__doc__)
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
+    parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input file (json file) to read")
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
+    parser.add_argument("output_file", type=FileType('w'),
                         nargs='?', default=sys.stdout,
                         help="The output file (FSDB file) to write back out")
 
@@ -26,7 +27,7 @@ def parse_args():
 def handle_rows(out_fsdb, rows, columns):
     "Output each row in an array to the output fsdb file"
     for row in rows:
-        out=[]
+        out = []
         for column in columns:
             if column in row:
                 out.append(row[column])
@@ -42,13 +43,13 @@ def json_to_fsdb(input_file, output_file):
 
     try:
         rows = json.loads(first_line)
-        if type(rows) is not list:
+        if not isinstance(rows, list):
             rows = [rows]
-    except:
+    except Exception as exp:
         sys.stderr.write("failed to parse the first line as json:\n")
         sys.stderr.write(first_line)
-        exit(1)
-        
+        sys.stderr.write(str(exp))
+        sys.exit(1)
 
     columns = sorted(list(rows[0].keys()))
     out_fsdb = pyfsdb.Fsdb(out_file_handle=output_file)
@@ -58,10 +59,10 @@ def json_to_fsdb(input_file, output_file):
     for line in input_file:
         try:
             rows = json.loads(line)
-            if type(rows) is not list:
+            if not isinstance(rows, list):
                 rows = [rows]
             handle_rows(out_fsdb, rows, columns)
-        except:
+        except Exception as exp:
             sys.stderr.write("failed to parse: " + line)
 
 def main():
