@@ -71,7 +71,8 @@ class FsdbTest(TestCase):
         datah = StringIO(data)
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
-                self.assertTrue(False, "shouldn't have gotten here")
+                row = next(f)
+                self.assertTrue(False, "shouldn't have gotten here " + str(row))
         except ValueError:
             self.assertTrue(True, "proper exception thrown")
         except Exception as e:
@@ -122,9 +123,9 @@ class FsdbTest(TestCase):
         f.file_handle = fh
         self.assertTrue(f.file_handle == fh, "file_handle was set properly")
 
-        self.assertTrue(f.__next__ == f._next_as_array, "read type was set")
 
         row = next(f)
+        self.assertTrue(f.__next__ == f._next_as_array, "read type was set")
         self.assertTrue(row, 'row one is returned')
         self.assertTrue(row[0] == 'rowone')
 
@@ -213,7 +214,7 @@ class FsdbTest(TestCase):
         f.separator = " "
         self.assertTrue(f.header_line == "#fsdb -F s colone coltwo col3 col4\n")
 
-    def test_missing_header_support(self):
+    def test_missing_header_support_file(self):
         DATA_FILE = "pyfsdb/tests/noheader.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
         self.assertTrue(f, "opened ok")
@@ -238,6 +239,24 @@ class FsdbTest(TestCase):
         self.assertTrue(cols[2] == "colthree", "column three ok")
         self.assertTrue(cols[2] == "colthree", "column three ok")
         self.assertTrue(f.column_names[2] == "colthree", "column three ok")
+
+    def test_missing_header_support_filehandle(self):
+        from io import StringIO
+        data = "a	b	c\n"
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertTrue(f, "opened ok")
+        f.column_names = (["a", "b", "c"])
+
+        self.assertTrue(f.get_column_name(0) == "a")
+        self.assertTrue(f.get_column_name(1) == "b")
+        self.assertTrue(f.get_column_name(2) == "c")
+        self.assertTrue(f.get_column_number("a") == 0)
+        self.assertTrue(f.get_column_number("b") == 1)
+        self.assertTrue(f.get_column_number("c") == 2)
+
+        self.assertTrue(f.header_line == "#fsdb -F t a b c\n")
+
 
     def test_write_out_fsdb(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -269,8 +288,6 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(out_file = OUT_FILE)
         count = 1
 
-        self.assertTrue(len(f.out_column_names) == 0,
-                        "correct initial output count")
         f.out_column_names = ['a','b','c','new_count']
         self.assertTrue(len(f.out_column_names) == 4,
                         "correct initial output count")
@@ -399,6 +416,10 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(self.DATA_FILE)
         self.assertTrue(f, "opened ok")
 
+        # this generally shouldn't be called as is, so we need to self-init
+        f.maybe_open_filehandle()
+        f.read_header()
+
         all = []
         for r in f.next_as_dict():
             all.append(r)
@@ -482,6 +503,7 @@ class FsdbTest(TestCase):
         datah = StringIO(data)
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
+                row = next(f)
                 self.assertTrue(False, "shouldn't have gotten here")
         except ValueError:
             self.assertTrue(True, "proper exception thrown")

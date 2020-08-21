@@ -49,11 +49,14 @@ class Fsdb(object):
     fileh = None
     _header_line = None
     current_line = None
+    filename = None
     _separator = "\t"
     _separator_token = "t"
     _headers = None
     _column_names = {}
     _pass_comments = True
+    _mapping = None
+    _have_read_header = False
 
     _out_file = None
     _out_file_handle = None
@@ -64,7 +67,7 @@ class Fsdb(object):
     _out_separator_token = "t"
     _out_command_line = "____BROKEN____" # ick, magic
 
-    def __init__(self, filename = None, file_handle = None, return_type=RETURN_AS_ARRAY, out_file = None, out_file_handle = None, pass_comments = 'y', out_command_line = "____INTERNAL____", write_nones_as_blanks = True):
+    def __init__(self, filename = None, file_handle = None, return_type=RETURN_AS_ARRAY, out_file = None, out_file_handle = None, pass_comments = 'y', out_command_line = "____INTERNAL____", write_nones_as_blanks = True, column_names=None):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -77,8 +80,9 @@ class Fsdb(object):
         """
 
         self.return_type = return_type
-        self.file_handle = file_handle
         self.filename = filename
+        self.fileh = file_handle
+        self._column_names = column_names
         self._pass_comments = pass_comments
         self._write_nones_as_blanks = write_nones_as_blanks
         self._header_written = False
@@ -112,13 +116,12 @@ class Fsdb(object):
         if not fileh:
             return None
 
+        return fileh
+
         if self.return_type == RETURN_AS_DICTIONARY:
             self.__next__ = self._next_as_dict
         else:
             self.__next__ = self._next_as_array
-
-        self.header_line = next(self.fileh).rstrip()
-        self.headers = self.read_header(self.header_line)
 
         return self.fileh
 
@@ -126,6 +129,8 @@ class Fsdb(object):
     def headers(self):
         "Headers for the file handle being read."
         self.maybe_open_filehandle()
+        if not self._headers:
+            self.read_header()
         return self._headers
 
     @headers.setter
@@ -136,6 +141,8 @@ class Fsdb(object):
     def header_line(self):
         "The top #fsdb header line in the file being read."
         self.maybe_open_filehandle()
+        if not self._header_line:
+            self.read_header()
         return self._header_line
 
     @header_line.setter
@@ -146,36 +153,16 @@ class Fsdb(object):
     def column_names(self):
         "An array of column names for the file being read"
         self.maybe_open_filehandle()
+        if not self._column_names:
+            self.read_header()
         return list(self._column_names.keys())
-
-    def __create_column_name_mapping__(self, columns):
-        "Internal"
-        mapping = {'names': {}, 'numbers': {},
-                   'header': { 'separator': self.separator}}
-
-        argn = 0
-        for token in columns:
-            mapping['names'][token] = argn
-            mapping['numbers'][argn] = token
-            argn += 1
-
-        self._column_names = mapping['names']
-        self.column_nums = mapping['numbers']
-
-        if not self._out_column_names_set:
-            self._out_column_names = self._column_names.keys()
-
-        return mapping
 
     @column_names.setter
     def column_names(self, values):
-        try:
-            self.maybe_open_filehandle()
-        except ValueError:
-            pass # expected if there is no header
-            
         mapping = self.__create_column_name_mapping__(values)
-        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+        self._header_line = \
+            self.create_header_line(columns = values,
+                                    separator_token = self._separator_token)
         self.headers = self._header_line
 
     @property
@@ -187,6 +174,8 @@ class Fsdb(object):
 
            Changing this will also change the stored separator_token value."""
         self.maybe_open_filehandle()
+        if not self._separator:
+            self.read_header()
         return self._separator
 
     @separator.setter
@@ -205,6 +194,8 @@ class Fsdb(object):
 
            Changing this will also change the stored separator value."""
         self.maybe_open_filehandle()
+        if not self._separator_token:
+            self.read_header()
         return self._separator_token
 
     @separator_token.setter
@@ -212,6 +203,30 @@ class Fsdb(object):
         self._separator_token = value
         self._separator = self.parse_separator(self.separator_token)
         self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+
+    def __create_column_name_mapping__(self, columns):
+        """Internal
+
+        Creates a list of columns and numbers for rapid mapping
+        at the start to make more rapid lookups later.
+        """
+        mapping = {'names': {}, 'numbers': {},
+                   'header': { 'separator': self.separator}}
+
+        argn = 0
+        for token in columns:
+            mapping['names'][token] = argn
+            mapping['numbers'][argn] = token
+            argn += 1
+
+        self._column_names = mapping['names']
+        self.column_nums = mapping['numbers']
+
+        if not self._out_column_names_set:
+            self._out_column_names = self._column_names.keys()
+
+        self._mapping = mapping
+        return mapping
 
     #
     # output properties
@@ -247,11 +262,6 @@ class Fsdb(object):
             except:
                 pass
         
-    @property
-    def out_file_handle(self):
-        """The output file hnadle being written to (if one is being written)"""
-        return self._out_file_handle
-    
     @property
     def out_separator(self):
         """The separator for the output.
@@ -337,7 +347,6 @@ class Fsdb(object):
         
     def create_header_line(self, columns = None, separator_token = None):
         "Returns a header string for the stored column_names and separator/separator_token."
-           
         if not columns:
             columns = self.out_column_names
 
@@ -386,16 +395,10 @@ class Fsdb(object):
 
     def maybe_open_filehandle(self, mode="r"):
         "Internal"
-        if self.file_handle:
-            return self.file_handle
-
-        if self.filename:
+        if not self.file_handle and self.filename:
             self.file_handle = open(self.filename, mode)
-        else:
-            return None
 
         return self.file_handle
-        
 
     def __next__(self):
         """Returns the next array of data from an fsdb file.
@@ -403,6 +406,14 @@ class Fsdb(object):
            was set to pyfsdb.RETURN_AS_DICTIONARY."""
         
         fh = self.maybe_open_filehandle()
+        if not self._header_line:
+            self.read_header()
+
+        if self.return_type == RETURN_AS_DICTIONARY:
+            self.__next__ = self._next_as_dict
+        else:
+            self.__next__ = self._next_as_array
+
         if not fh:
             return None
         
@@ -545,7 +556,7 @@ class Fsdb(object):
         # unknown
         raise ValueError("Unknown separator token value: " + separator_token)
 
-    def read_header(self, line):
+    def read_header(self, line = None):
         """Internal
 
         Returns a dict of header -> column numbers.
@@ -563,6 +574,14 @@ class Fsdb(object):
            [-1, "error description"]         on failure
         """
 
+        if self._have_read_header:
+            return [0, self._mapping]
+
+        if not line:
+            line = next(self.file_handle)
+        self._header_line = line
+        self._headers = [self._header_line]
+
         args = line.split(" ")
         if args[0] != "#fsdb":
             raise ValueError("failed to find expected #fsdb header")
@@ -573,7 +592,7 @@ class Fsdb(object):
         while args[argn][0] == '-':
             if args[argn] == "-F":
                 argn += 1
-                self.separator_token = args[argn]
+                self._separator_token = args[argn]
             else:
                 return [-1, "Unown option: " + args[argn]]
 
@@ -587,7 +606,7 @@ class Fsdb(object):
         args = remainder.split(" ")
 
         mapping = self.__create_column_name_mapping__(args)
-        self.separator = mapping['header']['separator']
+        self._separator = mapping['header']['separator']
 
         return [0, mapping]
 
@@ -641,8 +660,6 @@ class Fsdb(object):
         """Returns a pandas dataframe for the given data"""
         import pandas
         column_names = self.column_names # forces opening and reading headers
-        print("-------------------------------------")
-        print(column_names)
         return pandas.read_csv(self.file_handle, sep='\t', comment="#",
                                names=self.column_names,
                                usecols=usecols)
