@@ -656,6 +656,10 @@ class Fsdb(object):
             row = self._current_row
         return self.separator.join(row) + "\n"
 
+    #
+    # Useful higher-level functions
+    #
+
     def get_pandas(self, usecols=None):
         """Returns a pandas dataframe for the given data"""
         import pandas
@@ -663,6 +667,18 @@ class Fsdb(object):
         return pandas.read_csv(self.file_handle, sep='\t', comment="#",
                                names=self.column_names,
                                usecols=usecols)
+
+    def foreach(self, fn, return_results=True):
+        results = []
+        if return_results:
+            for row in self:
+                results.append(fn(row))
+        else:
+            # do this separately for speed purposes
+            for row in self:
+                fn(row)
+
+        return results
 
     #
     # writing functions
