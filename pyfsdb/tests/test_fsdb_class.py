@@ -510,6 +510,37 @@ class FsdbTest(TestCase):
         except Exception as e:
             self.assertTrue(False, "wrong exception thrown: " + str(e))
 
+    def test_foreach(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        datah = StringIO(data)
+        with pyfsdb.Fsdb(file_handle=datah,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            ret = f.foreach(lambda x: x['b'])
+            self.assertEqual(ret, ['2', '5'],
+                             "foreach response data is correct")
+        
+
+    def test_filter(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        datah = StringIO(data)
+
+        def double_middle(row):
+            row[1] = 2*int(row[1])
+            return(row)
+
+        outh = StringIO()
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        out_file_handle=outh)
+        f.filter(double_middle)
+
+        self.assertEqual(outh.getvalue(),
+                         "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n",
+                         "filter properly double the middle column")
+
+        f.close()
+
 if __name__ == "__main__":
     unittest.main()
         

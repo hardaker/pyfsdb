@@ -254,9 +254,9 @@ class Fsdb(object):
         self._maybe_open_out()
 
     def _maybe_open_out(self):
-        if (self.out_file):
+        if not self._out_file_handle and self.out_file:
             self._out_file_handle = open(self.out_file, "w")
-        elif (self.out_file_handle):
+        elif self.out_file_handle:
             try:
                 self._out_file = self._out_file_handle.name
             except:
@@ -669,6 +669,8 @@ class Fsdb(object):
                                usecols=usecols)
 
     def foreach(self, fn, return_results=True):
+        """Applies a function fn to each row, returning an 
+        aggregate list of results if desired."""
         results = []
         if return_results:
             for row in self:
@@ -679,6 +681,12 @@ class Fsdb(object):
                 fn(row)
 
         return results
+
+    def filter(self, fn):
+        """Applies a function to the input stream rows, and saves the output
+        results back to the output fsdb handle."""
+        for row in self:
+            self.append(fn(row))
 
     #
     # writing functions
