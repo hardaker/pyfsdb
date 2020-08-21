@@ -31,6 +31,19 @@ f.close() # closes and writes trailing comments
 # (if the FSDB object is also reading a file, default values
 # for out_column_names and out_separator will be taken from the input file).
 
+# Convenience wrappers
+
+# foreach: return a list of the values from the second column
+f = pyfsdb.Fsdb("data.fsdb")
+results = f.foreach(lambda x: x[2])
+
+# filter: reads the input file, filters it using myfilt, and writes to output
+def myfilt(row):
+    return [int(row['mycol']) * 2]    
+
+f = pyfsdb.Fsdb("data.fsdb", out_file="output.fsdb")
+results = f.filter(myfilt)
+
 """
 
 import sys
@@ -67,7 +80,16 @@ class Fsdb(object):
     _out_separator_token = "t"
     _out_command_line = "____BROKEN____" # ick, magic
 
-    def __init__(self, filename = None, file_handle = None, return_type=RETURN_AS_ARRAY, out_file = None, out_file_handle = None, pass_comments = 'y', out_command_line = "____INTERNAL____", write_nones_as_blanks = True, column_names=None):
+    def __init__(self,
+                 filename = None,
+                 file_handle = None,
+                 return_type=RETURN_AS_ARRAY,
+                 out_file = None,
+                 out_file_handle = None,
+                 pass_comments = 'y',
+                 out_command_line = "____INTERNAL____",
+                 write_nones_as_blanks = True,
+                 column_names=None):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
