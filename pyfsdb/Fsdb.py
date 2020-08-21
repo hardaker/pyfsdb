@@ -724,6 +724,8 @@ class Fsdb(object):
     def _append_really(self, row = None):
         if not row:
             row = self._current_row
+        if isinstance(row, dict):
+            row = [row[x] for x in self.out_column_names]
         if self._write_nones_as_blanks:
             for i in range(0,len(row)):
                 if row[i] == None:
