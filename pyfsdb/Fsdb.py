@@ -704,11 +704,11 @@ class Fsdb(object):
 
         return results
 
-    def filter(self, fn):
+    def filter(self, fn, args=[]):
         """Applies a function to the input stream rows, and saves the output
         results back to the output fsdb handle."""
         for row in self:
-            filtered = fn(row)
+            filtered = fn(row, *args)
             if filtered:
                 self.append(filtered)
 

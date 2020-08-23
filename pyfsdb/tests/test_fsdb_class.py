@@ -541,6 +541,26 @@ class FsdbTest(TestCase):
 
         f.close()
 
+    def test_filter_with_args(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        datah = StringIO(data)
+
+        def double_middle(row, by):
+            row[1] = by*int(row[1])
+            return(row)
+
+        outh = StringIO()
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        out_file_handle=outh)
+        f.filter(double_middle, args=[2])
+
+        self.assertEqual(outh.getvalue(),
+                         "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n",
+                         "filter properly double the middle column")
+
+        f.close()
+
     def test_filter_with_writing_dictionaries(self):
         from io import StringIO
         data = "#fsdb -F t a b c\n1\t2\t3\nskip\t\tblanks\n4\t5\t6\n"
