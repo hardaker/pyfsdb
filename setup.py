@@ -30,6 +30,7 @@ setuptools.setup(
             'db2tex = pyfsdb.db2tex:main',
             'dbformat = pyfsdb.dbformat:main',
             'dbreescape = pyfsdb.dbreescape:main',
+            'dbensure = pyfsdb.dbensure:main',
         ]
     },
     classifiers=[
