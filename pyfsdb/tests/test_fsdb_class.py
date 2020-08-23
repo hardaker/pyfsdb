@@ -520,6 +520,20 @@ class FsdbTest(TestCase):
             self.assertEqual(ret, ['2', '5'],
                              "foreach response data is correct")
         
+    def test_foreach_with_args(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        datah = StringIO(data)
+
+        def mult_middle(row, by):
+            return int(row['b']) * by
+
+        with pyfsdb.Fsdb(file_handle=datah,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            ret = f.foreach(mult_middle, args=[2])
+            self.assertEqual(ret, [4, 10],
+                             "foreach response with args data is correct")
+
 
     def test_filter(self):
         from io import StringIO

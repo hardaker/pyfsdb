@@ -690,17 +690,17 @@ class Fsdb(object):
                                names=self.column_names,
                                usecols=usecols)
 
-    def foreach(self, fn, return_results=True):
+    def foreach(self, fn, return_results=True, args=[]):
         """Applies a function fn to each row, returning an 
         aggregate list of results if desired."""
         results = []
         if return_results:
             for row in self:
-                results.append(fn(row))
+                results.append(fn(row, *args))
         else:
             # do this separately for speed purposes
             for row in self:
-                fn(row)
+                fn(row, *args)
 
         return results
 
