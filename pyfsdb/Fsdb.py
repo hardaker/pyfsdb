@@ -386,11 +386,13 @@ class Fsdb(object):
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
         self.maybe_open_filehandle()
+        self.read_header()
         return self._column_names[column_name]
 
     def get_column_numbers(self, column_names):
         "Given a list of column_names, returns a list of integer index into an array of values."
         self.maybe_open_filehandle()
+        self.read_header()
         column_numbers = []
         for name in column_names:
             column_numbers.append(self.get_column_number(name))
@@ -399,6 +401,7 @@ class Fsdb(object):
     def get_column_name(self, column_number):
         "Given an integer column number, returns its column name."
         self.maybe_open_filehandle()
+        self.read_header()
         return self.column_nums[column_number]
 
     def set_iterator_function(self):
