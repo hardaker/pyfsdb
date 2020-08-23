@@ -18,6 +18,9 @@ def parse_args():
     parser.add_argument("-c", "--columns", nargs="*",
                         help="The columns to check in the data")
 
+    parser.add_argument("-v", "--fill", default=None, type=str,
+                        help="Don't drop the rows but fill with this value if a column is missing")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input file to process")
@@ -29,10 +32,13 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def filter_row(row, columns):
+def filter_row(row, columns, fill_value):
     for column in columns:
         if row[column] == "":
-            return
+            if fill_value:
+                row[column] = fill_value
+            else:
+                return
     return row
 
 def main():
@@ -47,7 +53,7 @@ def main():
 
     print(column_nums)
 
-    fh.filter(filter_row, args=[column_nums])
+    fh.filter(filter_row, args=[column_nums, args.fill])
 
 if __name__ == "__main__":
     main()
