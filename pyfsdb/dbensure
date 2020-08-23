@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+"""dbensure can be used that some or all fields in a table contain data.
+
+If rows with the specified columns (default: all) don't contain data,
+they're dropped from the output rows."""
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+import sys
+
+import pyfsdb
+
+def parse_args():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            description=__doc__,
+	                        epilog="Exmaple Usage: dbensure input_file.fsdb output_file.fsdb")
+
+    parser.add_argument("-c", "--columns", nargs="*",
+                        help="The columns to check in the data")
+
+    parser.add_argument("input_file", type=FileType('r'),
+                        nargs='?', default=sys.stdin,
+                        help="The input file to process")
+
+    parser.add_argument("output_file", type=FileType('w'),
+                        nargs='?', default=sys.stdout,
+                        help="Where to send the output data")
+
+    args = parser.parse_args()
+    return args
+
+def filter_row(row, columns):
+    for column in columns:
+        if row[column] == "":
+            return
+    return row
+
+def main():
+    args = parse_args()
+    fh = pyfsdb.Fsdb(file_handle=args.input_file,
+                     out_file_handle=args.output_file)
+
+    if args.columns:
+        column_nums = fh.get_column_numbers(args.columns)
+    else:
+        column_nums = list(range(len(fh.column_names)))
+
+    print(column_nums)
+
+    fh.filter(filter_row, args=[column_nums])
+
+if __name__ == "__main__":
+    main()
