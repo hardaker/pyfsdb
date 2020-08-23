@@ -543,10 +543,12 @@ class FsdbTest(TestCase):
 
     def test_filter_with_writing_dictionaries(self):
         from io import StringIO
-        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        data = "#fsdb -F t a b c\n1\t2\t3\nskip\t\tblanks\n4\t5\t6\n"
         datah = StringIO(data)
 
         def double_middle_dict(row):
+            if row['b'] == '': # tests returning no-entries drops it
+                return
             row['b'] = 2*int(row['b'])
             return(row)
 

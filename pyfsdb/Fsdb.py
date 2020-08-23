@@ -708,7 +708,9 @@ class Fsdb(object):
         """Applies a function to the input stream rows, and saves the output
         results back to the output fsdb handle."""
         for row in self:
-            self.append(fn(row))
+            filtered = fn(row)
+            if filtered:
+                self.append(filtered)
 
     #
     # writing functions
