@@ -21,6 +21,9 @@ def parse_args():
     parser.add_argument("-v", "--fill", default=None, type=str,
                         help="Don't drop the rows but fill with this value if a column is missing")
 
+    parser.add_argument("-e", "--print-error", action="store_true",
+                        help="Print an error message on each dropped row")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input file to process")
@@ -32,12 +35,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def filter_row(row, columns, fill_value):
+def filter_row(row, columns, fill_value, print_error):
     for column in columns:
         if row[column] == "":
             if fill_value:
                 row[column] = fill_value
             else:
+                if print_error:
+                    sys.stderr.write("# dbensure dropping row:" + str(row) + "\n")
                 return
     return row
 
@@ -51,9 +56,7 @@ def main():
     else:
         column_nums = list(range(len(fh.column_names)))
 
-    print(column_nums)
-
-    fh.filter(filter_row, args=[column_nums, args.fill])
+    fh.filter(filter_row, args=[column_nums, args.fill, args.print_error])
 
 if __name__ == "__main__":
     main()
