@@ -380,6 +380,8 @@ class Fsdb(object):
 
         # create the header line
         header_line = "#fsdb -F " + separator_token + " " + " ".join(columns) + "\n"
+        self._have_read_header = True
+
         return header_line
 
     # column accessor helpers
@@ -601,6 +603,7 @@ class Fsdb(object):
 
         if self._have_read_header:
             return [0, self._mapping]
+        self._have_read_header = True
 
         if not line:
             line = next(self.file_handle)
