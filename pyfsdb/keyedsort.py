@@ -24,6 +24,9 @@ def parse_args():
     parser.add_argument("-c", "--column", type=str, 
                         help="The column to sort by")
 
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Output number of rows cached to stderr")
+
     parser.add_argument("input_file", type=str,
                         help="The file to read (can't be stdin; must be seekable)")
 
@@ -96,7 +99,8 @@ def main():
 
     f.write_finish()
 
-    sys.stderr.write("cached %d/%d lines\n" % (cached_count, line_count))
+    if args.verbose:
+        sys.stderr.write("cached %d/%d lines\n" % (cached_count, line_count))
 
 if __name__ == "__main__":
     main()
