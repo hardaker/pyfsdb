@@ -1,0 +1,108 @@
+#!/usr/bin/python3
+
+import sys
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+import pyfsdb
+
+def parse_args():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            description=__doc__,
+	                        epilog="Exmaple Usage: ")
+
+    parser.add_argument("-c", "--columns", type=str, nargs=2,
+                        help="Columns to use")
+
+    parser.add_argument("-v", "--value-column", default="count", type=str,
+                        help="The value column to plot as the heat map")
+
+    parser.add_argument("-t", "--add-text", action="store_true",
+                        help="Add text labels to the grid")
+
+    parser.add_argument("input_file", type=FileType('r'),
+                        nargs='?', default=sys.stdin,
+                        help="Input fsdb file to read")
+
+    parser.add_argument("output_file", type=str,
+                        nargs='?', default="out.png",
+                        help="Where to write the png file to")
+
+    args = parser.parse_args()
+
+    if not args.columns or len(args.columns) != 2:
+        raise ValueError("exactly 2 columns must be passed to -c")
+
+    return args
+
+def main():
+    args = parse_args()
+
+    # read in the input data
+    f = pyfsdb.Fsdb(file_handle=args.input_file,
+                    return_type=pyfsdb.RETURN_AS_DICTIONARY)
+
+    max_value = None
+    dataset = {} # nested tree structure
+    ycols = {} # stores each unique second value
+    for row in f:
+        if not max_value:
+            max_value = float(row[args.value_column])
+        else:
+            max_value = max(max_value, float(row[args.value_column]))
+
+        if row[args.columns[0]] not in dataset:
+            dataset[row[args.columns[0]]] = \
+                { row[args.columns[1]]: float(row[args.value_column]) }
+        else:
+            dataset[row[args.columns[0]]][row[args.columns[1]]] = \
+                float(row[args.value_column])
+        ycols[row[args.columns[1]]] = 1
+            
+    # merge the data into a two dimensional array
+    data = []
+    ycols = sorted(ycols)
+    for first_column in sorted(dataset.keys()):
+        newrow = []
+        for second_column in ycols:
+            if second_column in dataset[first_column]:
+                newrow.append(dataset[first_column][second_column] / max_value)
+            else:
+                newrow.append(0.0)
+        data.append(newrow)
+                              
+#    print(data)
+    grapharray = np.array(data)
+
+    # generate the graph
+    fig, ax = plt.subplots()
+    im = ax.imshow(grapharray, vmin=0.0, vmax=.001)
+
+    ax.set_xlabel(args.columns[1])
+    ax.set_ylabel(args.columns[0])
+
+    if args.add_text:
+        ax.set_xticks(np.arange(len(dataset)))
+        ax.set_xticklabels(dataset.keys())
+        ax.set_yticks(np.arange(len(ycols)))
+        ax.set_yticklabels(ycols.keys())
+
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+
+        for i in range(len(grapharray)):
+            for j in range(len(grapharray)):
+                text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
+                               ha="center", va="center", color="w")
+
+    fig.tight_layout()
+    plt.savefig(args.output_file, 
+                bbox_inches="tight", pad_inches=0)
+
+if __name__ == "__main__":
+    main()
+
+
