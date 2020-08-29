@@ -139,10 +139,11 @@ def main():
         outh.append(row)
 
     # Now loop through all data adding any rows 
-    dump_remaining(outh, savestruct,
-                   # total original column numbers - key count
-                   len(streamh.column_names) - len(args.keys),
-                   args.keys, args.values)
+    if args.include_unmatched_augment_rows:
+        dump_remaining(outh, savestruct,
+                       # total original column numbers - key count
+                       len(streamh.column_names) - len(args.keys),
+                       args.keys, args.values)
 
 if __name__ == "__main__":
     main()
