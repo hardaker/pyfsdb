@@ -64,7 +64,7 @@ def main():
             
     # merge the data into a two dimensional array
     data = []
-    ycols = sorted(ycols)
+    ycols = sorted(ycols.keys())
     for first_column in sorted(dataset.keys()):
         newrow = []
         for second_column in ycols:
@@ -74,27 +74,26 @@ def main():
                 newrow.append(0.0)
         data.append(newrow)
                               
-#    print(data)
     grapharray = np.array(data)
 
     # generate the graph
     fig, ax = plt.subplots()
-    im = ax.imshow(grapharray, vmin=0.0, vmax=.001)
+    im = ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
 
     ax.set_xlabel(args.columns[1])
     ax.set_ylabel(args.columns[0])
 
     if args.add_text:
-        ax.set_xticks(np.arange(len(dataset)))
-        ax.set_xticklabels(dataset.keys())
-        ax.set_yticks(np.arange(len(ycols)))
-        ax.set_yticklabels(ycols.keys())
+        ax.set_yticks(np.arange(len(dataset)))
+        ax.set_yticklabels(dataset.keys())
+        ax.set_xticks(np.arange(len(ycols)))
+        ax.set_xticklabels(ycols)
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
 
         for i in range(len(grapharray)):
-            for j in range(len(grapharray)):
+            for j in range(len(grapharray[i])):
                 text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
                                ha="center", va="center", color="w")
 
