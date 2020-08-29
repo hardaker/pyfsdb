@@ -16,7 +16,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'dbtopn = pyfsdb.topn:main',
-            'dbaugment = pyfsdb.augment:main',
+            'dbaugment = pyfsdb.dbaugment:main',
             'bro2fsdb = pyfsdb.pro2fsdb:main',
             'dbcoluniq = pyfsdb.coluniq:main',
             'dbfullpivot = pyfsdb.fullpivot:main',
