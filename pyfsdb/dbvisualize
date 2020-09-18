@@ -85,7 +85,7 @@ def main():
         data.append(newrow)
                               
     grapharray = np.array(data)
-    if args.invert:
+    if not args.invert:
         grapharray = 1 - grapharray
 
     # generate the graph
