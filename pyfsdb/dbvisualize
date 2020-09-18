@@ -20,10 +20,16 @@ def parse_args():
     parser.add_argument("-v", "--value-column", default="count", type=str,
                         help="The value column to plot as the heat map")
 
-    parser.add_argument("-t", "--add-text", action="store_true",
-                        help="Add text labels to the grid")
+    parser.add_argument("-i", "--invert", action="store_true",
+                        help="Invert the foreground/background colors")
 
-    parser.add_argument("-l", "--add-labels", action="store_true",
+    parser.add_argument("-F", "--add-fractions", action="store_true",
+                        help="Add text fraction labels to the grid")
+
+    parser.add_argument("-R", "--add-raw", action="store_true",
+                        help="Add text raw-value labels to the grid")
+
+    parser.add_argument("-L", "--add-labels", action="store_true",
                         help="Add x/y axis labels")
 
     parser.add_argument("input_file", type=FileType('r'),
@@ -67,8 +73,9 @@ def main():
             
     # merge the data into a two dimensional array
     data = []
+    xcols = sorted(dataset.keys())
     ycols = sorted(ycols.keys())
-    for first_column in sorted(dataset.keys()):
+    for first_column in xcols:
         newrow = []
         for second_column in ycols:
             if second_column in dataset[first_column]:
@@ -78,6 +85,8 @@ def main():
         data.append(newrow)
                               
     grapharray = np.array(data)
+    if args.invert:
+        grapharray = 1 - grapharray
 
     # generate the graph
     fig, ax = plt.subplots()
@@ -88,22 +97,34 @@ def main():
 
     if args.add_labels:
         ax.set_yticks(np.arange(len(dataset)))
-        ax.set_yticklabels(dataset.keys())
+        ax.set_yticklabels(xcols)
         ax.set_xticks(np.arange(len(ycols)))
         ax.set_xticklabels(ycols)
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
 
-    if args.add_text:
+    if args.add_fractions:
         for i in range(len(grapharray)):
             for j in range(len(grapharray[i])):
                 text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
-                               ha="center", va="center", color="w")
+                               ha="center", va="center", color="r")
+    elif args.add_raw:
+        for i, first_column in enumerate(xcols):
+            for j, second_column in enumerate(ycols):
+                try:
+                    value = dataset[first_column][second_column]
+                    text = ax.text(j, i, "{}".format(int(value)),
+                                   ha="center", va="center", color="r")
+                except Exception:
+                    pass
 
     fig.tight_layout()
     plt.savefig(args.output_file, 
                 bbox_inches="tight", pad_inches=0)
+
+    # import pprint
+    # pprint.pprint(dataset)
 
 if __name__ == "__main__":
     main()
