@@ -23,6 +23,9 @@ def parse_args():
     parser.add_argument("-t", "--add-text", action="store_true",
                         help="Add text labels to the grid")
 
+    parser.add_argument("-l", "--add-labels", action="store_true",
+                        help="Add x/y axis labels")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="Input fsdb file to read")
@@ -83,7 +86,7 @@ def main():
     ax.set_xlabel(args.columns[1])
     ax.set_ylabel(args.columns[0])
 
-    if args.add_text:
+    if args.add_labels:
         ax.set_yticks(np.arange(len(dataset)))
         ax.set_yticklabels(dataset.keys())
         ax.set_xticks(np.arange(len(ycols)))
@@ -92,6 +95,7 @@ def main():
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
 
+    if args.add_text:
         for i in range(len(grapharray)):
             for j in range(len(grapharray[i])):
                 text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
