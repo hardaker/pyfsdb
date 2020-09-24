@@ -31,7 +31,7 @@ setuptools.setup(
             'dbformat = pyfsdb.dbformat:main',
             'dbreescape = pyfsdb.dbreescape:main',
             'dbensure = pyfsdb.dbensure:main',
-            'dbvisualize = pyfsdb.dbvisualize:main',
+            'dbheatmap = pyfsdb.dbheatmap:main',
         ]
     },
     classifiers=[
