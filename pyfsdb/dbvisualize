@@ -9,10 +9,11 @@ import numpy as np
 
 import pyfsdb
 
+
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-	                        epilog="Exmaple Usage: ")
+                            epilog="Exmaple Usage: ")
 
     parser.add_argument("-c", "--columns", type=str, nargs=2,
                         help="Columns to use")
@@ -47,6 +48,7 @@ def parse_args():
 
     return args
 
+
 def main():
     args = parse_args()
 
@@ -55,8 +57,8 @@ def main():
                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
     max_value = None
-    dataset = {} # nested tree structure
-    ycols = {} # stores each unique second value
+    dataset = {}  # nested tree structure
+    ycols = {}  # stores each unique second value
     for row in f:
         if not max_value:
             max_value = float(row[args.value_column])
@@ -70,7 +72,7 @@ def main():
             dataset[row[args.columns[0]]][row[args.columns[1]]] = \
                 float(row[args.value_column])
         ycols[row[args.columns[1]]] = 1
-            
+
     # merge the data into a two dimensional array
     data = []
     xcols = sorted(dataset.keys())
@@ -83,14 +85,14 @@ def main():
             else:
                 newrow.append(0.0)
         data.append(newrow)
-                              
+
     grapharray = np.array(data)
     if not args.invert:
         grapharray = 1 - grapharray
 
     # generate the graph
     fig, ax = plt.subplots()
-    im = ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
+    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
 
     ax.set_xlabel(args.columns[1])
     ax.set_ylabel(args.columns[0])
@@ -114,19 +116,18 @@ def main():
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
-                    text = ax.text(j, i, "{}".format(int(value)),
-                                   ha="center", va="center", color="r")
+                    ax.text(j, i, "{}".format(int(value)),
+                            ha="center", va="center", color="r")
                 except Exception:
                     pass
 
     fig.tight_layout()
-    plt.savefig(args.output_file, 
+    plt.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
 
     # import pprint
     # pprint.pprint(dataset)
 
+
 if __name__ == "__main__":
     main()
-
-
