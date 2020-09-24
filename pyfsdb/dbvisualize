@@ -33,6 +33,9 @@ def parse_args():
     parser.add_argument("-L", "--add-labels", action="store_true",
                         help="Add x/y axis labels")
 
+    parser.add_argument("-fs", "--font-size", default=None, type=int,
+                        help="Set the fontsize for labels")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="Input fsdb file to read")
@@ -110,14 +113,16 @@ def main():
         for i in range(len(grapharray)):
             for j in range(len(grapharray[i])):
                 text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
-                               ha="center", va="center", color="r")
+                               ha="center", va="center", color="r",
+                               fontsize=args.font_size)
     elif args.add_raw:
         for i, first_column in enumerate(xcols):
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
                     ax.text(j, i, "{}".format(int(value)),
-                            ha="center", va="center", color="r")
+                            ha="center", va="center", color="r",
+                            fontsize=args.font_size)
                 except Exception:
                     pass
 
