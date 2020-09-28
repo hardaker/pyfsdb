@@ -22,7 +22,7 @@ for data in f:
 
 # writing FSDB formatted data out
 # (note: a single Fsdb object can be set up for both reading and writing)
-f = pyfsdb.Fsdb(output_file = "my.fsdb")
+f = pyfsdb.Fsdb(out_file = "my.fsdb")
 f.out_column_names = ['foo','bar','baz']
 f.out_separator = "\t"
 f.append(["a", "b", "c"])
