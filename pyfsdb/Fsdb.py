@@ -123,7 +123,6 @@ class Fsdb(object):
         else:
             self.out_command_line = out_command_line
 
-
         self._comments = []
 
     @property
@@ -283,7 +282,7 @@ class Fsdb(object):
                 self._out_file = self._out_file_handle.name
             except:
                 pass
-        
+
     @property
     def out_separator(self):
         """The separator for the output.
@@ -366,7 +365,7 @@ class Fsdb(object):
         self._out_header_line = self.create_header_line(values)
 
     # support functions
-        
+
     def create_header_line(self, columns = None, separator_token = None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
@@ -431,7 +430,7 @@ class Fsdb(object):
         """Returns the next array of data from an fsdb file.
            Returns an array by default, or a dictionary if return_type 
            was set to pyfsdb.RETURN_AS_DICTIONARY."""
-        
+
         fh = self.maybe_open_filehandle()
         if not self._header_line:
             self.read_header()
@@ -443,7 +442,7 @@ class Fsdb(object):
 
         if not fh:
             return None
-        
+
         return self.__next__()
 
     def _handle_comment(self, line):
@@ -465,7 +464,7 @@ class Fsdb(object):
 
     def _next_as_array(self):
         """Return the next object as an array of columns."""
-        
+
         line = next(self.fileh)
         while line and line[0] == '#':
             line = self._handle_comment(line)
@@ -492,14 +491,14 @@ class Fsdb(object):
             return_dict[self.column_nums[index]] = array[index]
 
         return return_dict
-        
+
     # generator type function for returning a row as an array
     def next_as_array(self):
         """Generator function to return a row as an array.
 
         Using a generator is faster than using the Fsdb object
         as a iterator."""
-        
+
         fh = self.maybe_open_filehandle()
 
         try:
@@ -521,7 +520,7 @@ class Fsdb(object):
 
         Using a generator is faster than using the Fsdb object
         as a iterator."""
-        
+
         fh = self.maybe_open_filehandle()
 
         try:
@@ -613,7 +612,7 @@ class Fsdb(object):
         args = line.split(" ")
         if args[0] != "#fsdb":
             raise ValueError("failed to find expected #fsdb header")
-        
+
         # should we use argparse here?
         argn = 1
         separator=" "
@@ -697,7 +696,7 @@ class Fsdb(object):
         elif self._header_line:
             # assuming copy the original
             self._out_file_handle.write(self._header_line)
-        
+
         # if we write the header line,
         #    it's now ok to set the output function to the right function
         self.append = self._append_really
@@ -727,7 +726,7 @@ class Fsdb(object):
 
     def write_finish(self):
         self.close()
-        
+
     def close(self):
         """Writes final processing command comment to the output file and closes it."""
         if self.fileh:
@@ -750,13 +749,12 @@ class Fsdb(object):
 
     def __del__(self):
         self.close()
-        
+
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
         self.close()
-        
 
 
 def main():
@@ -765,7 +763,7 @@ def main():
     line = sys.stdin.next()
     result = fsdb.read_header(line)
     print(result)
-    
+
+
 if __name__ == "__main__":
     main()
-    
