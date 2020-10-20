@@ -638,46 +638,6 @@ class Fsdb(object):
 
         return [0, mapping]
 
-    def read_fsdb(self, fileh):
-        """DO NOT USE
-
-        Returns a dict of all data from an fsdb file
-
-        Note: This reads all the data into memory.  Instead of 
-        using this function, you should use the Fsdb class as 
-        an iterator instead.
-
-        The header line should be in the form:
-
-            #fsdb -option value column1(separator)column2...
-
-        Returns:
-           [0, {
-                  names: { colname: colnum, ...},
-                  numbers: { colnum: colname, ...}
-                  header: { separator: separator_string}
-                  data: [[row1_col1, row1_col2, ...],
-                         [row2_col1, row2_col2, ...]]
-               }]    on success
-           [-1, "error description"]         on failure
-
-        """
-
-        header = next(fileh)
-        data = self.read_header(header)
-        if data[0] != 0:
-            return data
-
-        data = data[1]
-        separator = data['header']['separator']
-        data['data'] = []
-        for line in fileh:
-            if line[0] == '#':
-                continue
-            data['data'].append(line.rstrip().split(separator))
-
-        return [0, data]
-
     def row_as_string(self, row = None):
         """Converts an array row to an FSDB output line."""
         if not row:
