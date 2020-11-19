@@ -15,7 +15,7 @@ class TestColUniq(unittest.TestCase):
         outh = StringIO()
         outh.close = noop
         datah = StringIO(data)
-        filter_unique_columns(datah, outh, 'a')
+        filter_unique_columns(datah, outh, ['a'])
 
         # check the the result
         self.assertEqual(outh.getvalue(),
@@ -25,7 +25,7 @@ class TestColUniq(unittest.TestCase):
         outh = StringIO()
         outh.close = noop
         datah = StringIO(data)
-        filter_unique_columns(datah, outh, 'a', count=True)
+        filter_unique_columns(datah, outh, ['a'], count=True)
 
         # check the the result
         self.assertEqual(outh.getvalue(),
