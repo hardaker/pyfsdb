@@ -17,7 +17,7 @@ setuptools.setup(
         'console_scripts': [
             'dbtopn = pyfsdb.topn:main',
             'dbaugment = pyfsdb.dbaugment:main',
-            'bro2fsdb = pyfsdb.pro2fsdb:main',
+            'bro2fsdb = pyfsdb.bro2fsdb:main',
             'dbcoluniq = pyfsdb.coluniq:main',
             'dbfullpivot = pyfsdb.fullpivot:main',
             'dbreversepivot = pyfsdb.reversepivot:main',
