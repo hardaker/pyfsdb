@@ -13,20 +13,11 @@ def parse_args():
     parser = argparse.ArgumentParser(formatter_class=formatter_class,
                                      description=__doc__)
 
-    parser.add_argument("-k", "--key", default=["key"], type=str, nargs="*",
+    parser.add_argument("-k", "--keys", default=["key"], type=str, nargs="*",
                         help="Key to use when counting for uniqueness")
 
     parser.add_argument("-c", "--count", action="store_true",
                         help="Count the columns")
-
-    parser.add_argument("-s", "--sort", action="store_true",
-                        help="Sort the results")
-
-    parser.add_argument("-S", "--sort-by-count", action="store_true",
-                        help="Sort the results but by count")
-
-    parser.add_argument("-r", "--reverse-sort", action="store_true",
-                        help="Sort in reverse order")
 
     parser.add_argument("input_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
@@ -40,9 +31,19 @@ def parse_args():
     return args
 
 
+def output_results(outh, keys, data, count=False):
+    for subkey in data:
+        if isinstance(data[subkey], dict):
+            output_results(outh, keys + [subkey], data[subkey], count)
+        else:
+            if count:
+                outh.append(keys + [subkey, data[subkey]])
+            else:
+                outh.append(keys + [subkey])
+
+
 def filter_unique_columns(in_file_handle, out_file_handle, keys,
-                          count=False, sort=False,
-                          reverse_sort=False, sort_by_count=False):
+                          count=False):
     fh = pyfsdb.Fsdb(file_handle=in_file_handle)
     ofh = pyfsdb.Fsdb(out_file_handle=out_file_handle)
 
@@ -54,25 +55,28 @@ def filter_unique_columns(in_file_handle, out_file_handle, keys,
     else:
         ofh.column_names = keys
 
-    counters = collections.Counter()
-    for row in fh:
-        counters[row[key_columns[0]]] += 1
+    num_keys = len(keys)
+    if len(key_columns) == 1:
+        counters = collections.Counter()
+        for row in fh:
+            counters[row[key_columns[0]]] += 1
+    else:
+        counters = {}
+        for row in fh:
+            pointer = counters
+            for keynum in range(num_keys - 2):
+                if row[key_columns[keynum]] not in pointer:
+                    pointer[row[key_columns[keynum]]] = {}
+                pointer = pointer[row[key_columns[keynum]]]
 
-    output_keys = counters.keys()
-    if sort:
-        output_keys = sorted(output_keys, reverse=reverse_sort)
-    elif sort_by_count:
-        output_keys = sorted(output_keys, key=lambda x: counters[x],
-                             reverse=reverse_sort)
+            if row[key_columns[num_keys - 2]] not in pointer:
+                pointer[row[key_columns[num_keys - 2]]] = collections.Counter()
+            pointer[row[key_columns[num_keys - 2]]][row[key_columns[num_keys - 1]]] += 1
+
 
     # output the results, with optional counts
     # (if statement at outer tier for speed)
-    if count:
-        for output_key in output_keys:
-            ofh.append([output_key, counters[output_key]])
-    else:
-        for output_key in output_keys:
-            ofh.append([output_key])
+    output_results(ofh, [], counters, count)
 
     ofh.close()
 
@@ -81,9 +85,7 @@ def main():
     args = parse_args()
 
     filter_unique_columns(args.input_file, args.output_file,
-                          count=args.count, sort=args.sort,
-                          reverse_sort=args.reverse_sort,
-                          sort_by_count=args.sort_by_count)
+                          keys=args.keys, count=args.count)
 
 
 if __name__ == "__main__":
