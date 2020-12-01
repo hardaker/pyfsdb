@@ -95,7 +95,13 @@ def main():
 
     # generate the graph
     fig, ax = plt.subplots()
+
+    # set the size
+    fig.set_dpi(150)
+    fig.set_size_inches(16,9)
+
     ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
+    ax.grid(ls=':')
 
     ax.set_xlabel(args.columns[1])
     ax.set_ylabel(args.columns[0])
