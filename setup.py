@@ -32,6 +32,7 @@ setuptools.setup(
             'dbreescape = pyfsdb.dbreescape:main',
             'dbensure = pyfsdb.dbensure:main',
             'dbheatmap = pyfsdb.dbheatmap:main',
+            'dbdatetoepoch = pyfsdb.dbdatetoepoch:main',
         ]
     },
     classifiers=[
