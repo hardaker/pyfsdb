@@ -37,10 +37,6 @@ def main():
                      out_file_handle=args.output_file)
     column_names = fh.column_names
     fh.out_column_names = column_names + [args.timestamp_column]
-    sys.stderr.write(f"{fh.out_column_names}\n")
-    sys.stderr.write(str(len(fh.out_column_names)) + "\n")
-    sys.stderr.write(f"{fh.column_names}\n")
-    sys.stderr.write(str(len(fh.column_names)) + "\n")
 
     date_column = fh.get_column_number(args.date_column)
     for row in fh:
