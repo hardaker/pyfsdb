@@ -52,29 +52,26 @@ def parse_args():
     return args
 
 
-def main():
-    args = parse_args()
-
-    # read in the input data
-    f = pyfsdb.Fsdb(file_handle=args.input_file,
-                    return_type=pyfsdb.RETURN_AS_DICTIONARY)
-
+def create_heat_map(input_data, columns, value_column,
+                    add_labels=False, add_raw=False,
+                    add_fractions=False, invert=False,
+                    font_size=None):
     max_value = None
     dataset = {}  # nested tree structure
     ycols = {}  # stores each unique second value
-    for row in f:
+    for row in input_data:
         if not max_value:
-            max_value = float(row[args.value_column])
+            max_value = float(row[value_column])
         else:
-            max_value = max(max_value, float(row[args.value_column]))
+            max_value = max(max_value, float(row[value_column]))
 
-        if row[args.columns[0]] not in dataset:
-            dataset[row[args.columns[0]]] = \
-                { row[args.columns[1]]: float(row[args.value_column]) }
+        if row[columns[0]] not in dataset:
+            dataset[row[columns[0]]] = \
+                { row[columns[1]]: float(row[value_column]) }
         else:
-            dataset[row[args.columns[0]]][row[args.columns[1]]] = \
-                float(row[args.value_column])
-        ycols[row[args.columns[1]]] = 1
+            dataset[row[columns[0]]][row[columns[1]]] = \
+                float(row[value_column])
+        ycols[row[columns[1]]] = 1
 
     # merge the data into a two dimensional array
     data = []
@@ -90,7 +87,7 @@ def main():
         data.append(newrow)
 
     grapharray = np.array(data)
-    if not args.invert:
+    if not invert:
         grapharray = 1 - grapharray
 
     # generate the graph
@@ -100,13 +97,13 @@ def main():
     fig.set_dpi(150)
     fig.set_size_inches(16,9)
 
-    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
-    ax.grid(ls=':')
+    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='Pastel1')
+    # ax.grid(ls=':')
 
-    ax.set_xlabel(args.columns[1])
-    ax.set_ylabel(args.columns[0])
+    ax.set_xlabel(columns[1])
+    ax.set_ylabel(columns[0])
 
-    if args.add_labels:
+    if add_labels:
         ax.set_yticks(np.arange(len(dataset)))
         ax.set_yticklabels(xcols)
         ax.set_xticks(np.arange(len(ycols)))
@@ -115,24 +112,38 @@ def main():
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
 
-    if args.add_fractions:
+    if add_fractions:
         for i in range(len(grapharray)):
             for j in range(len(grapharray[i])):
                 text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
                                ha="center", va="center", color="r",
-                               fontsize=args.font_size)
-    elif args.add_raw:
+                               fontsize=font_size)
+    elif add_raw:
         for i, first_column in enumerate(xcols):
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
                     ax.text(j, i, "{}".format(int(value)),
                             ha="center", va="center", color="r",
-                            fontsize=args.font_size)
+                            fontsize=font_size)
                 except Exception:
                     pass
 
     fig.tight_layout()
+    
+
+def main():
+    args = parse_args()
+
+    # read in the input data
+    f = pyfsdb.Fsdb(file_handle=args.input_file,
+                    return_type=pyfsdb.RETURN_AS_DICTIONARY)
+
+    fig = create_heat_map(f, args.columns, args.value_column,
+                          args.add_labels, args.add_raw,
+                          args.add_fractions, args.invert,
+                          args.font_size)
+
     plt.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
 
