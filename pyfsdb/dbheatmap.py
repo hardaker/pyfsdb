@@ -97,8 +97,8 @@ def create_heat_map(input_data, columns, value_column,
     fig.set_dpi(150)
     fig.set_size_inches(16,9)
 
-    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='gray')
-    ax.grid(ls=':')
+    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='Pastel1')
+    # ax.grid(ls=':')
 
     ax.set_xlabel(columns[1])
     ax.set_ylabel(columns[0])
