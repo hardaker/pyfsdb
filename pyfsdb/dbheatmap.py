@@ -130,6 +130,7 @@ def create_heat_map(input_data, columns, value_column,
                     pass
 
     fig.tight_layout()
+    return fig
     
 
 def main():
