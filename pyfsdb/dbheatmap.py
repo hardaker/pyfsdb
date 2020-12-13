@@ -145,7 +145,7 @@ def main():
                           args.add_fractions, args.invert,
                           args.font_size)
 
-    plt.savefig(args.output_file,
+    fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
 
     # import pprint
