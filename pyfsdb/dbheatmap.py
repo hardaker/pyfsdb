@@ -123,9 +123,10 @@ def create_heat_map(input_data, columns, value_column,
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
-                    ax.text(j, i, "{}".format(int(value)),
-                            ha="center", va="center", color="r",
-                            fontsize=font_size)
+                    if value != "0" and value != 0:
+                        ax.text(j, i, "{}".format(int(value)),
+                                ha="center", va="center", color="r",
+                                fontsize=font_size)
                 except Exception:
                     pass
 
