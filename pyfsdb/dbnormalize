@@ -43,6 +43,7 @@ def main():
     for key in args.keys:
         df[key] = df[key] / maxval
     fh.save_pandas(df)
+    fh.close()
     
 
 if __name__ == "__main__":
