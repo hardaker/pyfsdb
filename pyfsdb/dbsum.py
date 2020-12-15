@@ -2,7 +2,12 @@
 
 """dbsum will take two matricies in FSDB and add the data together
 based on particular keys.  This is similar to joining and then merging
-the columns, but in one application.""" 
+the columns, but in one application without the need to specify column
+renaming/etc with otherwise identically formatted files.
+
+Note: this requires memory large enough to store the final results in
+memory at once.
+""" 
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import sys
