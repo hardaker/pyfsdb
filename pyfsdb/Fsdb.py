@@ -648,15 +648,15 @@ class Fsdb(object):
     #
 
     def get_pandas(self, usecols=None):
-        """Returns a pandas dataframe for the given data"""
+        """Returns a pandas dataframe for the given data.  Warning: this cannot preserve comments in the files; FSDB comments are stripped from the output."""
         import pandas
         column_names = self.column_names # forces opening and reading headers
         return pandas.read_csv(self.file_handle, sep='\t', comment="#",
-                               names=self.column_names,
-                               usecols=usecols)
+                               names=self.column_names, usecols=usecols)
 
     def save_pandas(self, df):
         "saves a pandas dataframe to the output file"
+        import pandas
         if not self._out_column_names:
             self.out_column_names = df.columns
         self._write_header_line()
