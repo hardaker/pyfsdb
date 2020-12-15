@@ -123,13 +123,15 @@ def create_heat_map(input_data, columns, value_column,
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
-                    ax.text(j, i, "{}".format(int(value)),
-                            ha="center", va="center", color="r",
-                            fontsize=font_size)
+                    if value != "0" and value != 0:
+                        ax.text(j, i, "{}".format(int(value)),
+                                ha="center", va="center", color="r",
+                                fontsize=font_size)
                 except Exception:
                     pass
 
     fig.tight_layout()
+    return fig
     
 
 def main():
@@ -144,7 +146,7 @@ def main():
                           args.add_fractions, args.invert,
                           args.font_size)
 
-    plt.savefig(args.output_file,
+    fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
 
     # import pprint
