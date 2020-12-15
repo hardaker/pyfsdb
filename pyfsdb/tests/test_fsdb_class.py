@@ -1,5 +1,9 @@
 from unittest import TestCase
 import pyfsdb
+from io import StringIO
+
+def noop(**kwargs):
+    pass
 
 class FsdbTest(TestCase):
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -434,7 +438,7 @@ class FsdbTest(TestCase):
         all = f.get_pandas()
         self.check_data(all.values.tolist())
 
-    def test_get_pandas(self):
+    def test_get_pandas2(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
         self.assertTrue(f, "opened ok")
         
@@ -445,6 +449,35 @@ class FsdbTest(TestCase):
         self.assertTrue(len(rows[1]) == 1)
         self.assertTrue(rows[0][0] == "info")
         self.assertTrue(rows[1][0] == "other")
+
+    def test_save_pandas(self):
+        f = pyfsdb.Fsdb(self.DATA_FILE)
+        df = f.get_pandas()
+
+        outstr = ""
+        for line in open(self.DATA_FILE):
+            if line[0] == '#' and line[0:5] != "#fsdb":
+                continue
+            outstr += line
+
+        # create a buffer, but don't let it close
+        out = StringIO()
+        out.close = noop
+
+        # create the output FSDB object
+        of = pyfsdb.Fsdb(out_file_handle=out)
+        of.out_column_names = f.column_names
+
+        # save the data
+        of.save_pandas(df)
+        of.close()
+        
+        # check that its' right
+        results = out.getvalue()
+        import sys
+        sys.stderr.write(results)
+        self.assertEqual(results[0:len(outstr)], outstr,
+                         "save_pandas worked")
         
     def test_comment_ordering(self):
         HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"

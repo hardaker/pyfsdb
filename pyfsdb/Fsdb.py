@@ -655,6 +655,14 @@ class Fsdb(object):
                                names=self.column_names,
                                usecols=usecols)
 
+    def save_pandas(self, df):
+        "saves a pandas dataframe to the output file"
+        if not self._out_column_names:
+            self.out_column_names = df.columns
+        self._write_header_line()
+        df.to_csv(self._out_file_handle, sep="\t", header=False,
+                  index=False)
+
     def foreach(self, fn, return_results=True, args=[]):
         """Applies a function fn to each row, returning an 
         aggregate list of results if desired."""
