@@ -34,6 +34,7 @@ setuptools.setup(
             'dbheatmap = pyfsdb.dbheatmap:main',
             'dbdatetoepoch = pyfsdb.dbdatetoepoch:main',
             'dbnormalize = pyfsdb.dbnormalize:main',
+            'dbsum = pyfsdb.dbsum:main',
         ]
     },
     classifiers=[
