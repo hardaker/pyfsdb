@@ -450,7 +450,7 @@ class FsdbTest(TestCase):
         self.assertTrue(rows[0][0] == "info")
         self.assertTrue(rows[1][0] == "other")
 
-    def test_save_pandas(self):
+    def test_put_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
         df = f.get_pandas()
 
@@ -469,7 +469,7 @@ class FsdbTest(TestCase):
         of.out_column_names = f.column_names
 
         # save the data
-        of.save_pandas(df)
+        of.put_pandas(df)
         of.close()
         
         # check that its' right
@@ -477,7 +477,7 @@ class FsdbTest(TestCase):
         import sys
         sys.stderr.write(results)
         self.assertEqual(results[0:len(outstr)], outstr,
-                         "save_pandas worked")
+                         "put_pandas worked")
         
     def test_comment_ordering(self):
         HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"
