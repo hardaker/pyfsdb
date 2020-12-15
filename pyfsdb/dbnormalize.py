@@ -14,6 +14,7 @@ import pyfsdb
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import sys
 
+
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
@@ -44,8 +45,7 @@ def main():
         df[key] = df[key] / maxval
     fh.put_pandas(df)
     fh.close()
-    
+
 
 if __name__ == "__main__":
     main()
-
