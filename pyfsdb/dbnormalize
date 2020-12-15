@@ -42,7 +42,7 @@ def main():
     maxval = df[args.keys].max().max()
     for key in args.keys:
         df[key] = df[key] / maxval
-    fh.save_pandas(df)
+    fh.put_pandas(df)
     fh.close()
     
 

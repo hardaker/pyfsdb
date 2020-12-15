@@ -654,7 +654,7 @@ class Fsdb(object):
         return pandas.read_csv(self.file_handle, sep='\t', comment="#",
                                names=self.column_names, usecols=usecols)
 
-    def save_pandas(self, df):
+    def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
         import pandas
         if not self._out_column_names:
