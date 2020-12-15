@@ -33,6 +33,7 @@ setuptools.setup(
             'dbensure = pyfsdb.dbensure:main',
             'dbheatmap = pyfsdb.dbheatmap:main',
             'dbdatetoepoch = pyfsdb.dbdatetoepoch:main',
+            'dbnormalize = pyfsdb.dbnormalize:main',
         ]
     },
     classifiers=[
