@@ -57,12 +57,6 @@ def main():
                         ptr[row[key]] = {}
                     ptr = ptr[row[key]]
 
-                # create an answer record
-                # TODO: the sub structure shouldn't be needed?
-                if 'ans' not in ptr:
-                    ptr['ans'] = {}
-                ptr = ptr['ans']
-
                 # for each column, add it or subtract it from the results
                 for value in values:
                     if value not in ptr:
@@ -80,7 +74,7 @@ def main():
 
     def write_recursive(spot, depth, indexes):
         if depth == 0:
-            oh.append(indexes + list(spot['ans'].values()))
+            oh.append(indexes + list(spot.values()))
         else:
             for keyvalue in spot:
                 write_recursive(spot[keyvalue], depth-1, indexes + [keyvalue])
