@@ -67,7 +67,7 @@ def create_heat_map(input_data, columns, value_column,
 
         if row[columns[0]] not in dataset:
             dataset[row[columns[0]]] = \
-                { row[columns[1]]: float(row[value_column]) }
+                {row[columns[1]]: float(row[value_column])}
         else:
             dataset[row[columns[0]]][row[columns[1]]] = \
                 float(row[value_column])
@@ -115,9 +115,9 @@ def create_heat_map(input_data, columns, value_column,
     if add_fractions:
         for i in range(len(grapharray)):
             for j in range(len(grapharray[i])):
-                text = ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
-                               ha="center", va="center", color="r",
-                               fontsize=font_size)
+                ax.text(j, i, "{:1.1f}".format(grapharray[i][j]),
+                        ha="center", va="center", color="r",
+                        fontsize=font_size)
     elif add_raw:
         for i, first_column in enumerate(xcols):
             for j, second_column in enumerate(ycols):
@@ -132,7 +132,7 @@ def create_heat_map(input_data, columns, value_column,
 
     fig.tight_layout()
     return fig
-    
+
 
 def main():
     args = parse_args()
