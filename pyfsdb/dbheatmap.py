@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
-    parser.add_argument("--label-limit", default=20, type=int,
+    parser.add_argument("--label-limit", default=40, type=int,
                         help="The maximum length of a label;" +
                         "  If longer, truncate with ...s in the middle. " +
                         "Use 0 if infinite is desired.")
@@ -114,11 +114,16 @@ def create_heat_map(input_data, columns, value_column,
     ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size))
     ax.set_ylabel(maybe_shrink_label(columns[0], max_label_size))
 
+    # note: xlabels are applied on the y tick labels
     if add_labels:
         ax.set_yticks(np.arange(len(dataset)))
-        ax.set_yticklabels(xcols)
         ax.set_xticks(np.arange(len(ycols)))
-        ax.set_xticklabels(ycols)
+
+        xlabels = [maybe_shrink_label(x, max_label_size) for x in xcols]
+        ax.set_yticklabels(xlabels)
+
+        ylabels = [maybe_shrink_label(y, max_label_size) for y in ycols]
+        ax.set_xticklabels(ylabels)
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
