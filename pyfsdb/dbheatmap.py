@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
-    parser.add_argument("--label-limit", default=40, type=int,
+    parser.add_argument("--label-limit", default=30, type=int,
                         help="The maximum length of a label;" +
                         "  If longer, truncate with ...s in the middle. " +
                         "Use 0 if infinite is desired.")
@@ -57,7 +57,7 @@ def parse_args():
     return args
 
 
-def maybe_shrink_label(label, length_limit=40):
+def maybe_shrink_label(label, length_limit=30):
     if len(label) <= length_limit:
         return label
     return label[0:length_limit-1] + "..." + label[- length_limit-2:]
