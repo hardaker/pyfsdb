@@ -57,10 +57,10 @@ def parse_args():
     return args
 
 
-def maybe_shrink_label(label, length_limit = 20):
+def maybe_shrink_label(label, length_limit=40):
     if len(label) <= length_limit:
         return label
-    return label[0:9] + "..." + label[-8:]
+    return label[0:length_limit-1] + "..." + label[- length_limit-2:]
 
 
 def create_heat_map(input_data, columns, value_column,
