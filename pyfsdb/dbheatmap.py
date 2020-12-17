@@ -36,6 +36,11 @@ def parse_args():
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
+    parser.add_argument("--label-limit", default=20, type=int,
+                        help="The maximum length of a label;" +
+                        "  If longer, truncate with ...s in the middle. " +
+                        "Use 0 if infinite is desired.")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="Input fsdb file to read")
@@ -52,10 +57,16 @@ def parse_args():
     return args
 
 
+def maybe_shrink_label(label, length_limit = 20):
+    if len(label) <= length_limit:
+        return label
+    return label[0:9] + "..." + label[-8:]
+
+
 def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
-                    font_size=None):
+                    font_size=None, max_label_size=20):
     max_value = None
     dataset = {}  # nested tree structure
     ycols = {}  # stores each unique second value
@@ -100,8 +111,8 @@ def create_heat_map(input_data, columns, value_column,
     ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='Pastel1')
     # ax.grid(ls=':')
 
-    ax.set_xlabel(columns[1])
-    ax.set_ylabel(columns[0])
+    ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size))
+    ax.set_ylabel(maybe_shrink_label(columns[0], max_label_size))
 
     if add_labels:
         ax.set_yticks(np.arange(len(dataset)))
@@ -144,7 +155,7 @@ def main():
     fig = create_heat_map(f, args.columns, args.value_column,
                           args.add_labels, args.add_raw,
                           args.add_fractions, args.invert,
-                          args.font_size)
+                          args.font_size, args.label_limit)
 
     fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
