@@ -67,6 +67,7 @@ def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
                     font_size=None, max_label_size=20):
+    min_value = None
     max_value = None
     dataset = {}  # nested tree structure
     ycols = {}  # stores each unique second value
@@ -75,6 +76,11 @@ def create_heat_map(input_data, columns, value_column,
             max_value = float(row[value_column])
         else:
             max_value = max(max_value, float(row[value_column]))
+
+        if not min_value:
+            min_value = float(row[value_column])
+        else:
+            min_value = min(min_value, float(row[value_column]))
 
         if row[columns[0]] not in dataset:
             dataset[row[columns[0]]] = \
@@ -92,7 +98,8 @@ def create_heat_map(input_data, columns, value_column,
         newrow = []
         for second_column in ycols:
             if second_column in dataset[first_column]:
-                newrow.append(dataset[first_column][second_column] / max_value)
+                val = dataset[first_column][second_column] / max_value
+                newrow.append(val)
             else:
                 newrow.append(0.0)
         data.append(newrow)
