@@ -13,7 +13,7 @@ import sys
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             description=__doc__,
-                            epilog="Exmaple Usage: parque2fsdb -c col1 col2 file.parquet file.fsdb")
+                            epilog="Exmaple Usage: parque2fsdb -c col1 col2 -- file.parquet file.fsdb")
 
     parser.add_argument("-c", "--columns", nargs="*",
                         type=str, help="Columns to load")
