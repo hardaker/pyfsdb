@@ -1,0 +1,55 @@
+#!/usr/bin/python3
+
+"""Save an FSDB file to an apache parquet file"""
+
+import fastparquet
+import pyfsdb
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+import sys
+
+
+def parse_args():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            description=__doc__,
+                            epilog="Exmaple Usage: fsdb2parquet -c col1 col2 -- file.fsdb file.parquet ")
+
+    parser.add_argument("-c", "--categories", nargs="*",
+                        type=str, help="Columns to declare as categories")
+
+    parser.add_argument("-C", "--compression-type", default="GZIP", type=str,
+                        help="The compression type to use (SNAPPY or GZIP)")
+
+    parser.add_argument("-o", "--row-offsets", default=50000000, type=int,
+                        help="Row size to write")
+
+    parser.add_argument("input_file", type=FileType('r'),
+                        help="The input fsdb file to load (can be - for stdin)")
+
+    parser.add_argument("output_file", type=str,
+                        help="The output parquet file to write")
+
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
+
+    import pdb ; pdb.set_trace()
+    fh = pyfsdb.Fsdb(file_handle=args.input_file)
+
+    df = fh.get_pandas()
+
+    if args.categories:
+        for column in args.categories:
+            df[column] = df[column].astype('category')
+
+    df.to_parquet(args.output_file, compression=args.compression_type,
+                  row_group_offsets=args.row_offsets, index=False)
+
+
+if __name__ == "__main__":
+    main()
+
+
