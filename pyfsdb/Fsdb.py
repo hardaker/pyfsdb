@@ -658,7 +658,7 @@ class Fsdb(object):
         "saves a pandas dataframe to the output file"
         import pandas
         if not self._out_column_names:
-            self.out_column_names = df.columns
+            self.out_column_names = df.columns.values.tolist()
         self._write_header_line()
         df.to_csv(self._out_file_handle, sep="\t", header=False,
                   index=False)
