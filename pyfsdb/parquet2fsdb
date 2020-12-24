@@ -42,7 +42,7 @@ def main():
     pf = fastparquet.ParquetFile(args.input_file)
 
     if args.line_by_line:
-        for df in pf.iter_row_groups():
+        for df in pf.iter_row_groups(columns=args.columns):
             fh.put_pandas(df)
     else:
         df = pf.to_pandas(columns=args.columns)
