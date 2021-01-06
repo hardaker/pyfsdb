@@ -52,7 +52,6 @@ setuptools.setup(
             'dbensure = pyfsdb.obsolete.dbensure:main',
             'dbheatmap = pyfsdb.obsolete.dbheatmap:main',
             'dbdatetoepoch = pyfsdb.obsolete.dbdatetoepoch:main',
-            'dbnormalize = pyfsdb.obsolete.dbnormalize:main',
             'dbsum = pyfsdb.obsolete.dbsum:main',
         ]
     },
