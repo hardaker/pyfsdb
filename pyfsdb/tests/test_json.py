@@ -3,7 +3,7 @@ from io import StringIO
 
 class test_json_functions(unittest.TestCase):
     def test_json_to_fsdb(self):
-        from pyfsdb.json2fsdb import json_to_fsdb
+        from pyfsdb.tools.json2fsdb import json_to_fsdb
         self.assertTrue(json_to_fsdb, "loaded")
 
         inp = StringIO('{"d":"f", "a":"c"}' + "\n" +
@@ -19,7 +19,7 @@ class test_json_functions(unittest.TestCase):
                          "output of json_to_fsdb is correct")
         
     def test_fsdb_to_json(self):
-        from pyfsdb.fsdb2json import fsdb_to_json
+        from pyfsdb.tools.fsdb2json import fsdb_to_json
         self.assertTrue(fsdb_to_json, "loaded")
 
         inp = StringIO("#fsdb -F t a d\nc\tf\nb\te\n")
