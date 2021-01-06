@@ -1,5 +1,5 @@
 def test_label_shrink():
-    from pyfsdb.dbheatmap import maybe_shrink_label
+    from pyfsdb.pdbheatmap import maybe_shrink_label
     assert True
 
     assert maybe_shrink_label("foo") == "foo"

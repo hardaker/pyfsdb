@@ -10,7 +10,7 @@ class TestColUniq(unittest.TestCase):
         from io import StringIO
         data = "#fsdb -F t a b c\na\tb\tc\nb\tc\td\na\tb\td\n"
 
-        from pyfsdb.dbcoluniq import filter_unique_columns
+        from pyfsdb.pdbcoluniq import filter_unique_columns
 
         outh = StringIO()
         outh.close = noop
@@ -37,7 +37,7 @@ class TestColUniq(unittest.TestCase):
         from io import StringIO
         data = "#fsdb -F t a b c\na\tb\tc\nb\tc\td\na\tb\td\n"
 
-        from pyfsdb.dbcoluniq import filter_unique_columns
+        from pyfsdb.pdbcoluniq import filter_unique_columns
 
         outh = StringIO()
         outh.close = noop
@@ -55,7 +55,7 @@ class TestColUniq(unittest.TestCase):
         #
         data = "#fsdb -F t x y z\na\tb\tc\nb\tc\td\na\tb\td\na\tb\tc\n"
 
-        from pyfsdb.dbcoluniq import filter_unique_columns
+        from pyfsdb.pdbcoluniq import filter_unique_columns
 
         outh = StringIO()
         outh.close = noop

@@ -15,27 +15,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     entry_points={
         'console_scripts': [
-            'dbtopn = pyfsdb.tools.dbtopn:main',
-            'dbaugment = pyfsdb.tools.dbaugment:main',
-            'bro2fsdb = pyfsdb.tools.bro2fsdb:main',
-            'dbcoluniq = pyfsdb.tools.dbcoluniq:main',
-            'dbfullpivot = pyfsdb.tools.dbfullpivot:main',
-            'dbreversepivot = pyfsdb.tools.dbreversepivot:main',
-            'dbzerofill = pyfsdb.tools.dbzerofill:main',
-            'dbkeyedsort = pyfsdb.tools.dbkeyedsort:main',
-            'dbsplitter = pyfsdb.tools.dbsplitter:main',
-            'json2fsdb = pyfsdb.tools.json2fsdb:main',
-            'fsdb2json = pyfsdb.tools.fsdb2json:main',
-            'fsdb2many = pyfsdb.tools.fsdb2many:main',
-            'db2tex = pyfsdb.tools.db2tex:main',
-            'dbformat = pyfsdb.tools.dbformat:main',
-            'dbreescape = pyfsdb.tools.dbreescape:main',
-            'dbensure = pyfsdb.tools.dbensure:main',
-            'dbheatmap = pyfsdb.tools.dbheatmap:main',
-            'dbdatetoepoch = pyfsdb.tools.dbdatetoepoch:main',
-            'dbnormalize = pyfsdb.tools.dbnormalize:main',
-            'dbsum = pyfsdb.tools.dbsum:main',
-
             # migrating to pdb prefixes
             'pdbtopn = pyfsdb.tools.dbtopn:main',
             'pdbaugment = pyfsdb.tools.dbaugment:main',
@@ -57,6 +36,24 @@ setuptools.setup(
             'pdbdatetoepoch = pyfsdb.tools.dbdatetoepoch:main',
             'pdbnormalize = pyfsdb.tools.dbnormalize:main',
             'pdbsum = pyfsdb.tools.dbsum:main',
+
+            # obsolete wrappers
+            'dbtopn = pyfsdb.obsolete.dbtopn:main',
+            'dbaugment = pyfsdb.obsolete.dbaugment:main',
+            'dbcoluniq = pyfsdb.obsolete.dbcoluniq:main',
+            'dbfullpivot = pyfsdb.obsolete.dbfullpivot:main',
+            'dbreversepivot = pyfsdb.obsolete.dbreversepivot:main',
+            'dbzerofill = pyfsdb.obsolete.dbzerofill:main',
+            'dbkeyedsort = pyfsdb.obsolete.dbkeyedsort:main',
+            'dbsplitter = pyfsdb.obsolete.dbsplitter:main',
+            'db2tex = pyfsdb.obsolete.db2tex:main',
+            'dbformat = pyfsdb.obsolete.dbformat:main',
+            'dbreescape = pyfsdb.obsolete.dbreescape:main',
+            'dbensure = pyfsdb.obsolete.dbensure:main',
+            'dbheatmap = pyfsdb.obsolete.dbheatmap:main',
+            'dbdatetoepoch = pyfsdb.obsolete.dbdatetoepoch:main',
+            'dbnormalize = pyfsdb.obsolete.dbnormalize:main',
+            'dbsum = pyfsdb.obsolete.dbsum:main',
         ]
     },
     classifiers=[
