@@ -55,20 +55,6 @@ class FsdbTest(TestCase):
         self.assertTrue(rows[1][2] == 'stuff')
 
 
-    def test_read_all_data(self):
-        HEADER_FILE = "pyfsdb/tests/tests.fsdb"
-        f = pyfsdb.Fsdb()
-        fileh = open(HEADER_FILE, "r")
-        data = f.read_fsdb(fileh)
-
-        self.assertTrue(data[0] == 0,
-                        'parsing status is 0')
-        self.assertTrue('data' in data[1],
-                        'data is in the output')
-
-        rows = data[1]['data']
-        self.check_data(rows)
-        
     def test_broken_header(self):
         from io import StringIO
         data = "a,b,c" # pretend we're a csv
