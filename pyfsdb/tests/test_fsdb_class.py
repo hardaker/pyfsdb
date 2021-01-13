@@ -616,8 +616,8 @@ class FsdbTest(TestCase):
                          "filter properly double the middle column")
 
         f.close()
+
+
 if __name__ == "__main__":
+    import unittest
     unittest.main()
-        
-
-
