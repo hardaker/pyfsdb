@@ -488,8 +488,6 @@ class FsdbTest(TestCase):
         with open(OUTPUT_FILE, "r") as fh:
             file2 = fh.read(8192)
 
-        print("file2:" + file2)
-
         self.assertTrue(file2.startswith(file1), # ignore added trailers
                          "file contents with headers are the same")
 
