@@ -420,6 +420,14 @@ class FsdbTest(TestCase):
         self.check_data([[all[0]['colone'], all[0]['coltwo'], all[0]['colthree']],
                          [all[1]['colone'], all[1]['coltwo'], all[1]['colthree']]])
 
+    def test_get_all(self):
+        f = pyfsdb.Fsdb(self.DATA_FILE)
+        data = f.get_all()
+
+        self.assertEqual(data, self.EXPECTED_DATA,
+                         "get_all returned correct results")
+
+
     def test_get_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
         self.assertTrue(f, "opened ok")
@@ -438,6 +446,24 @@ class FsdbTest(TestCase):
         self.assertTrue(len(rows[1]) == 1)
         self.assertTrue(rows[0][0] == "info")
         self.assertTrue(rows[1][0] == "other")
+
+    def test_get_pandas_with_data_comments(self):
+        fake = StringIO("#fsdb -F t one two\n1\ta\n# comment\n2\t#b\n")
+
+        f = pyfsdb.Fsdb(file_handle=fake)
+        self.assertTrue(f, "opened ok")
+
+        all = f.get_pandas(has_middle_comments=True)
+
+        print(all)
+        rows = all.values.tolist()
+        print(rows)
+        self.assertTrue(len(rows) == 2)
+        self.assertTrue(rows[0][0] == 1)
+        self.assertTrue(rows[1][0] == 2)
+        self.assertTrue(rows[0][1] == "a")
+        self.assertTrue(rows[1][1] == "#b")
+
 
     def test_put_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)

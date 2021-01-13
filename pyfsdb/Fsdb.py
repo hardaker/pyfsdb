@@ -647,12 +647,36 @@ class Fsdb(object):
     # Useful higher-level functions
     #
 
-    def get_pandas(self, usecols=None):
-        """Returns a pandas dataframe for the given data.  Warning: this cannot preserve comments in the files; FSDB comments are stripped from the output."""
+    def get_all(self):
+        all_rows = []
+        for row in self:
+            all_rows.append(row)
+        return all_rows
+
+    def get_pandas(self, usecols=None, comment="#", has_middle_comments=False):
+        """Returns a pandas dataframe for the given data.  Warning: this
+        cannot preserve comments in the files; FSDB comments are
+        stripped from the output.
+        """
         import pandas
         column_names = self.column_names # forces opening and reading headers
-        return pandas.read_csv(self.file_handle, sep='\t', comment="#",
-                               names=self.column_names, usecols=usecols)
+
+        if has_middle_comments:
+            slow_data = self.get_all()
+
+            df = pandas.DataFrame(slow_data, columns=column_names)
+
+            import pdb ; pdb.set_trace()
+            for column in column_names:
+                try:
+                    df[column] = pandas.to_numeric(df[column])
+                except:
+                    pass
+
+            return df
+        else:
+            return pandas.read_csv(self.file_handle, sep='\t', comment=comment,
+                                   names=column_names, usecols=usecols)
 
     def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
