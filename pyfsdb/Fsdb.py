@@ -654,7 +654,7 @@ class Fsdb(object):
             all_rows.append(row)
         return all_rows
 
-    def get_pandas(self, usecols=None, comment="#", has_middle_comments=False):
+    def get_pandas(self, usecols=None, comment="#", data_has_comment_chars=False):
         """Returns a pandas dataframe for the given data.  Warning: this
         cannot preserve comments in the files; FSDB comments are
         stripped from the output.
@@ -662,7 +662,7 @@ class Fsdb(object):
         import pandas
         column_names = self.column_names # forces opening and reading headers
 
-        if has_middle_comments:
+        if data_has_comment_chars:
             # when data has the comment character in the middle,
             # pandas.read_csv fails because it assumes comment
             # characters are line breaks.  We have no choice but to

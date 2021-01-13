@@ -453,11 +453,9 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=fake)
         self.assertTrue(f, "opened ok")
 
-        all = f.get_pandas(has_middle_comments=True)
+        all = f.get_pandas(data_has_comment_chars=True)
 
-        print(all)
         rows = all.values.tolist()
-        print(rows)
         self.assertTrue(len(rows) == 2)
         self.assertTrue(rows[0][0] == 1)
         self.assertTrue(rows[1][0] == 2)
