@@ -464,7 +464,7 @@ class FsdbTest(TestCase):
         sys.stderr.write(results)
         self.assertEqual(results[0:len(outstr)], outstr,
                          "put_pandas worked")
-        
+
     def test_comment_ordering(self):
         HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"
         OUTPUT_FILE = "pyfsdb/tests/test_comments_at_top.test.fsdb"
