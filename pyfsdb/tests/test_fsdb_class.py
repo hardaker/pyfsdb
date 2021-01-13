@@ -9,6 +9,8 @@ def noop(**kwargs):
 class FsdbTest(TestCase):
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
     OUT_FILE = "pyfsdb/tests/testout.fsdb"
+    EXPECTED_DATA = [['rowone', 'info', 'data'],
+                     ['rowtwo', 'other', 'stuff']]
 
     def test_loaded_tests(self):
         self.assertTrue(True)
