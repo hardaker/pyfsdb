@@ -671,7 +671,6 @@ class Fsdb(object):
 
             df = pandas.DataFrame(slow_data, columns=column_names)
 
-            import pdb ; pdb.set_trace()
             for column in column_names:
                 try:
                     df[column] = pandas.to_numeric(df[column])
