@@ -648,6 +648,7 @@ class Fsdb(object):
     #
 
     def get_all(self):
+        """Read all the data into memory and return it as an array of rows."""
         all_rows = []
         for row in self:
             all_rows.append(row)
@@ -662,6 +663,10 @@ class Fsdb(object):
         column_names = self.column_names # forces opening and reading headers
 
         if has_middle_comments:
+            # when data has the comment character in the middle,
+            # pandas.read_csv fails because it assumes comment
+            # characters are line breaks.  We have no choice but to
+            # read all the data ourselves (slow).
             slow_data = self.get_all()
 
             df = pandas.DataFrame(slow_data, columns=column_names)
