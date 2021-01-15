@@ -58,9 +58,12 @@ def parse_args():
 
 
 def maybe_shrink_label(label, length_limit=30):
+    label = str(label)
     if len(label) <= length_limit:
         return label
-    return label[0:length_limit-1] + "..." + label[- length_limit-2:]
+    part_length = int((length_limit-3) / 2) # save room for middle dots
+    right_len = -part_length
+    return label[0:part_length+1] + "..." + label[right_len:]
 
 
 def create_heat_map(input_data, columns, value_column,
