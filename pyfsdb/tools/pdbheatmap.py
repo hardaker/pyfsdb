@@ -66,14 +66,13 @@ def maybe_shrink_label(label, length_limit=30):
     return label[0:part_length+1] + "..." + label[right_len:]
 
 
-def create_heat_map(input_data, columns, value_column,
-                    add_labels=False, add_raw=False,
-                    add_fractions=False, invert=False,
-                    font_size=None, max_label_size=20):
+def normalize(input_data, columns, value_column):
+    # loop over all the rows calculating the min/max values and save results
     min_value = None
     max_value = None
-    dataset = {}  # nested tree structure
     ycols = {}  # stores each unique second value
+    dataset = {}  # nested tree structure
+
     for row in input_data:
         if not max_value:
             max_value = float(row[value_column])
@@ -107,6 +106,17 @@ def create_heat_map(input_data, columns, value_column,
                 newrow.append(0.0)
         data.append(newrow)
 
+    return (data, dataset, min_value, max_value, xcols, ycols)
+
+
+def create_heat_map(input_data, columns, value_column,
+                    add_labels=False, add_raw=False,
+                    add_fractions=False, invert=False,
+                    font_size=None, max_label_size=20):
+
+    (data, dataset, min_value, max_value, xcols, ycols) = \
+        normalize(input_data, columns, value_column)
+
     grapharray = np.array(data)
     if not invert:
         grapharray = 1 - grapharray
@@ -116,7 +126,7 @@ def create_heat_map(input_data, columns, value_column,
 
     # set the size
     fig.set_dpi(150)
-    fig.set_size_inches(16,9)
+    fig.set_size_inches(16, 9)
 
     ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='Pastel1')
     # ax.grid(ls=':')
