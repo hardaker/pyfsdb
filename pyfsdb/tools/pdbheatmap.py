@@ -150,7 +150,7 @@ def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
                     font_size=None, max_label_size=20,
-                    cmap='Pastel1', label_column=None):
+                    cmap='Blues_r', label_column=None):
 
     results = normalize(input_data, columns, value_column, label_column)
 
