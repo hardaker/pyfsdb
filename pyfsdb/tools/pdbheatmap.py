@@ -33,6 +33,9 @@ def parse_args():
     parser.add_argument("-L", "--add-labels", action="store_true",
                         help="Add x/y axis labels")
 
+    parser.add_argument("--label-column", default=None, type=str,
+                        help="Column to use for labeling the squares")
+
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
@@ -69,12 +72,22 @@ def maybe_shrink_label(label, length_limit=30):
     return label[0:part_length+1] + "..." + label[right_len:]
 
 
-def normalize(input_data, columns, value_column):
+def normalize(input_data, columns, value_column, label_column=None):
+    """Loops over all of the rows of dict data extracting a tuple of:
+
+     data: the data in array/dict format
+     dataset: the dataset in a deep dictonary format
+     min_value: the minimum value seen
+     max_value: the maximum value seen
+     xcols: the list of x column labels
+     ycols: the list of y column labels
+     labelset: the labels in a deep dictonary format if label_column was specified"""
     # loop over all the rows calculating the min/max values and save results
     min_value = None
     max_value = None
     ycols = {}  # stores each unique second value
     dataset = {}  # nested tree structure
+    labelset = {}
 
     for row in input_data:
         if not max_value:
@@ -87,13 +100,20 @@ def normalize(input_data, columns, value_column):
         else:
             min_value = min(min_value, float(row[value_column]))
 
-        if row[columns[0]] not in dataset:
-            dataset[row[columns[0]]] = \
-                {row[columns[1]]: float(row[value_column])}
+        x_value = row[columns[0]]
+        y_value = row[columns[1]]
+        value = row[value_column]
+        if label_column:
+            label = row[label_column]
+        if x_value not in dataset:
+            dataset[x_value] = {y_value: float(value)}
+            if label_column:
+                labelset[x_value] = {y_value: label}
         else:
-            dataset[row[columns[0]]][row[columns[1]]] = \
-                float(row[value_column])
-        ycols[row[columns[1]]] = 1
+            dataset[x_value][y_value] = float(value)
+            if label_column:
+                labelset[x_value][y_value] = label
+        ycols[y_value] = 1
 
     # merge the data into a two dimensional array
     data = []
@@ -109,17 +129,29 @@ def normalize(input_data, columns, value_column):
                 newrow.append(0.0)
         data.append(newrow)
 
-    return (data, dataset, min_value, max_value, xcols, ycols)
+    return {'data': data,
+            'dataset': dataset,
+            'min_value': min_value,
+            'max_value': max_value,
+            'xcols': xcols,
+            'ycols': ycols,
+            'labelset': labelset}
 
 
 def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
                     font_size=None, max_label_size=20,
-                    cmap='Pastel1'):
+                    cmap='Pastel1', label_column=None):
 
-    (data, dataset, min_value, max_value, xcols, ycols) = \
-        normalize(input_data, columns, value_column)
+    results = normalize(input_data, columns, value_column, label_column)
+
+    (data, dataset, xcols, ycols, labelset) = \
+        (results['data'],
+         results['dataset'],
+         results['xcols'],
+         results['ycols'],
+         results['labelset'])
 
     grapharray = np.array(data)
     if not invert:
@@ -170,6 +202,18 @@ def create_heat_map(input_data, columns, value_column,
                 except Exception:
                     pass
 
+    elif label_column:
+        for i, first_column in enumerate(xcols):
+            for j, second_column in enumerate(ycols):
+                try:
+                    label = labelset[first_column][second_column]
+                    if label:
+                        ax.text(j, i, str(label),
+                                ha="center", va="center", color="r",
+                                fontsize=font_size)
+                except Exception:
+                    pass
+
     fig.tight_layout()
     return (fig, data, dataset)
 
@@ -186,7 +230,7 @@ def main():
                         args.add_labels, args.add_raw,
                         args.add_fractions, args.invert,
                         args.font_size, args.label_limit,
-                        args.cmap)
+                        args.cmap, args.label_column)
 
     fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
