@@ -36,6 +36,9 @@ def parse_args():
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
+    parser.add_argument("-C", "--cmap", default="Pastel1", type=str,
+                        help="matplotlib colormap to use")
+
     parser.add_argument("--label-limit", default=30, type=int,
                         help="The maximum length of a label;" +
                         "  If longer, truncate with ...s in the middle. " +
@@ -112,7 +115,8 @@ def normalize(input_data, columns, value_column):
 def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
-                    font_size=None, max_label_size=20):
+                    font_size=None, max_label_size=20,
+                    cmap='Pastel1'):
 
     (data, dataset, min_value, max_value, xcols, ycols) = \
         normalize(input_data, columns, value_column)
@@ -128,7 +132,7 @@ def create_heat_map(input_data, columns, value_column,
     fig.set_dpi(150)
     fig.set_size_inches(16, 9)
 
-    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap='Pastel1')
+    ax.imshow(grapharray, vmin=0.0, vmax=1.0)
     # ax.grid(ls=':')
 
     ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size))
@@ -160,14 +164,14 @@ def create_heat_map(input_data, columns, value_column,
                 try:
                     value = dataset[first_column][second_column]
                     if value != "0" and value != 0:
-                        ax.text(j, i, "{}".format(int(value)),
+                        ax.text(j, i, "{:1.1f}".format(float(value)),
                                 ha="center", va="center", color="r",
                                 fontsize=font_size)
                 except Exception:
                     pass
 
     fig.tight_layout()
-    return fig
+    return (fig, data, dataset)
 
 
 def main():
@@ -177,10 +181,10 @@ def main():
     f = pyfsdb.Fsdb(file_handle=args.input_file,
                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
-    fig = create_heat_map(f, args.columns, args.value_column,
-                          args.add_labels, args.add_raw,
-                          args.add_fractions, args.invert,
-                          args.font_size, args.label_limit)
+    (fig, data) = create_heat_map(f, args.columns, args.value_column,
+                                  args.add_labels, args.add_raw,
+                                  args.add_fractions, args.invert,
+                                  args.font_size, args.label_limit)
 
     fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
