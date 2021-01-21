@@ -39,8 +39,11 @@ def parse_args():
     parser.add_argument("-fs", "--font-size", default=None, type=int,
                         help="Set the fontsize for labels")
 
-    parser.add_argument("-C", "--cmap", default="Pastel1", type=str,
-                        help="matplotlib colormap to use")
+    parser.add_argument("-C", "--cmap", default="Blues_r", type=str,
+                        help="matplotlib colormap to use (good choices: Blues_r, gray, PuBu_r, summer_r, YlGn_r)")
+
+    parser.add_argument("--list-cmaps", action="store_true",
+                        help="List the colormap values available for -C")
 
     parser.add_argument("--label-limit", default=30, type=int,
                         help="The maximum length of a label;" +
@@ -56,6 +59,11 @@ def parse_args():
                         help="Where to write the png file to")
 
     args = parser.parse_args()
+
+    if args.list_cmaps:
+        all = plt.colormaps()
+        print("\n".join(all))
+        exit()
 
     if not args.columns or len(args.columns) != 2:
         raise ValueError("exactly 2 columns must be passed to -c")
@@ -164,7 +172,7 @@ def create_heat_map(input_data, columns, value_column,
     fig.set_dpi(150)
     fig.set_size_inches(16, 9)
 
-    ax.imshow(grapharray, vmin=0.0, vmax=1.0)
+    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap=cmap)
     # ax.grid(ls=':')
 
     ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size))
