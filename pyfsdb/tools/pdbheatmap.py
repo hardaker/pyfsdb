@@ -108,18 +108,19 @@ def normalize(input_data, columns, value_column, label_column=None):
         else:
             min_value = min(min_value, float(row[value_column]))
 
+        label = None
         x_value = row[columns[0]]
         y_value = row[columns[1]]
         value = row[value_column]
-        if label_column:
+        if label_column and label_column in row:
             label = row[label_column]
         if x_value not in dataset:
             dataset[x_value] = {y_value: float(value)}
-            if label_column:
+            if label:
                 labelset[x_value] = {y_value: label}
         else:
             dataset[x_value][y_value] = float(value)
-            if label_column:
+            if label:
                 labelset[x_value][y_value] = label
         ycols[y_value] = 1
 
