@@ -181,10 +181,12 @@ def main():
     f = pyfsdb.Fsdb(file_handle=args.input_file,
                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
-    (fig, data) = create_heat_map(f, args.columns, args.value_column,
-                                  args.add_labels, args.add_raw,
-                                  args.add_fractions, args.invert,
-                                  args.font_size, args.label_limit)
+    (fig, data, dataset) = \
+        create_heat_map(f, args.columns, args.value_column,
+                        args.add_labels, args.add_raw,
+                        args.add_fractions, args.invert,
+                        args.font_size, args.label_limit,
+                        args.cmap)
 
     fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
