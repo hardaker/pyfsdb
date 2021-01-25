@@ -83,7 +83,7 @@ def maybe_shrink_label(label, length_limit=30):
 def normalize(input_data, columns, value_column, label_column=None):
     """Loops over all of the rows of dict data extracting a tuple of:
 
-     data: the data in array/dict format
+     data: the data in array/dict format, normalized to MIN->1.0
      dataset: the dataset in a deep dictonary format
      min_value: the minimum value seen
      max_value: the maximum value seen
@@ -116,12 +116,16 @@ def normalize(input_data, columns, value_column, label_column=None):
             label = row[label_column]
         if x_value not in dataset:
             dataset[x_value] = {y_value: float(value)}
-            if label:
-                labelset[x_value] = {y_value: label}
         else:
             dataset[x_value][y_value] = float(value)
-            if label:
+
+        # set the optional labels
+        if label:
+            if x_value not in labelset:
+                labelset[x_value] = {y_value: label}
+            else:
                 labelset[x_value][y_value] = label
+
         ycols[y_value] = 1
 
     # merge the data into a two dimensional array
