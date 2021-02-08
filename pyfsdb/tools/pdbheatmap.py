@@ -135,7 +135,7 @@ def normalize(input_data, columns, value_column, label_column=None):
     for first_column in xcols:
         newrow = []
         for second_column in ycols:
-            if second_column in dataset[first_column]:
+            if second_column in dataset[first_column] and max_value > 0:
                 val = dataset[first_column][second_column] / max_value
                 newrow.append(val)
             else:
