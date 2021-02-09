@@ -399,6 +399,18 @@ class Fsdb(object):
     def converters(self, new_converters):
         self._converters = new_converters
 
+    def _convert_converters(self):
+        if isinstance(self._converters, dict):
+            converters = []
+            # convert this to an array based on column names
+            for column_name in self.column_names:
+                if column_name in self._converters and \
+                   callable(self._converters[column_name]):
+                    converters.append(self._converters[column_name])
+                else:
+                    converters.append(None)
+            self._converters = converters
+
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
@@ -450,6 +462,8 @@ class Fsdb(object):
         fh = self.maybe_open_filehandle()
         if not self._header_line:
             self.read_header()
+
+        self._convert_converters()
 
         if self.return_type == RETURN_AS_DICTIONARY:
             self.__next__ = self._next_as_dict
