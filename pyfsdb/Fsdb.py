@@ -387,7 +387,12 @@ class Fsdb(object):
 
     @property
     def converters(self):
-        "The list of conversion routines"
+        """The list of conversion routines.
+
+        The data type passed in should match the expected output type --
+        It should be an array if an array is coming out.
+        it should be a dict if RETURN_AS_DICTIONARY was passed to `return_type`
+        """
         return self._converters
 
     @converters.setter
@@ -475,7 +480,7 @@ class Fsdb(object):
 
     def _convert_array_values(self, row):
         for (n, converter) in enumerate(self._converters):
-            if row[n]:
+            if converter is not None and row[n] is not None:
                 row[n] = converter(row[n])
         return row
 

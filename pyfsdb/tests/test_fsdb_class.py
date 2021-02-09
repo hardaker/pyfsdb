@@ -654,6 +654,7 @@ class FsdbTest(TestCase):
             for value in row:
                 self.assertIsInstance(value, str, "value is a string")
 
+        # convert all to an int
         datah = StringIO(data)
         f = pyfsdb.Fsdb(file_handle=datah,
                         converters=[int, int, int])
@@ -662,6 +663,20 @@ class FsdbTest(TestCase):
             for value in row:
                 self.assertIsInstance(value, int,
                                       "value is converted to an int")
+
+
+        # partial converters
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        converters=[int, None, int])
+        for row in f:
+            for (col, value) in enumerate(row):
+                if col == 1:
+                    self.assertIsInstance(value, str,
+                                          "value is left as a str")
+                else:
+                    self.assertIsInstance(value, int,
+                                          "value is converted to an int")
 
 
 if __name__ == "__main__":
