@@ -100,6 +100,9 @@ class Fsdb(object):
            If `pass_comments` is True and both an input and output file
            handle are available, any comments read in while reading
            are printed to the output.
+
+           `converters` may be passed in as an array or dict of
+           converters to call (such as int, float, etc)
         """
 
         self.return_type = return_type
@@ -389,9 +392,12 @@ class Fsdb(object):
     def converters(self):
         """The list of conversion routines.
 
-        The data type passed in should match the expected output type --
-        It should be an array if an array is coming out.
-        it should be a dict if RETURN_AS_DICTIONARY was passed to `return_type`
+        It may be an array, with a converter per column,
+        or a dict with a convert per named column.
+
+        This must be set before the file is opened/read.
+
+        Useful converted may include int, float, etc.
         """
         return self._converters
 
