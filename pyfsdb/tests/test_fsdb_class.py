@@ -643,6 +643,27 @@ class FsdbTest(TestCase):
         f.close()
 
 
+    def test_converters(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+
+        for row in f:
+            for value in row:
+                self.assertIsInstance(value, str, "value is a string")
+
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        converters=[int, int, int])
+
+        for row in f:
+            for value in row:
+                self.assertIsInstance(value, int,
+                                      "value is converted to an int")
+
+
 if __name__ == "__main__":
     import unittest
     unittest.main()

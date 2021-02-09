@@ -89,7 +89,8 @@ class Fsdb(object):
                  pass_comments = 'y',
                  out_command_line = "____INTERNAL____",
                  write_nones_as_blanks = True,
-                 column_names=None):
+                 column_names=None,
+                 converters=None):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -108,6 +109,7 @@ class Fsdb(object):
         self._pass_comments = pass_comments
         self._write_nones_as_blanks = write_nones_as_blanks
         self._header_written = False
+        self._converters = converters
 
         if pass_comments not in ['y', 'n', 'e']:
             raise ValueError("pass_comments must be y/n/e")
@@ -383,6 +385,15 @@ class Fsdb(object):
 
         return header_line
 
+    @property
+    def converters(self):
+        "The list of conversion routines"
+        return self._converters
+
+    @converters.setter
+    def converters(self, new_converters):
+        self._converters = new_converters
+
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
@@ -462,6 +473,12 @@ class Fsdb(object):
                 self._comments.append(line)
         return next(self.fileh)
 
+    def _convert_array_values(self, row):
+        for (n, converter) in enumerate(self._converters):
+            if row[n]:
+                row[n] = converter(row[n])
+        return row
+
     def _next_as_array(self):
         """Return the next object as an array of columns."""
 
@@ -475,6 +492,8 @@ class Fsdb(object):
         if len(self._current_row) < len(self._column_names):
             n = (len(self._column_names))-len(self._current_row)
             self._current_row.extend([''] * n)
+        if self._converters:
+            self._current_row = self._convert_array_values(self._current_row)
         return self._current_row
 
     def _next_as_dict(self):
