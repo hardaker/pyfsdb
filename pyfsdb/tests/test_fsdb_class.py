@@ -664,7 +664,6 @@ class FsdbTest(TestCase):
                 self.assertIsInstance(value, int,
                                       "value is converted to an int")
 
-
         # partial converters
         datah = StringIO(data)
         f = pyfsdb.Fsdb(file_handle=datah,
@@ -677,6 +676,52 @@ class FsdbTest(TestCase):
                 else:
                     self.assertIsInstance(value, int,
                                           "value is converted to an int")
+
+        # dict based converters
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        converters={'a': int, 'b': None},
+                        return_type=pyfsdb.RETURN_AS_DICTIONARY)
+
+        for row in f:
+            for key in row:
+                value = row[key]
+                if key == 'a':
+                    self.assertIsInstance(value, int,
+                                          "value is converted to an int")
+                else:
+                    self.assertIsInstance(value, str,
+                                          "value is left as a str")
+
+        # dict based converters, with array output
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        converters={'a': int, 'b': None})
+
+        for row in f:
+            for (col, value) in enumerate(row):
+                if col == 0:
+                    self.assertIsInstance(value, int,
+                                          "value is converted to an int")
+                else:
+                    self.assertIsInstance(value, str,
+                                          "value is left as a str")
+
+        # array based converters, with dict output
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah,
+                        converters=[int, None, None],
+                        return_type=pyfsdb.RETURN_AS_DICTIONARY)
+
+        for row in f:
+            for key in row:
+                value = row[key]
+                if key == 'a':
+                    self.assertIsInstance(value, int,
+                                          "value is converted to an int")
+                else:
+                    self.assertIsInstance(value, str,
+                                          "value is left as a str")
 
 
 if __name__ == "__main__":
