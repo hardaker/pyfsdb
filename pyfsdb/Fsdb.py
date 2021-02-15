@@ -698,10 +698,12 @@ class Fsdb(object):
             all_rows.append(row)
         return all_rows
 
-    def get_pandas(self, usecols=None, comment="#", data_has_comment_chars=False):
+    def get_pandas(self, usecols=None, comment="#",
+                   data_has_comment_chars=False, **kwargs):
         """Returns a pandas dataframe for the given data.  Warning: this
         cannot preserve comments in the files; FSDB comments are
-        stripped from the output.
+        stripped from the output.  Any other args will be passed to
+        pandas.read_csv()
         """
         import pandas
         column_names = self.column_names # forces opening and reading headers
@@ -724,7 +726,8 @@ class Fsdb(object):
             return df
         else:
             return pandas.read_csv(self.file_handle, sep='\t', comment=comment,
-                                   names=column_names, usecols=usecols)
+                                   names=column_names, usecols=usecols,
+                                   **kwargs)
 
     def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
