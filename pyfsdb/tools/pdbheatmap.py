@@ -180,8 +180,8 @@ def create_heat_map(input_data, columns, value_column,
     ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap=cmap)
     # ax.grid(ls=':')
 
-    ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size))
-    ax.set_ylabel(maybe_shrink_label(columns[0], max_label_size))
+    ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size), fontsize=font_size)
+    ax.set_ylabel(maybe_shrink_label(columns[0], max_label_size), fontsize=font_size)
 
     # note: xlabels are applied on the y tick labels
     if add_labels:
@@ -189,10 +189,10 @@ def create_heat_map(input_data, columns, value_column,
         ax.set_xticks(np.arange(len(ycols)))
 
         xlabels = [maybe_shrink_label(x, max_label_size) for x in xcols]
-        ax.set_yticklabels(xlabels)
+        ax.set_yticklabels(xlabels, fontsize=font_size)
 
         ylabels = [maybe_shrink_label(y, max_label_size) for y in ycols]
-        ax.set_xticklabels(ylabels)
+        ax.set_xticklabels(ylabels, fontsize=font_size)
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
