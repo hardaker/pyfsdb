@@ -16,7 +16,7 @@ def parse_args():
                             epilog="Exmaple Usage: ")
 
     parser.add_argument("-c", "--columns", type=str, nargs=2,
-                        help="Columns to use")
+                        help="The two columns to use for the x and y axes")
 
     parser.add_argument("-v", "--value-column", default="count", type=str,
                         help="The value column to plot as the heat map")
