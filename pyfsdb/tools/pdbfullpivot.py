@@ -77,7 +77,7 @@ def main():
 
     # the output columns will be a merge of the time column, and
     # previously seen key-index values.
-    output_columns = ['time']
+    output_columns = [args.time_column]
     output_columns.extend(columns.keys())
     out.out_column_names = output_columns
 
