@@ -68,7 +68,7 @@ def process(input_file_handle, jinja2_template, output_file_handle,
 
 def main():
     args = parse_args()
-    process(args.input_file, args.jinja2_template, arg.output_file)
+    process(args.input_file, args.jinja2_template, args.output_file)
 
 
 if __name__ == "__main__":
