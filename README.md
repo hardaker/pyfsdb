@@ -127,6 +127,10 @@ max: 246
 #   | dbfilealter -R C
 ```
 
+# Author
+
+Wes Hardaker @ USC/ISI
+
 # See also
 
 The FSDB website and manual page for the original perl module: 
