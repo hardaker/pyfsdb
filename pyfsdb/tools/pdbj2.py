@@ -3,9 +3,7 @@
 """This script takes all the data in a file, and passes it to a
    jinja2 template with each row being stored in a `rows` variable.
 
-   Note: va
-
-   Note: all the rows must be loaded into memory at ance.
+   Note: all the rows must be loaded into memory at once.
 """
 
 import argparse
@@ -16,7 +14,7 @@ import pyfsdb
 import jinja2
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__, epilog="Example: pdbj2 -j report.j2 input.fsdb output.txt")
 
     parser.add_argument("-j", "--jinja2-template",
                         type=argparse.FileType('r'),
@@ -31,13 +29,13 @@ def parse_args():
 
     parser.add_argument("output_file", type=argparse.FileType('w'),
                         nargs='?', default=sys.stdout,
-                        help="")
+                        help="Where to write the results to")
 
     args = parser.parse_args()
 
     if not args.jinja2_template:
-            sys.stderr.write("A jinja2 template argument (-j) is required\n")
-            exit(1)
+        sys.stderr.write("A jinja2 template argument (-j) is required\n")
+        exit(1)
 
     return args
 
