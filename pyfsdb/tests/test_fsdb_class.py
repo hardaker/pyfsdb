@@ -140,6 +140,12 @@ class FsdbTest(TestCase):
 
         self.assertTrue(count > 0, "at least one row read")
 
+    def test_header_early_read(self):
+        DATA_FILE = "pyfsdb/tests/tests.fsdb"
+        f = pyfsdb.Fsdb(DATA_FILE)
+        self.assertEqual(f.headers, ["#fsdb -F t colone coltwo colthree\n"],
+                         "properly early-read headers")
+
     def test_header_access(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
