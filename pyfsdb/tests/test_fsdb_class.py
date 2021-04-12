@@ -723,6 +723,12 @@ class FsdbTest(TestCase):
                     self.assertIsInstance(value, str,
                                           "value is left as a str")
 
+    def test_pass_comment_error(self):
+        try:
+            pyfsdb.Fsdb(pass_comments="z")
+        except Exception as e:
+            self.assertIsInstance(e, ValueError,
+                                  "properly errored on illegal pass_comments")
 
 if __name__ == "__main__":
     import unittest
