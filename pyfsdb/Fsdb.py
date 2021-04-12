@@ -840,13 +840,3 @@ class Fsdb(object):
         self.close()
 
 
-def main():
-    print("at top")
-    fsdb = Fsdb()
-    line = sys.stdin.next()
-    result = fsdb.read_header(line)
-    print(result)
-
-
-if __name__ == "__main__":
-    main()
