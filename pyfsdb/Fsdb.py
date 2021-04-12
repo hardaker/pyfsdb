@@ -139,17 +139,7 @@ class Fsdb(object):
     def file_handle(self, fileh):
         self.fileh = fileh
 
-        if not fileh:
-            return None
-
         return fileh
-
-        if self.return_type == RETURN_AS_DICTIONARY:
-            self.__next__ = self._next_as_dict
-        else:
-            self.__next__ = self._next_as_array
-
-        return self.fileh
 
     @property
     def headers(self):
