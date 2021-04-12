@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyfsdb",
-    version="1.1.20",
+    version="1.1.21",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A python implementation of the flat-file streaming database",
@@ -34,6 +34,7 @@ setuptools.setup(
             'pdbensure = pyfsdb.tools.pdbensure:main',
             'pdbheatmap = pyfsdb.tools.pdbheatmap:main',
             'pdbdatetoepoch = pyfsdb.tools.pdbdatetoepoch:main',
+            'pdbepochtodate = pyfsdb.tools.pdbepochtodate:main',
             'pdbnormalize = pyfsdb.tools.pdbnormalize:main',
             'pdbsum = pyfsdb.tools.pdbsum:main',
             'pdbj2 = pyfsdb.tools.pdbj2:main',
