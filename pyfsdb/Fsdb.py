@@ -584,8 +584,10 @@ class Fsdb(object):
             return "  "
         elif separator == "s":
             return " "
+        elif separator[0] == "c":
+            return separator[1:]
         elif separator[0] == "C":
-            return separator[1:] # not sure this is right
+            return separator[1:] # won't handle multiples like manual says
         elif separator[0] == "X":
             # 
             raise ValueError("XN hexcode splitting not supported")

@@ -761,6 +761,17 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah)
         self.assertEqual(f.get_all(), expected)
 
+        # trying arbitrary char
+        for testchar in ['Z', '|', '$']:
+            for testspec in ['c', 'C']:
+                fmt_str=f"-F {testspec}{testchar}"
+                datas = data.replace("\t", testchar).replace("-F t",
+                                                             fmt_str)
+
+                datah = StringIO(datas)
+                f = pyfsdb.Fsdb(file_handle=datah)
+                self.assertEqual(f.get_all(), expected)
+
 
 if __name__ == "__main__":
     import unittest
