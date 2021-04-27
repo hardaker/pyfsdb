@@ -806,6 +806,13 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah)
         self.assertEqual(f.get_all(), expected)
 
+        # use a lower case x too
+        datas = data.replace("\t", "A").replace("-F t", "-F x41")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
 if __name__ == "__main__":
     import unittest
     unittest.main()
