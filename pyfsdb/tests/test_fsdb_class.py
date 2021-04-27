@@ -799,6 +799,13 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah)
         self.assertEqual(f.get_all(), expected)
 
+        # hex-specified character (0x41 = 'A')
+        datas = data.replace("\t", "A").replace("-F t", "-F X41")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
 if __name__ == "__main__":
     import unittest
     unittest.main()

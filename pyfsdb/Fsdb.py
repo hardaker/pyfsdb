@@ -589,10 +589,9 @@ class Fsdb(object):
         elif separator[0] == "C":
             return separator[1:] # won't handle multiples like manual says
         elif separator[0] == "X":
-            # 
-            raise ValueError("XN hexcode splitting not supported")
+            return chr(int("0x" + separator[1:],0))
         elif separator == "D":
-            # ""
+            # python NONE to splits on all white space
             return None
 
         # unknown
@@ -608,9 +607,6 @@ class Fsdb(object):
             return "s"
         elif len(separator_token) == 1:
             return "C" + separator_token
-        elif separator_token[0:1] == "0x":
-            # XXX
-            raise ValueError("XN hexcode splitting not supported")
         elif separator_token == None:
             # XXX
             separator_token = 'D'
