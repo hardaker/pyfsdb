@@ -593,7 +593,7 @@ class Fsdb(object):
             raise ValueError("XN hexcode splitting not supported")
         elif separator == "D":
             # ""
-            raise ValueError("generic whitespace splitting not supported")
+            return None
 
         # unknown
         raise ValueError("Unknown separator value: " + separator)
@@ -611,9 +611,9 @@ class Fsdb(object):
         elif separator_token[0:1] == "0x":
             # XXX
             raise ValueError("XN hexcode splitting not supported")
-        elif separator == "D":
+        elif separator_token == None:
             # XXX
-            raise ValueError("generic whitespace splitting not supported")
+            separator_token = 'D'
 
         # unknown
         raise ValueError("Unknown separator token value: " + separator_token)
@@ -651,7 +651,7 @@ class Fsdb(object):
 
         # should we use argparse here?
         argn = 1
-        separator=" "
+        separator = None  # (D)efault is all white space
         while args[argn][0] == '-':
             if args[argn] == "-F":
                 argn += 1

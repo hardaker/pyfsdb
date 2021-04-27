@@ -792,6 +792,12 @@ class FsdbTest(TestCase):
                 f = pyfsdb.Fsdb(file_handle=datah)
                 self.assertEqual(f.get_all(), expected)
 
+        # mixed tabs and spaces with a (D)efault whitespace
+        datas = data.replace("\t", "  ", 2).replace("-F t", "-F D")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
 
 if __name__ == "__main__":
     import unittest
