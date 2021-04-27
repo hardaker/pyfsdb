@@ -645,7 +645,6 @@ class Fsdb(object):
         self._header_line = line
         self._headers = [self._header_line]
 
-        # XXX: split by tabs too
         args = line.split()
         if args[0] != "#fsdb":
             raise ValueError("failed to find expected #fsdb header")
