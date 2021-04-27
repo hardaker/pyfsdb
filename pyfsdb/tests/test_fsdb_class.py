@@ -735,6 +735,32 @@ class FsdbTest(TestCase):
         except Exception as e:
             self.assertIsInstance(e, ValueError,
                                   "properly errored on illegal pass_comments")
+    def test_separators(self):
+        from io import StringIO
+
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = [['1', '2', '3'],
+                    ['4', '5', '6']]
+
+        # test tabs
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # convert to spaces
+        datas = data.replace("\t", " ").replace("-F t", "-F s")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # convert to double spaces
+        datas = data.replace("\t", "  ").replace("-F t", "-F S")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
 
 if __name__ == "__main__":
     import unittest

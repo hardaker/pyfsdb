@@ -643,6 +643,7 @@ class Fsdb(object):
         self._header_line = line
         self._headers = [self._header_line]
 
+        # XXX: split by tabs too
         args = line.split(" ")
         if args[0] != "#fsdb":
             raise ValueError("failed to find expected #fsdb header")
@@ -658,6 +659,8 @@ class Fsdb(object):
                 return [-1, "Unown option: " + args[argn]]
 
             argn += 1
+
+        self._separator = self.parse_separator(self._separator_token)
 
         # join the remainder of the arguments back together to split
         # by the correct separator
