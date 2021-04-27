@@ -735,6 +735,26 @@ class FsdbTest(TestCase):
         except Exception as e:
             self.assertIsInstance(e, ValueError,
                                   "properly errored on illegal pass_comments")
+
+    def test_whitespaces_in_format_line(self):
+        from io import StringIO
+
+        # standard data with a space formatting in the header
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = [['1', '2', '3'],
+                    ['4', '5', '6']]
+
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # same data, but with dabs in the header
+        datatabs = data.replace(" ","\t")
+        datah = StringIO(datatabs)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+
     def test_separators(self):
         from io import StringIO
 
