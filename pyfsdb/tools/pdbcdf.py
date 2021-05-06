@@ -19,6 +19,9 @@ def parse_args():
                         type=str,
                         help="The output CDF column name -- if none, '_cdf' will be appended to --column")
 
+    parser.add_argument("-m", "--use-max", action="store_true",
+                        help="Use the maximum of the data column instead of the sum to divide by")
+
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level.")
 
@@ -34,7 +37,8 @@ def parse_args():
     basicConfig(level=args.log_level)
     return args
 
-def process_cdf(input_file, output_file, data_column, out_cdf=None):
+def process_cdf(input_file, output_file, data_column,
+                out_cdf=None, use_max=False):
     # open input and output fsdb handles
     fh = pyfsdb.Fsdb(file_handle=input_file)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
@@ -49,9 +53,13 @@ def process_cdf(input_file, output_file, data_column, out_cdf=None):
     oh.out_column_names = out_columns
 
     df = fh.get_pandas(data_has_comment_chars=True)
-    sum_val = df[data_column].sum()
 
-    df[out_cdf] = df[data_column] / sum_val
+    if use_max:
+        denominator = df[data_column].max()
+    else:
+        denominator = df[data_column].sum()
+
+    df[out_cdf] = df[data_column] / denominator
 
     oh.put_pandas(df)
 
@@ -59,7 +67,8 @@ def main():
     args = parse_args()
 
     process_cdf(args.input_file, args.output_file,
-                args.data_column, args.cdf_column)
+                args.data_column, args.cdf_column,
+                args.use_max)
 
 if __name__ == "__main__":
     main()
