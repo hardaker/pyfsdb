@@ -584,14 +584,17 @@ class Fsdb(object):
             return "  "
         elif separator == "s":
             return " "
+        elif separator[0] == "c":
+            return separator[1:]
         elif separator[0] == "C":
-            return separator[1:] # not sure this is right
-        elif separator[0] == "X":
-            # 
-            raise ValueError("XN hexcode splitting not supported")
+            return separator[1:] # won't handle multiples like manual says
+        elif separator[0] == "x":
+            return chr(int("0x" + separator[1:],0))
+        elif separator[0] == "X": # won't handle multiples like manual says
+            return chr(int("0x" + separator[1:],0))
         elif separator == "D":
-            # ""
-            raise ValueError("generic whitespace splitting not supported")
+            # python NONE to splits on all white space
+            return None
 
         # unknown
         raise ValueError("Unknown separator value: " + separator)
@@ -606,12 +609,9 @@ class Fsdb(object):
             return "s"
         elif len(separator_token) == 1:
             return "C" + separator_token
-        elif separator_token[0:1] == "0x":
+        elif separator_token == None:
             # XXX
-            raise ValueError("XN hexcode splitting not supported")
-        elif separator == "D":
-            # XXX
-            raise ValueError("generic whitespace splitting not supported")
+            separator_token = 'D'
 
         # unknown
         raise ValueError("Unknown separator token value: " + separator_token)
@@ -643,13 +643,13 @@ class Fsdb(object):
         self._header_line = line
         self._headers = [self._header_line]
 
-        args = line.split(" ")
+        args = line.split()
         if args[0] != "#fsdb":
             raise ValueError("failed to find expected #fsdb header")
 
         # should we use argparse here?
         argn = 1
-        separator=" "
+        separator = None  # (D)efault is all white space
         while args[argn][0] == '-':
             if args[argn] == "-F":
                 argn += 1
@@ -658,6 +658,8 @@ class Fsdb(object):
                 return [-1, "Unown option: " + args[argn]]
 
             argn += 1
+
+        self._separator = self.parse_separator(self._separator_token)
 
         # join the remainder of the arguments back together to split
         # by the correct separator

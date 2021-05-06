@@ -736,6 +736,83 @@ class FsdbTest(TestCase):
             self.assertIsInstance(e, ValueError,
                                   "properly errored on illegal pass_comments")
 
+    def test_whitespaces_in_format_line(self):
+        from io import StringIO
+
+        # standard data with a space formatting in the header
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = [['1', '2', '3'],
+                    ['4', '5', '6']]
+
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # same data, but with dabs in the header
+        datatabs = data.replace(" ","\t")
+        datah = StringIO(datatabs)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+
+    def test_separators(self):
+        from io import StringIO
+
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = [['1', '2', '3'],
+                    ['4', '5', '6']]
+
+        # test tabs
+        datah = StringIO(data)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # convert to spaces
+        datas = data.replace("\t", " ").replace("-F t", "-F s")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # convert to double spaces
+        datas = data.replace("\t", "  ").replace("-F t", "-F S")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # trying arbitrary char
+        for testchar in ['Z', '|', '$']:
+            for testspec in ['c', 'C']:
+                fmt_str=f"-F {testspec}{testchar}"
+                datas = data.replace("\t", testchar).replace("-F t",
+                                                             fmt_str)
+
+                datah = StringIO(datas)
+                f = pyfsdb.Fsdb(file_handle=datah)
+                self.assertEqual(f.get_all(), expected)
+
+        # mixed tabs and spaces with a (D)efault whitespace
+        datas = data.replace("\t", "  ", 2).replace("-F t", "-F D")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # hex-specified character (0x41 = 'A')
+        datas = data.replace("\t", "A").replace("-F t", "-F X41")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
+        # use a lower case x too
+        datas = data.replace("\t", "A").replace("-F t", "-F x41")
+
+        datah = StringIO(datas)
+        f = pyfsdb.Fsdb(file_handle=datah)
+        self.assertEqual(f.get_all(), expected)
+
 if __name__ == "__main__":
     import unittest
     unittest.main()
