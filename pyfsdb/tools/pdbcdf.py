@@ -19,9 +19,6 @@ def parse_args():
                         type=str,
                         help="The output CDF column name -- if none, '_cdf' will be appended to --column")
 
-    parser.add_argument("-m", "--use-max", action="store_true",
-                        help="Use the maximum of the data column instead of the sum to divide by")
-
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level.")
 
@@ -54,12 +51,8 @@ def process_cdf(input_file, output_file, data_column,
 
     df = fh.get_pandas(data_has_comment_chars=True)
 
-    if use_max:
-        denominator = df[data_column].max()
-    else:
-        denominator = df[data_column].sum()
-
-    df[out_cdf] = df[data_column] / denominator
+    denominator = df[data_column].sum()
+    df[out_cdf] = df[data_column].cumsum() / denominator
 
     oh.put_pandas(df)
 
@@ -67,8 +60,7 @@ def main():
     args = parse_args()
 
     process_cdf(args.input_file, args.output_file,
-                args.data_column, args.cdf_column,
-                args.use_max)
+                args.data_column, args.cdf_column)
 
 if __name__ == "__main__":
     main()
