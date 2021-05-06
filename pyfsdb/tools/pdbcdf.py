@@ -2,7 +2,8 @@
 that this requires loading all the data into memory for efficiency."""
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-from logging import debug, info, warn, error, critical, basicConfig
+from logging import debug, info, warning, error, critical
+import logging
 import sys
 import pyfsdb
 
@@ -31,7 +32,9 @@ def parse_args():
                         help="Where to write the output FSDB to")
 
     args = parser.parse_args()
-    basicConfig(level=args.log_level)
+    log_level = args.log_level.upper()
+    logging.basicConfig(level=log_level,
+                        format="%(levelname)-10s:\t%(message)s")
     return args
 
 def process_cdf(input_file, output_file, data_column,
