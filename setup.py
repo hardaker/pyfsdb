@@ -38,6 +38,7 @@ setuptools.setup(
             'pdbnormalize = pyfsdb.tools.pdbnormalize:main',
             'pdbsum = pyfsdb.tools.pdbsum:main',
             'pdbj2 = pyfsdb.tools.pdbj2:main',
+            'pdbcdf = pyfsdb.tools.pdbcdf:main',
 
             # obsolete wrappers
             'dbtopn = pyfsdb.obsolete.dbtopn:main',
