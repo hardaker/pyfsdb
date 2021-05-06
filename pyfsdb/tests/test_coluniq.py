@@ -1,9 +1,12 @@
 import unittest
-
+import re
 
 def noop():
     pass
 
+def truncate_comments(value):
+    value = re.sub("\n# +\\|.*", "", value)
+    return value
 
 class TestColUniq(unittest.TestCase):
     def test_single_uniques(self):
@@ -18,8 +21,8 @@ class TestColUniq(unittest.TestCase):
         filter_unique_columns(datah, outh, ['a'])
 
         # check the the result
-        self.assertEqual(outh.getvalue(),
-                        "#fsdb -F t a\na\nb\n#   | /usr/bin/pytest-3 pyfsdb/tests/test_coluniq.py\n",
+        self.assertEqual(truncate_comments(outh.getvalue()),
+                        "#fsdb -F t a\na\nb\n",
                         "resulting values are right from uniq")
 
         outh = StringIO()
@@ -28,8 +31,8 @@ class TestColUniq(unittest.TestCase):
         filter_unique_columns(datah, outh, ['a'], count=True)
 
         # check the the result
-        self.assertEqual(outh.getvalue(),
-                        "#fsdb -F t a count\na\t2\nb\t1\n#   | /usr/bin/pytest-3 pyfsdb/tests/test_coluniq.py\n",
+        self.assertEqual(truncate_comments(outh.getvalue()),
+                        "#fsdb -F t a count\na\t2\nb\t1\n",
                         "resulting values are right from uniq")
 
 
@@ -45,8 +48,8 @@ class TestColUniq(unittest.TestCase):
         filter_unique_columns(datah, outh, ['a', 'b'])
 
         # check the the result
-        self.assertEqual(outh.getvalue(),
-                        "#fsdb -F t a b\na\tb\nb\tc\n#   | /usr/bin/pytest-3 pyfsdb/tests/test_coluniq.py\n",
+        self.assertEqual(truncate_comments(outh.getvalue()),
+                        "#fsdb -F t a b\na\tb\nb\tc\n",
                         "resulting values are right from uniq")
 
 
@@ -63,7 +66,8 @@ class TestColUniq(unittest.TestCase):
         filter_unique_columns(datah, outh, ['x', 'y', 'z'], count=True)
 
         # check the the result
-        self.assertEqual(outh.getvalue(),
-                        "#fsdb -F t x y z count\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n#   | /usr/bin/pytest-3 pyfsdb/tests/test_coluniq.py\n",
+        self.assertEqual(truncate_comments(outh.getvalue()),
+                        "#fsdb -F t x y z count\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n",
                         "resulting values are right from uniq")
+
 
