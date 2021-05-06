@@ -79,6 +79,7 @@ class Fsdb(object):
     _out_separator = "\t"
     _out_separator_token = "t"
     _out_command_line = "____BROKEN____" # ick, magic
+    _save_command_history = True
 
     def __init__(self,
                  filename = None,
@@ -90,7 +91,8 @@ class Fsdb(object):
                  out_command_line = "____INTERNAL____",
                  write_nones_as_blanks = True,
                  column_names=None,
-                 converters=None):
+                 converters=None,
+                 save_command_history=True):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -113,6 +115,7 @@ class Fsdb(object):
         self._write_nones_as_blanks = write_nones_as_blanks
         self._header_written = False
         self._converters = converters
+        self._save_command_history = save_command_history
 
         if pass_comments not in ['y', 'n', 'e']:
             raise ValueError("pass_comments must be y/n/e")
@@ -813,7 +816,7 @@ class Fsdb(object):
             try:
                 if not self._header_written:
                     self._write_header_line()
-                if self.out_command_line:
+                if self._save_command_history and self.out_command_line:
                     for comment_line in self._comments:
                         self._out_file_handle.write(comment_line)
                     self._out_file_handle.write("#   | " + self.out_command_line + "\n")
