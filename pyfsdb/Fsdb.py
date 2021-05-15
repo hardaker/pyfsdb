@@ -693,6 +693,11 @@ class Fsdb(object):
             all_rows.append(row)
         return all_rows
 
+    def put_all(self, rows):
+        "Reads a list of rows and appends them to the FSDB file."
+        for row in rows:
+            self.append(row)
+
     def get_pandas(self, usecols=None, comment="#",
                    data_has_comment_chars=False, **kwargs):
         """Returns a pandas dataframe for the given data.  Warning: this

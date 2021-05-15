@@ -2,9 +2,14 @@ from unittest import TestCase
 import pyfsdb
 import sys
 from io import StringIO
+import re
 
 def noop(**kwargs):
     pass
+
+def truncate_comments(value):
+    value = re.sub("\n# +\\|.*", "", value)
+    return value
 
 class FsdbTest(TestCase):
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -433,6 +438,20 @@ class FsdbTest(TestCase):
         self.assertEqual(data, self.EXPECTED_DATA,
                          "get_all returned correct results")
 
+    def test_put_all(self):
+        oh = StringIO()
+
+        of = pyfsdb.Fsdb(out_file_handle=oh)
+        of.out_column_names = ['a', 'b', 'c']
+
+        of.put_all([[1, 2, 3], [4, 5, 6]])
+
+        result = oh.getvalue()
+
+        self.assertEqual(truncate_comments(result),
+                         "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n",
+                         "get_all returned correct results")
+        of.close()
 
     def test_get_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
@@ -812,6 +831,7 @@ class FsdbTest(TestCase):
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
         self.assertEqual(f.get_all(), expected)
+
 
 if __name__ == "__main__":
     import unittest

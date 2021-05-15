@@ -2,4 +2,4 @@
 # another comment
 1	2
 # done
-#   | setup.py test
+#   | /usr/bin/pytest-3
