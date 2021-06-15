@@ -20,6 +20,12 @@ def parse_args():
                         type=str,
                         help="The output CDF column name -- if none, '_cdf' will be appended to --column")
 
+    parser.add_argument("-R", "--raw-column", default=None, type=str,
+                        help="Output raw accumulating count to this column")
+
+    parser.add_argument("-P", "--percent-column", default=None, type=str,
+                        help="Output a percentage column, in addition to the CDF column")
+
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level.")
 
@@ -38,7 +44,8 @@ def parse_args():
     return args
 
 def process_cdf(input_file, output_file, data_column,
-                out_cdf=None, use_max=False):
+                out_cdf=None, raw_column=None, percent_column=None,
+                use_max=False):
     # open input and output fsdb handles
     fh = pyfsdb.Fsdb(file_handle=input_file)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
@@ -46,16 +53,28 @@ def process_cdf(input_file, output_file, data_column,
     # crate output columns
     out_columns = fh.column_names
 
+    # Add the CDF column
     if not out_cdf:
         out_cdf = data_column + "_cdf"
     
     out_columns.append(out_cdf)
+
+    # add the raw and percentage columns
+    if raw_column:
+        out_columns.append(raw_column)
+    if percent_column:
+        out_columns.append(percent_column)
+
     oh.out_column_names = out_columns
 
     df = fh.get_pandas(data_has_comment_chars=True)
 
     denominator = df[data_column].sum()
     df[out_cdf] = df[data_column].cumsum() / denominator
+    if raw_column:
+        df[raw_column] = df[data_column].cumsum()
+    if percent_column:
+        df[percent_column] = df[data_column] / denominator
 
     oh.put_pandas(df)
 
@@ -63,7 +82,8 @@ def main():
     args = parse_args()
 
     process_cdf(args.input_file, args.output_file,
-                args.data_column, args.cdf_column)
+                args.data_column, args.cdf_column,
+                args.raw_column, args.percent_column)
 
 if __name__ == "__main__":
     main()
