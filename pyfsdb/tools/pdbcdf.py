@@ -26,6 +26,9 @@ def parse_args():
     parser.add_argument("-P", "--percent-column", default=None, type=str,
                         help="Output a percentage column, in addition to the CDF column")
 
+    parser.add_argument("-F", "--fraction-column", default=None, type=str,
+                        help="Output a percentage column, in addition to the CDF column")
+
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level.")
 
@@ -44,7 +47,8 @@ def parse_args():
     return args
 
 def process_cdf(input_file, output_file, data_column,
-                out_cdf=None, raw_column=None, percent_column=None,
+                out_cdf=None, raw_column=None,
+                fraction_column=None, percent_column=None,
                 use_max=False):
     # open input and output fsdb handles
     fh = pyfsdb.Fsdb(file_handle=input_file)
@@ -62,6 +66,8 @@ def process_cdf(input_file, output_file, data_column,
     # add the raw and percentage columns
     if raw_column:
         out_columns.append(raw_column)
+    if fraction_column:
+        out_columns.append(fraction_column)
     if percent_column:
         out_columns.append(percent_column)
 
@@ -73,8 +79,10 @@ def process_cdf(input_file, output_file, data_column,
     df[out_cdf] = df[data_column].cumsum() / denominator
     if raw_column:
         df[raw_column] = df[data_column].cumsum()
+    if fraction_column:
+        df[fraction_column] = df[data_column] / denominator
     if percent_column:
-        df[percent_column] = df[data_column] / denominator
+        df[percent_column] = 100.0 * df[data_column] / denominator
 
     oh.put_pandas(df)
 
@@ -83,7 +91,8 @@ def main():
 
     process_cdf(args.input_file, args.output_file,
                 args.data_column, args.cdf_column,
-                args.raw_column, args.percent_column)
+                args.raw_column, args.fraction_column,
+                args.percent_column)
 
 if __name__ == "__main__":
     main()
