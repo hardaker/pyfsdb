@@ -41,7 +41,7 @@ def parse_args():
                         help="The input FSDB file to plot")
 
     parser.add_argument("output_file", type=str, nargs='?', default="",
-                        help="The output (PNG) file to write; if not specified plot in a window")
+                        help="The output (PNG) file to write; if not specified plot in a window; if NONE don't plot at all (useful to just print AUC)")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -91,7 +91,8 @@ def main():
         print(f"AUC: {auc(fpr, tpr)}")
 
     if args.output_file:
-        plt.savefig(args.output_file)
+        if args.output_file != "NONE":
+            plt.savefig(args.output_file)
     else:
         plt.show()
 
