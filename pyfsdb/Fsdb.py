@@ -120,7 +120,6 @@ class Fsdb(object):
         if out_column_names:
             self._out_column_names = out_column_names
             self._out_column_names_set = True
-            self._out_header_line = self.create_header_line(out_column_names)
 
         if pass_comments not in ['y', 'n', 'e']:
             raise ValueError("pass_comments must be y/n/e")
@@ -774,6 +773,11 @@ class Fsdb(object):
             self.append(row)
 
     def _write_header_line(self):
+        # maybe construct it
+        if not self._out_header_line and self._out_column_names:
+            self._out_header_line = self.create_header_line()
+
+        # write out the correct header
         if self._out_header_line:
             self._out_file_handle.write(self._out_header_line)
         elif self._header_line:
