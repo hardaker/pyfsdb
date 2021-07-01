@@ -92,7 +92,8 @@ class Fsdb(object):
                  write_nones_as_blanks = True,
                  column_names=None,
                  converters=None,
-                 save_command_history=True):
+                 save_command_history=True,
+                 out_column_names=None):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -116,6 +117,10 @@ class Fsdb(object):
         self._header_written = False
         self._converters = converters
         self._save_command_history = save_command_history
+        if out_column_names:
+            self._out_column_names = out_column_names
+            self._out_column_names_set = True
+            self._out_header_line = self.create_header_line(out_column_names)
 
         if pass_comments not in ['y', 'n', 'e']:
             raise ValueError("pass_comments must be y/n/e")
