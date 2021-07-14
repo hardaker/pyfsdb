@@ -1,11 +1,9 @@
 from unittest import TestCase
+from unittest.mock import Mock
 import pyfsdb
 import sys
 from io import StringIO
 import re
-
-def noop(**kwargs):
-    pass
 
 def truncate_comments(value):
     value = re.sub("\n# +\\|.*", "", value)
@@ -500,7 +498,7 @@ class FsdbTest(TestCase):
 
         # create a buffer, but don't let it close
         out = StringIO()
-        out.close = noop
+        out.close = Mock()
 
         # create the output FSDB object
         of = pyfsdb.Fsdb(out_file_handle=out)
@@ -509,7 +507,9 @@ class FsdbTest(TestCase):
         # save the data
         of.put_pandas(df)
         of.close()
-        
+
+        out.close.assert_called()
+
         # check that its' right
         results = out.getvalue()
         import sys
@@ -839,7 +839,7 @@ class FsdbTest(TestCase):
         
         indata = StringIO(data)
         outdata = StringIO()
-        outdata.close = noop
+        outdata.close = Mock()
 
         f = pyfsdb.Fsdb(file_handle=indata,
                         out_file_handle=outdata,
@@ -855,6 +855,8 @@ class FsdbTest(TestCase):
         self.assertTrue(outdata.getvalue().startswith(expected),
                         "read and write to the same handle")
         
+        outdata.close.assert_called()
+
     def test_in_out_same_handle_add_col(self):
         from io import StringIO
         data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
@@ -862,7 +864,7 @@ class FsdbTest(TestCase):
         
         indata = StringIO(data)
         outdata = StringIO()
-        outdata.close = noop
+        outdata.close = Mock()
 
         f = pyfsdb.Fsdb(file_handle=indata,
                         out_file_handle=outdata,
@@ -886,18 +888,20 @@ class FsdbTest(TestCase):
         self.assertTrue(result.startswith(expected),
                         "read and write to the same handle")
 
+        outdata.close.assert_called()
+
     def test_changing_columns_on_init(self):
         from io import StringIO
         data = [1,2,3]
         expected = "#fsdb -F t a b c\n1\t2\t3\n"
         
         outdata = StringIO()
-        outdata.close = noop
+        outdata.close = Mock()
 
         f = pyfsdb.Fsdb(out_file_handle=outdata,
                         out_column_names=['a', 'b', 'c'])
 
-        f.close = noop
+        f.close = Mock()
         f.append(data)
         f.close()
         
@@ -907,6 +911,7 @@ class FsdbTest(TestCase):
         print(expected)
         self.assertTrue(result.startswith(expected),
                         "set columns on init")
+
 
 if __name__ == "__main__":
     import unittest
