@@ -832,6 +832,81 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah)
         self.assertEqual(f.get_all(), expected)
 
+    def test_in_out_same_handle(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n"
+        
+        indata = StringIO(data)
+        outdata = StringIO()
+        outdata.close = noop
+
+        f = pyfsdb.Fsdb(file_handle=indata,
+                        out_file_handle=outdata,
+                        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+                        converters={"b": int})
+        for row in f:
+            row['b'] *= 2
+            f.append(row)
+
+        f.close()
+        
+        # ignore headers
+        self.assertTrue(outdata.getvalue().startswith(expected),
+                        "read and write to the same handle")
+        
+    def test_in_out_same_handle_add_col(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
+        expected = "#fsdb -F t a b c d\n1\t4\t3\ty\n4\t10\t6\ty\n"
+        
+        indata = StringIO(data)
+        outdata = StringIO()
+        outdata.close = noop
+
+        f = pyfsdb.Fsdb(file_handle=indata,
+                        out_file_handle=outdata,
+                        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+                        converters={"b": int})
+
+        # say we're adding a column
+        columns = f.column_names
+        columns.append('d')
+        f.out_column_names = columns
+
+        for row in f:
+            row['b'] *= 2
+            row['d'] = 'y'
+            f.append(row)
+
+        f.close()
+        
+        # ignore headers
+        result = outdata.getvalue()
+        self.assertTrue(result.startswith(expected),
+                        "read and write to the same handle")
+
+    def test_changing_columns_on_init(self):
+        from io import StringIO
+        data = [1,2,3]
+        expected = "#fsdb -F t a b c\n1\t2\t3\n"
+        
+        outdata = StringIO()
+        outdata.close = noop
+
+        f = pyfsdb.Fsdb(out_file_handle=outdata,
+                        out_column_names=['a', 'b', 'c'])
+
+        f.close = noop
+        f.append(data)
+        f.close()
+        
+        # ignore headers
+        result = outdata.getvalue()
+        print(result)
+        print(expected)
+        self.assertTrue(result.startswith(expected),
+                        "set columns on init")
 
 if __name__ == "__main__":
     import unittest
