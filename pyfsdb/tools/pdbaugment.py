@@ -83,6 +83,45 @@ def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
             dump_remaining(fsh, struct[item], empty_num,
                            key_cols, value_cols)
 
+
+def stash_row(cache, key_list, row):
+    """Stashes a row in a depth tree based on the keys in the row, the
+    cache should be initialized to an empty dictonary on the first
+    call."""
+    # store each row based on its list of keys, but storing
+    # each additional key as a deeper layer of dictionaries.
+    # the final key used is 'data' to store the data itself
+
+    # traverse/create the nested structure
+    current = cache
+    for key in key_list:
+        if row[key] not in current:
+            current[row[key]] = {}
+        current = current[row[key]]
+    current['data'] = row
+
+
+def find_row(cache, key_list, row, return_data=True):
+    """Finds a row in a stash given a list of keys matching a passed in
+       row.  Any matches will be marked as used too.  If `return_data`
+       is true, the cached data itself will be returned, otherwise the
+       cache pointer above it will be returned with 'data' as a
+       sub-key to the cache point.
+
+    """
+    # traverse/create the nested structure
+    current = cache
+    for key in key_list:
+        if row[key] not in current:
+            current = None
+            break
+        current = current[row[key]]
+
+    if return_data:
+        return current['data'];
+    return current
+
+
 def main():
     args = parse_args()
 
@@ -93,15 +132,9 @@ def main():
     # store each row based on its list of keys, but storing
     # each additional key as a deeper layer of dictionaries.
     # the final key used is 'data' to store the data itself
-    savestruct = {}
+    cache = {}
     for row in augh:
-        current = savestruct
-        # traverse/create the nested structure
-        for key in args.keys:
-            if row[key] not in current:
-                current[row[key]] = {}
-            current = current[row[key]]
-        current['data'] = row
+        stash_row(cache, args.keys, row)
 
     # read in stream file, and augment each row with the new columns
     streamh = pyfsdb.Fsdb(file_handle = args.stream_file)
@@ -121,14 +154,10 @@ def main():
     key_columns = streamh.get_column_numbers(args.keys)
 
     for row in streamh:
-        current = savestruct
+        current = cache
         # traverse/create the nested structure
-        for key in key_columns:
-            if row[key] not in current:
-                current = None
-                break
-            current = current[row[key]]
-    
+        current = find_row(cache, args.keys, row, return_data=False)
+
         # on a deep match finding
         if current:
             current['used'] = 1
