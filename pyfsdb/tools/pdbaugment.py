@@ -34,7 +34,7 @@ def parse_args():
                         help="Include (at the bottom) any rows from the augment file that failed to match any stream rows.")
 
     parser.add_argument("-n", "--mark-new", type=str,
-                        help="Mark new columns in this column with a 1, else a 0")
+                        help="Mark new columns in `stream_file` not present in `augument_file` with a 1 in this new column name, else a 0")
 
     parser.add_argument("stream_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
