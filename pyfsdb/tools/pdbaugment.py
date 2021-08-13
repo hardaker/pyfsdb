@@ -33,6 +33,8 @@ def parse_args():
     parser.add_argument("-i", "--include-unmatched-augment-rows", action="store_true",
                         help="Include (at the bottom) any rows from the augment file that failed to match any stream rows.")
 
+    parser.add_argument("-n", "--mark-new", type=str,
+                        help="Mark new columns in this column with a 1, else a 0")
 
     parser.add_argument("stream_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
@@ -48,12 +50,13 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if (not args. values or len(args.values) == 0) \
+    if ((not args. values or len(args.values) == 0) and not args.mark_new) \
        and not args.include_all_values:
-            sys.stderr.write("Either -v or -V is required\n")
+            sys.stderr.write("Either -v, -V or -n is required\n")
             exit(1)
 
     return args
+
 
 def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
     """Adds remaining unseen records in the stored augment file into the
@@ -140,23 +143,28 @@ def main():
     streamh = pyfsdb.Fsdb(file_handle = args.stream_file)
 
     # determine which columns need to be added on (potentially all)
-    if not args.values or len(args.values) == 0:
+    if args.include_all_values or \
+       ((not args.values or len(args.values) == 0) and not args.mark_new):
         columns = augh.column_names
         args.values = []
         for column in columns:
             if column not in args.keys:
                 args.values.append(column)
+    else:
+        args.values = []
 
     # create the output stream to store the data
-    outh = pyfsdb.Fsdb(out_file_handle = args.output_file)
-    outh.out_column_names = streamh.column_names + args.values
+    outh = pyfsdb.Fsdb(out_file_handle=args.output_file)
+    other_columns = []
+    if args.mark_new:
+        other_columns = [args.mark_new]
+    outh.out_column_names = streamh.column_names + args.values + other_columns
 
     key_columns = streamh.get_column_numbers(args.keys)
 
     for row in streamh:
-        current = cache
         # traverse/create the nested structure
-        current = find_row(cache, args.keys, row, return_data=False)
+        current = find_row(cache, key_columns, row, return_data=False)
 
         # on a deep match finding
         if current:
@@ -164,15 +172,20 @@ def main():
             current = current['data']
             for value in args.values:
                 row.append(current[value])
+            if args.mark_new:
+                row.append(0)
+        elif args.mark_new:
+            row.extend([None] * len(args.values) + [1])
 
         outh.append(row)
 
-    # Now loop through all data adding any rows 
+    # Now loop through all data adding any rows
     if args.include_unmatched_augment_rows:
         dump_remaining(outh, savestruct,
                        # total original column numbers - key count
                        len(streamh.column_names) - len(args.keys),
                        args.keys, args.values)
+
 
 if __name__ == "__main__":
     main()
