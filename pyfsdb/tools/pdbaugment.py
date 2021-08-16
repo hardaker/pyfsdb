@@ -150,7 +150,7 @@ def main():
         for column in columns:
             if column not in args.keys:
                 args.values.append(column)
-    else:
+    elif not args.values:
         args.values = []
 
     # create the output stream to store the data
