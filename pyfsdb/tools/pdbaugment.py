@@ -58,7 +58,7 @@ def parse_args():
     return args
 
 
-def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
+def dump_remaining(fsh, struct, empty_num, key_cols, value_cols, mark_new=None):
     """Adds remaining unseen records in the stored augment file into the
     output handle.  Recursion used to descend a deep-encoded
     structure.
@@ -76,6 +76,8 @@ def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
             row.extend([''] * empty_num)
             for value in value_cols:
                 row.append(struct['data'][value])
+            if mark_new:
+                row.append(1)
 
             # append the created row
             fsh.append(row)
@@ -84,7 +86,7 @@ def dump_remaining(fsh, struct, empty_num, key_cols, value_cols):
         # we're not fully deep in the tree, keep diving
         for item in struct:
             dump_remaining(fsh, struct[item], empty_num,
-                           key_cols, value_cols)
+                           key_cols, value_cols, mark_new=mark_new)
 
 
 def stash_row(cache, key_list, row):
@@ -184,7 +186,8 @@ def main():
         dump_remaining(outh, cache,
                        # total original column numbers - key count
                        len(streamh.column_names) - len(args.keys),
-                       args.keys, args.values)
+                       args.keys, args.values,
+                       mark_new=args.mark_new)
 
 
 if __name__ == "__main__":
