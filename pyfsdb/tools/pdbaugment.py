@@ -181,7 +181,7 @@ def main():
 
     # Now loop through all data adding any rows
     if args.include_unmatched_augment_rows:
-        dump_remaining(outh, savestruct,
+        dump_remaining(outh, cache,
                        # total original column numbers - key count
                        len(streamh.column_names) - len(args.keys),
                        args.keys, args.values)
