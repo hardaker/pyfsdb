@@ -1,0 +1,76 @@
+#!/usr/bin/python3
+
+"""Convert an FSDB file into a sqlite3 database"""
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+from logging import debug, info, warning, error, critical
+import logging
+import sys
+import sqlite3
+import pyfsdb
+
+def parse_args():
+    "Parse the command line arguments."
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            description=__doc__,
+                            epilog="Exmaple Usage: db2sql input.fsdb output.sqlite3")
+
+    parser.add_argument("-c", "--converters", default=[], type=str, nargs='*',
+                        help="Convert column names to these sql types.  Arguments should be name/type pairs separated by equal signs")
+
+    parser.add_argument("--log-level", default="info",
+                        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).")
+
+    parser.add_argument("input_file", type=FileType('r'),
+                        nargs='?', default=sys.stdin,
+                        help="Input fsdb file to load")
+
+    parser.add_argument("output_file", type=str,
+                        nargs='?', help="Output sqlite3 to create or augment")
+
+    args = parser.parse_args()
+    log_level = args.log_level.upper()
+    logging.basicConfig(level=log_level,
+                        format="%(levelname)-10s:\t%(message)s")
+    return args
+
+
+class FsdbSqlite3():
+    def __init__(self, fsdb_handle, output_sqlite3_filename, **kwargs):
+        self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
+        self.con = sqlite3.connect(output_sqlite3_filename)
+        self.cur = self.con.cursor()
+
+        self.table_name = "fsdb_table"
+        if 'table_name' in kwargs:
+            self.table_name = kwargs['table_name']
+            del kwargs['table_name']
+
+        self.converters = {}
+        if 'converters' in kwargs:
+            self.table_name = kwargs['converters']
+
+    def create_table(self, table_name="fsdb_table"):
+        "creates a new database from a definition within an FSDB handle"
+        columns = self.fsdb.column_names
+
+        column_strings = []
+        for column in columns:
+            coltype = self.converters.get(column, 'string')
+            column_strings.append(f"{column} {coltype}")
+
+        debug(f"create table {table_name} {', '.join(column_strings)};")
+
+    def convert_to_sqlite3(fh, output_sqlite3_filename):
+        """"""
+        pass
+
+def main():
+    args = parse_args()
+
+    conv = FsdbSqlite3(args.input_file, args.output_file,
+                       converters=args.converters)
+    conv.create_table()
+
+if __name__ == "__main__":
+    main()
