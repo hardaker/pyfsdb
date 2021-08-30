@@ -9,6 +9,7 @@ import sys
 import sqlite3
 import pyfsdb
 
+
 def parse_args():
     "Parse the command line arguments."
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
@@ -17,6 +18,9 @@ def parse_args():
 
     parser.add_argument("-c", "--converters", default=[], type=str, nargs='*',
                         help="Convert column names to these sql types.  Arguments should be name/type pairs separated by equal signs")
+
+    parser.add_argument("--delete", "--delete-existing-rows", action="store_true",
+                        help="Delete existing data before inserting new rows (ie, replace the data)")
 
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).")
@@ -59,11 +63,31 @@ class FsdbSqlite3():
             coltype = self.converters.get(column, 'string')
             column_strings.append(f"{column} {coltype}")
 
-        debug(f"create table {table_name} {', '.join(column_strings)};")
+        self.table_name = table_name
+        statement = f"create table if not exists {table_name} ({', '.join(column_strings)})"
+        debug(statement)
+        self.con.execute(statement)
 
-    def convert_to_sqlite3(fh, output_sqlite3_filename):
-        """"""
-        pass
+    def insert_into_to_table(self, chunks=100):
+        """Insert the rows of the database into the sqlite3 table"""
+
+        statement = f"insert into {self.table_name} ({','.join(self.fsdb.column_names)}) " + \
+            f"values({','.join(['?'] * len(self.fsdb.column_names))})"
+        debug(statement)
+
+        self.cur.execute('begin transaction')
+        for n, row in enumerate(self.fsdb):
+            if (n % chunks == 0):
+                self.cur.execute("end transaction")
+                self.cur.execute("begin transaction")
+            self.cur.execute(statement, row)
+        self.cur.execute("end transaction")
+
+
+    def clear_table(self):
+        """Deletes existing rows from the table"""
+        self.con.execute(f"delete from {self.table_name}")
+
 
 def main():
     args = parse_args()
@@ -71,6 +95,10 @@ def main():
     conv = FsdbSqlite3(args.input_file, args.output_file,
                        converters=args.converters)
     conv.create_table()
+    if args.delete:
+        conv.clear_table()
+    conv.insert_into_to_table()
+
 
 if __name__ == "__main__":
     main()
