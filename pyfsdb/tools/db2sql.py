@@ -77,16 +77,18 @@ class FsdbSqlite3():
 
         self.cur.execute('begin transaction')
         for n, row in enumerate(self.fsdb):
+            self.cur.execute(statement, row)
             if (n % chunks == 0):
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
-            self.cur.execute(statement, row)
+                self.con.commit()
         self.cur.execute("end transaction")
-
+        self.con.commit()
 
     def clear_table(self):
         """Deletes existing rows from the table"""
         self.con.execute(f"delete from {self.table_name}")
+        self.con.commit()
 
 
 def main():
