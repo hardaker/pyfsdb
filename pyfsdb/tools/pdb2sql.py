@@ -108,7 +108,7 @@ class FsdbSqlite3():
             for spec in extra_values:
                 pair = spec.split("=")
                 extra_cols.append(pair[0])
-                extra_vals.append(f"'{pair[1]}'")
+                extra_vals.append(f"{pair[1]}")
             extra_columns_str = ", ".join(extra_cols) + ","
 
         statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(self.fsdb.column_names)}) " + \
