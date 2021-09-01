@@ -71,9 +71,9 @@ class FsdbSqlite3():
         # create the table
         statement = f"create table if not exists {table_name} ({', '.join(column_strings)})"
         debug(statement)
+        self.con.execute(statement)
 
         # create any indexes
-        import pdb ; pdb.set_trace()
         for index in indexes:
             parts = index.split(",")
             idx_name = "idx_" + "_".join(parts)
@@ -81,9 +81,6 @@ class FsdbSqlite3():
             statement = f"create index if not exists {idx_name} on {table_name} ({cols})"
             debug(statement)
             self.con.execute(statement)
-
-
-        self.con.execute(statement)
 
     def insert_into_to_table(self, chunks=100):
         """Insert the rows of the database into the sqlite3 table"""
