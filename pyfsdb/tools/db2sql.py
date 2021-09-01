@@ -28,6 +28,12 @@ def parse_args():
     parser.add_argument("-i", "--indexes", default=[], type=str, nargs="*",
                         help="Index columns to use when creating the table")
 
+    parser.add_argument("-e", "--extra-columns", default=[], type=str, nargs="*",
+                        help="Extra column specifiers to use when creating a table in name=type format")
+
+    parser.add_argument("-v", "--extra-values", default=[], type=str, nargs="*",
+                        help="Extra column values to use when inserting data")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="Input fsdb file to load")
@@ -57,7 +63,7 @@ class FsdbSqlite3():
         if 'converters' in kwargs:
             self.table_name = kwargs['converters']
 
-    def create_table(self, indexes=[], table_name="fsdb_table"):
+    def create_table(self, indexes=[], table_name="fsdb_table", extra_columns=[]):
         "creates a new database from a definition within an FSDB handle"
         columns = self.fsdb.column_names
 
@@ -68,8 +74,17 @@ class FsdbSqlite3():
 
         self.table_name = table_name
 
+        # see if we have extra columns to add
+        extra_columns_str = ""
+        if extra_columns:
+            transformed = []
+            for spec in extra_columns:
+                pair = spec.split("=")
+                transformed.append(" ".join(pair))
+            extra_columns_str = ", ".join(transformed) + ","
+
         # create the table
-        statement = f"create table if not exists {table_name} ({', '.join(column_strings)})"
+        statement = f"create table if not exists {table_name} ({extra_columns_str} {', '.join(column_strings)})"
         debug(statement)
         self.con.execute(statement)
 
@@ -82,16 +97,27 @@ class FsdbSqlite3():
             debug(statement)
             self.con.execute(statement)
 
-    def insert_into_to_table(self, chunks=100):
+    def insert_into_to_table(self, extra_values=[], chunks=100):
         """Insert the rows of the database into the sqlite3 table"""
 
-        statement = f"insert into {self.table_name} ({','.join(self.fsdb.column_names)}) " + \
-            f"values({','.join(['?'] * len(self.fsdb.column_names))})"
+        extra_columns_str = ""
+        extra_vals = []
+        if extra_values:
+            extra_cols = []
+            extra_vals = []
+            for spec in extra_values:
+                pair = spec.split("=")
+                extra_cols.append(pair[0])
+                extra_vals.append(f"'{pair[1]}'")
+            extra_columns_str = ", ".join(extra_cols) + ","
+
+        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(self.fsdb.column_names)}) " + \
+            f"values({','.join(['?'] * (len(extra_vals) + len(self.fsdb.column_names)))})"
         debug(statement)
 
         self.cur.execute('begin transaction')
         for n, row in enumerate(self.fsdb):
-            self.cur.execute(statement, row)
+            self.cur.execute(statement, extra_vals + row)
             if (n % chunks == 0):
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
@@ -110,10 +136,10 @@ def main():
 
     conv = FsdbSqlite3(args.input_file, args.output_file,
                        converters=args.converters)
-    conv.create_table(args.indexes)
+    conv.create_table(indexes=args.indexes, extra_columns=args.extra_columns)
     if args.delete:
         conv.clear_table()
-    conv.insert_into_to_table()
+    conv.insert_into_to_table(args.extra_values)
 
 
 if __name__ == "__main__":
