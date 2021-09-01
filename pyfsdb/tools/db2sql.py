@@ -25,6 +25,9 @@ def parse_args():
     parser.add_argument("--log-level", default="info",
                         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).")
 
+    parser.add_argument("-i", "--indexes", default=[], type=str, nargs="*",
+                        help="Index columns to use when creating the table")
+
     parser.add_argument("input_file", type=FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="Input fsdb file to load")
@@ -54,7 +57,7 @@ class FsdbSqlite3():
         if 'converters' in kwargs:
             self.table_name = kwargs['converters']
 
-    def create_table(self, table_name="fsdb_table"):
+    def create_table(self, indexes=[], table_name="fsdb_table"):
         "creates a new database from a definition within an FSDB handle"
         columns = self.fsdb.column_names
 
@@ -64,8 +67,22 @@ class FsdbSqlite3():
             column_strings.append(f"{column} {coltype}")
 
         self.table_name = table_name
+
+        # create the table
         statement = f"create table if not exists {table_name} ({', '.join(column_strings)})"
         debug(statement)
+
+        # create any indexes
+        import pdb ; pdb.set_trace()
+        for index in indexes:
+            parts = index.split(",")
+            idx_name = "idx_" + "_".join(parts)
+            cols = ", ".join(parts)
+            statement = f"create index if not exists {idx_name} on {table_name} ({cols})"
+            debug(statement)
+            self.con.execute(statement)
+
+
         self.con.execute(statement)
 
     def insert_into_to_table(self, chunks=100):
@@ -96,7 +113,7 @@ def main():
 
     conv = FsdbSqlite3(args.input_file, args.output_file,
                        converters=args.converters)
-    conv.create_table()
+    conv.create_table(args.indexes)
     if args.delete:
         conv.clear_table()
     conv.insert_into_to_table()
