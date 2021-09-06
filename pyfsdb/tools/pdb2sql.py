@@ -97,7 +97,7 @@ class FsdbSqlite3():
             debug(statement)
             self.con.execute(statement)
 
-    def insert_into_to_table(self, extra_values=[], chunks=100):
+    def insert_into_to_table(self, extra_values=[], chunks=1000):
         """Insert the rows of the database into the sqlite3 table"""
 
         extra_columns_str = ""
