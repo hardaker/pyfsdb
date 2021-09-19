@@ -105,7 +105,7 @@ class FsdbSql():
             debug(statement)
             self.con.execute(statement)
 
-    def insert_into_to_table(self, extra_values=[], chunks=10000):
+    def insert_into_to_table(self, extra_values=[], chunks=10000, drop_columns=[]):
         """Insert the rows of the database into the sqlite3 table"""
 
         extra_columns_str = ""
@@ -119,13 +119,19 @@ class FsdbSql():
                 extra_vals.append(f"{pair[1]}")
             extra_columns_str = ", ".join(extra_cols) + ","
 
-        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(self.fsdb.column_names)}) " + \
-            f"values({','.join(['?'] * (len(extra_vals) + len(self.fsdb.column_names)))})"
+        column_names = []
+        for col in self.fsdb.column_names:
+            if col not in drop_columns:
+                column_names.append(col)
+        
+        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) " + \
+            f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
         debug(statement)
 
         self.cur.execute('begin transaction')
         for n, row in enumerate(self.fsdb):
-            self.cur.execute(statement, extra_vals + row)
+            vals = [row[x] for x in column_names]
+            self.cur.execute(statement, extra_vals + vals)
             if (n % chunks == 0):
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
