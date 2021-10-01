@@ -489,7 +489,6 @@ class Fsdb(object):
                 magic_dict = {
                     bytes([0x1f,0x8b,0x08]): "gz",
                     bytes([0x42,0x5a,0x68]): "bz2",
-                    bytes([0x50,0x4b,0x03,0x04]): "zip",
                     bytes([0xfd,0x37,0x7a,0x58,0x5a,0x00]): "xz",
                 }
 
@@ -499,10 +498,22 @@ class Fsdb(object):
                     file_start = f.read(max_len)
                     for magic, filetype in magic_dict.items():
                         if file_start.startswith(magic):
-                            if filetype == "gz":
-                                import gzip
-                                self.file_handle = gzip.open(filename, 'rt')
-                                return self.file_handle
+                            try:
+                                if filetype == "gz":
+                                    import gzip
+                                    self.file_handle = gzip.open(filename, 'rt')
+                                    return self.file_handle
+                                elif filetype == "bz2":
+                                    import bz2
+                                    self.file_handle = bz2.open(filename, 'rt')
+                                    return self.file_handle
+                                elif filetype == "xz":
+                                    import lzma
+                                    self.file_handle = lzma.open(filename, 'rt')
+                                    return self.file_handle
+                            except Exception:
+                                sys.stderr.write(f"failed to use {filetype} module to decode the input stream")
+                                raise ValueError("cannot decode file")
         except Exception:
             pass
 
