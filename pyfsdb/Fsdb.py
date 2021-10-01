@@ -109,6 +109,9 @@ class Fsdb(object):
 
            `converters` may be passed in as an array or dict of
            converters to call (such as int, float, etc)
+
+           If `handle_compressed` is True (the default), the class will
+           do its best to handle compressed formats: bz2, gzip, and xz (lzma).
         """
 
         self.return_type = return_type
