@@ -80,6 +80,8 @@ class Fsdb(object):
     _out_separator_token = "t"
     _out_command_line = "____BROKEN____" # ick, magic
     _save_command_history = True
+    _handle_compressed = True
+    _compression_checked = False
 
     def __init__(self,
                  filename = None,
@@ -93,7 +95,8 @@ class Fsdb(object):
                  column_names=None,
                  converters=None,
                  save_command_history=True,
-                 out_column_names=None):
+                 out_column_names=None,
+                 handle_compressed=True):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -117,6 +120,8 @@ class Fsdb(object):
         self._header_written = False
         self._converters = converters
         self._save_command_history = save_command_history
+        self._handle_compressed = handle_compressed
+
         if out_column_names:
             self._out_column_names = out_column_names
             self._out_column_names_set = True
@@ -452,7 +457,57 @@ class Fsdb(object):
 
     def maybe_open_filehandle(self, mode="r"):
         "Internal"
-        if not self.file_handle and self.filename:
+
+        # the simple case:
+        if self.file_handle and \
+           (self._compression_checked or not self._handle_compressed):
+            return self.file_handle
+
+        # don't try to do this twice
+        self._compression_checked = True
+
+        # the simple case, open it if we don't need to detect compressed
+        if not self.file_handle and self.filename and not self._handle_compressed:
+            self.file_handle = open(self.filename, mode)
+            return self.file_handle
+
+
+        # wrap this in case anything at all fails:
+        try:
+
+            # otherwise we need to check if we're getting compressed data
+            filename = self.filename
+            if not filename and self.file_handle and self.file_handle.name != "<stdin>":
+                filename = self.file_handle.name
+
+            # if we were passed a file but not a file name, open that and check it
+            if filename:
+                # see if we can determine the file type from the first few bytes
+                # https://stackoverflow.com/questions/13044562/python-mechanism-to-identify-compressed-file-type-and-uncompress
+                # XXX: there should be a package that does this...
+                
+                magic_dict = {
+                    bytes([0x1f,0x8b,0x08]): "gz",
+                    bytes([0x42,0x5a,0x68]): "bz2",
+                    bytes([0x50,0x4b,0x03,0x04]): "zip",
+                    bytes([0xfd,0x37,0x7a,0x58,0x5a,0x00]): "xz",
+                }
+
+                max_len = max(len(x) for x in magic_dict)
+
+                with open(filename, 'rb') as f:
+                    file_start = f.read(max_len)
+                    for magic, filetype in magic_dict.items():
+                        if file_start.startswith(magic):
+                            if filetype == "gz":
+                                import gzip
+                                self.file_handle = gzip.open(filename, 'rt')
+                                return self.file_handle
+        except Exception:
+            pass
+
+        # fall back to just opening it and hope its raw
+        if self.filename:
             self.file_handle = open(self.filename, mode)
 
         return self.file_handle
