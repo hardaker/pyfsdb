@@ -14,6 +14,12 @@ def parse_args():
     parser.add_argument("-a", "--array", action="store_true",
                         help="Format the output as a large array.")
 
+    parser.add_argument("-d", "--dictionary", type=str,
+                        help="Turn the results into a json dictionary with a key from this column")
+
+    parser.add_argument("-v", "--value", type=str,
+                        help="If a dictionary out put is requested, rather than placing the entire row as the dictionary value, use just this column istead")
+
     parser.add_argument("input_file", type=argparse.FileType('r'),
                         nargs='?', default=sys.stdin,
                         help="The input file (FSDB file) to read")
@@ -26,7 +32,7 @@ def parse_args():
     return args
 
 
-def fsdb_to_json(input_file, output_file, as_array=False):
+def fsdb_to_json(input_file, output_file, as_array=False, as_dictionary=None, with_value=None):
     "Converts an FSDB file to a stream of json dictionary records"
     in_fsdb = pyfsdb.Fsdb(file_handle=input_file,
                           return_type=pyfsdb.RETURN_AS_DICTIONARY)
@@ -37,21 +43,39 @@ def fsdb_to_json(input_file, output_file, as_array=False):
         output_file.write("[")
         end_token = ","
         close_token = "]"
+    if as_dictionary:
+        output_file.write("{")
+        end_token = ","
+        close_token = "}"
 
     previous_record = None
     for record in in_fsdb:
         if previous_record:
-            output_file.write(json.dumps(previous_record) + end_token + "\n")
+            if as_dictionary:
+                if with_value:
+                    output_file.write(f'"{previous_record[as_dictionary]}": {json.dumps(previous_record[with_value])}{end_token}' + "\n")
+                else:
+                    output_file.write(f'"{previous_record[as_dictionary]}": {json.dumps(previous_record)}{end_token}' + "\n")
+            else:
+                output_file.write(json.dumps(previous_record) + end_token + "\n")
         previous_record = record
 
     if previous_record:
-        output_file.write(json.dumps(previous_record) + close_token + "\n")
+        if as_dictionary:
+            if with_value:
+                    output_file.write(f'"{previous_record[as_dictionary]}": {json.dumps(previous_record[with_value])}{close_token}' + "\n")
+            else:
+                output_file.write(f'"{previous_record[as_dictionary]}": {json.dumps(previous_record)}{close_token}' + "\n")
+        else:
+            output_file.write(json.dumps(previous_record) + close_token + "\n")
 
 def main():
     "CLI wrapper around fsdb_to_json"
     args = parse_args()
     fsdb_to_json(args.input_file, args.output_file,
-                 as_array = args.array)
+                 as_array = args.array,
+                 as_dictionary = args.dictionary,
+                 with_value=args.value)
 
 
 if __name__ == "__main__":
