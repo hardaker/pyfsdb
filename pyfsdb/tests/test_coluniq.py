@@ -1,5 +1,6 @@
 import unittest
 import re
+import sys
 
 def noop():
     pass
@@ -71,3 +72,21 @@ class TestColUniq(unittest.TestCase):
                         "resulting values are right from uniq")
 
 
+    def test_aggregate(self):
+        from io import StringIO
+        data = "#fsdb -F t a b c count\na\tb\tc\t2\nb\tc\td\t4\na\tb\tc\t10\n"
+
+        from pyfsdb.tools.pdbcoluniq import filter_unique_columns
+
+        outh = StringIO()
+        outh.close = noop
+        datah = StringIO(data)
+        filter_unique_columns(datah, outh, ['a', 'b', 'c'], count=True,
+                              initial_count_key='count')
+
+        # check the the result
+        output = outh.getvalue()
+        sys.stderr.write(f"here: {output}")
+        self.assertEqual(truncate_comments(output),
+                        "#fsdb -F t a b c count\na\tb\tc\t12\nb\tc\td\t4\n",
+                        "resulting values are right from uniq")
