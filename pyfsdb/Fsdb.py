@@ -53,6 +53,23 @@ if sys.version_info[0] < 3:
 RETURN_AS_ARRAY = 1
 RETURN_AS_DICTIONARY = 2
 
+incoming_type_converters = {
+    # python doesn't have different int sizes
+    'c': int,
+    'C': int,
+    's': int,
+    'S': int,
+    'i': int,
+    'l': int,
+    'L': int,
+    'q': int,
+    'Q': int,
+    # python doesn't have different float/double sizes
+    'f': float,
+    'd': float,
+    # we leave strings (c and C) alone
+}
+
 class Fsdb(object):
     """Reads FSDB files from the perl FSDB module.
 
@@ -96,7 +113,8 @@ class Fsdb(object):
                  converters=None,
                  save_command_history=True,
                  out_column_names=None,
-                 handle_compressed=True):
+                 handle_compressed=True,
+                 no_auto_conversion=False):
         """Returns a Fsdb class that can be used as an iterator.
 
            return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
@@ -124,6 +142,7 @@ class Fsdb(object):
         self._converters = converters
         self._save_command_history = save_command_history
         self._handle_compressed = handle_compressed
+        self._no_auto_conversion = no_auto_conversion
 
         if out_column_names:
             self._out_column_names = out_column_names
@@ -244,11 +263,21 @@ class Fsdb(object):
         mapping = {'names': {}, 'numbers': {},
                    'header': { 'separator': self.separator}}
 
-        argn = 0
-        for token in columns:
+        for argn, token in enumerate(columns):
+            # find out if we have auto-type-converters in the column names
+            if not self._no_auto_conversion and token.find(':') != -1:
+                if self._converters is None:
+                    self._converters = {}
+                (token, datatype) = token.split(':')
+                if datatype in incoming_type_converters and \
+                   token not in self._converters:
+                    if isinstance(self._converters, dict):
+                        self._converters[token] = incoming_type_converters[datatype]
+                    else:
+                        self._converters[argn] = incoming_type_converters[datatype]
+
             mapping['names'][token] = argn
             mapping['numbers'][argn] = token
-            argn += 1
 
         self._column_names = mapping['names']
         self.column_nums = mapping['numbers']

@@ -913,6 +913,38 @@ class FsdbTest(TestCase):
                         "set columns on init")
 
 
+    def test_datatype_columns(self):
+        from io import StringIO
+
+        # no conversions:
+        input_data = StringIO("#fsdb -F t a b c\n1\t2\t3\n")
+        with pyfsdb.Fsdb(file_handle=input_data,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            row = next(f)
+            self.assertEqual(row, {'a': "1", 'b': "2", 'c': "3"})
+
+        # manual conversions:
+        input_data = StringIO("#fsdb -F t a b c\n1\t2\t3\n")
+        with pyfsdb.Fsdb(file_handle=input_data, converters={'b': int},
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            row = next(f)
+            self.assertEqual(row, {'a': "1", 'b': 2, 'c': "3"})
+
+        # column-specified conversions:
+        input_data = StringIO("#fsdb -F t a b:i c\n1\t2\t3\n")
+        with pyfsdb.Fsdb(file_handle=input_data,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            row = next(f)
+            self.assertEqual(row, {'a': "1", 'b': 2, 'c': "3"})
+
+        # column-specified conversions with float:
+        input_data = StringIO("#fsdb -F t a b:f c\n1\t2.1\t3\n")
+        with pyfsdb.Fsdb(file_handle=input_data,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            row = next(f)
+            self.assertEqual(row, {'a': "1", 'b': 2.1, 'c': "3"})
+
+
 if __name__ == "__main__":
     import unittest
     unittest.main()
