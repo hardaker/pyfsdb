@@ -70,6 +70,11 @@ incoming_type_converters = {
     # we leave strings (c and C) alone
 }
 
+outgoing_type_converters = {
+    int: 'l',
+    float: 'd',
+}
+
 class Fsdb(object):
     """Reads FSDB files from the perl FSDB module.
 
@@ -405,7 +410,8 @@ class Fsdb(object):
 
     # support functions
 
-    def create_header_line(self, columns = None, separator_token = None):
+    def create_header_line(self, columns = None,
+                           separator_token = None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
             columns = self.out_column_names
@@ -417,7 +423,25 @@ class Fsdb(object):
             separator_token = self.separator_token
 
         # create the header line
-        header_line = "#fsdb -F " + separator_token + " " + " ".join(columns) + "\n"
+        header_line = "#fsdb -F " + separator_token + " "
+
+        # add each column, with an optional map
+        for n, column in enumerate(columns):
+            header_line += column
+
+            if not self._no_auto_conversion \
+               and self._converters:
+                if isinstance(self._converters, dict) \
+                   and column in self._converters \
+                   and self._converters[column] in outgoing_type_converters:
+                    header_line += ":" + outgoing_type_converters[self._converters[column]]
+                elif isinstance(self._converters, list) \
+                     and self._converters[n] in outgoing_type_converters:
+                    header_line += ":" + outgoing_type_converters[self._converters[n]]
+
+            header_line += " "
+
+        header_line = header_line.rstrip() + "\n"
         self._have_read_header = True
 
         return header_line
@@ -910,6 +934,7 @@ class Fsdb(object):
                 if row[i] == None:
                     row[i] = ''
         self._out_file_handle.write(self._out_separator.join(map(str,row)) + "\n")
+
     # backwards compatible ... don't use
     def write_row(self, row = None):
         self.append(row)

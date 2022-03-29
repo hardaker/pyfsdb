@@ -844,6 +844,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=indata,
                         out_file_handle=outdata,
                         return_type=pyfsdb.RETURN_AS_DICTIONARY,
+                        no_auto_conversion=True,
                         converters={"b": int})
         for row in f:
             row['b'] *= 2
@@ -860,8 +861,8 @@ class FsdbTest(TestCase):
     def test_in_out_same_handle_add_col(self):
         from io import StringIO
         data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
-        expected = "#fsdb -F t a b c d\n1\t4\t3\ty\n4\t10\t6\ty\n"
-        
+        expected = "#fsdb -F t a b:l c d\n1\t4\t3\ty\n4\t10\t6\ty\n"
+
         indata = StringIO(data)
         outdata = StringIO()
         outdata.close = Mock()
@@ -869,6 +870,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=indata,
                         out_file_handle=outdata,
                         return_type=pyfsdb.RETURN_AS_DICTIONARY,
+                        no_auto_conversion=False,  # test allowing type specification
                         converters={"b": int})
 
         # say we're adding a column
@@ -913,7 +915,7 @@ class FsdbTest(TestCase):
                         "set columns on init")
 
 
-    def test_datatype_columns(self):
+    def test_incoming_datatype_columns(self):
         from io import StringIO
 
         # no conversions:
@@ -943,6 +945,14 @@ class FsdbTest(TestCase):
                          return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
             row = next(f)
             self.assertEqual(row, {'a': "1", 'b': 2.1, 'c': "3"})
+
+        # column-specified conversions with float:
+        input_data = StringIO("#fsdb -F t a b c\n1\t2.1\t3\n")
+        with pyfsdb.Fsdb(file_handle=input_data,
+                         no_auto_conversion=True,
+                         return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
+            row = next(f)
+            self.assertEqual(row, {'a': "1", 'b': '2.1', 'c': "3"})
 
 
 if __name__ == "__main__":
