@@ -33,7 +33,7 @@ class TestColUniq(unittest.TestCase):
 
         # check the the result
         self.assertEqual(truncate_comments(outh.getvalue()),
-                        "#fsdb -F t a count\na\t2\nb\t1\n",
+                        "#fsdb -F t a count:l\na\t2\nb\t1\n",
                         "resulting values are right from uniq")
 
 
@@ -68,7 +68,7 @@ class TestColUniq(unittest.TestCase):
 
         # check the the result
         self.assertEqual(truncate_comments(outh.getvalue()),
-                        "#fsdb -F t x y z count\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n",
+                        "#fsdb -F t x y z count:l\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n",
                         "resulting values are right from uniq")
 
 
@@ -88,5 +88,5 @@ class TestColUniq(unittest.TestCase):
         output = outh.getvalue()
         sys.stderr.write(f"here: {output}")
         self.assertEqual(truncate_comments(output),
-                        "#fsdb -F t a b c count\na\tb\tc\t12\nb\tc\td\t4\n",
+                        "#fsdb -F t a b c count:l\na\tb\tc\t12\nb\tc\td\t4\n",
                         "resulting values are right from uniq")

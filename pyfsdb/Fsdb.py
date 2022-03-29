@@ -405,13 +405,12 @@ class Fsdb(object):
     @out_column_names.setter
     def out_column_names(self, values):
         mapping = self.__create_column_name_mapping__(values)
-        self.out_column_names_set = True
-        self._out_header_line = self.create_header_line(values)
 
     # support functions
 
     def create_header_line(self, columns = None,
-                           separator_token = None):
+                           separator_token = None,
+                           init_row = None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
             columns = self.out_column_names
@@ -425,19 +424,27 @@ class Fsdb(object):
         # create the header line
         header_line = "#fsdb -F " + separator_token + " "
 
+        if isinstance(init_row, dict):
+            init_row = [init_row[x] for x in self.out_column_names]
+
         # add each column, with an optional map
         for n, column in enumerate(columns):
             header_line += column
 
-            if not self._no_auto_conversion \
-               and self._converters:
-                if isinstance(self._converters, dict) \
-                   and column in self._converters \
-                   and self._converters[column] in outgoing_type_converters:
-                    header_line += ":" + outgoing_type_converters[self._converters[column]]
-                elif isinstance(self._converters, list) \
-                     and self._converters[n] in outgoing_type_converters:
-                    header_line += ":" + outgoing_type_converters[self._converters[n]]
+            if not self._no_auto_conversion:
+                converters = self._converters
+                if not converters:
+                    converters = {}
+                # if converters is a dictionary:
+                if isinstance(converters, dict) \
+                   and column in converters \
+                   and converters[column] in outgoing_type_converters:
+                    header_line += ":" + outgoing_type_converters[converters[column]]
+                elif isinstance(converters, list) \
+                     and converters[n] in outgoing_type_converters:
+                    header_line += ":" + outgoing_type_converters[converters[n]]
+                elif init_row and type(init_row[n]) in outgoing_type_converters:
+                    header_line += ":" + outgoing_type_converters[type(init_row[n])]
 
             header_line += " "
 
@@ -899,10 +906,10 @@ class Fsdb(object):
         for row in rows:
             self.append(row)
 
-    def _write_header_line(self):
+    def _write_header_line(self, init_row=None):
         # maybe construct it
         if not self._out_header_line and self._out_column_names:
-            self._out_header_line = self.create_header_line()
+            self._out_header_line = self.create_header_line(init_row=init_row)
 
         # write out the correct header
         if self._out_header_line:
@@ -920,8 +927,7 @@ class Fsdb(object):
         # internallly, if we haven't written the header out we do that first
         # then switch our operator for speed
 
-        self._write_header_line()
-
+        self._write_header_line(row)
         self.append(row)
 
     def _append_really(self, row = None):

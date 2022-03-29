@@ -447,7 +447,7 @@ class FsdbTest(TestCase):
         result = oh.getvalue()
 
         self.assertEqual(truncate_comments(result),
-                         "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n",
+                         "#fsdb -F t a:l b:l c:l\n1\t2\t3\n4\t5\t6\n",
                          "get_all returned correct results")
         of.close()
 
@@ -619,7 +619,7 @@ class FsdbTest(TestCase):
         f.filter(double_middle)
 
         self.assertEqual(outh.getvalue(),
-                         "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n",
+                         "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
                          "filter properly double the middle column")
 
         f.close()
@@ -639,7 +639,7 @@ class FsdbTest(TestCase):
         f.filter(double_middle, args=[2])
 
         self.assertEqual(outh.getvalue(),
-                         "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n",
+                         "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
                          "filter properly double the middle column")
 
         f.close()
@@ -662,7 +662,7 @@ class FsdbTest(TestCase):
         f.filter(double_middle_dict)
 
         self.assertEqual(outh.getvalue(),
-                         "#fsdb -F t a b c\n1\t4\t3\n4\t10\t6\n",
+                         "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
                          "filter properly double the middle column")
 
         f.close()
@@ -895,7 +895,7 @@ class FsdbTest(TestCase):
     def test_changing_columns_on_init(self):
         from io import StringIO
         data = [1,2,3]
-        expected = "#fsdb -F t a b c\n1\t2\t3\n"
+        expected = "#fsdb -F t a:l b:l c:l\n1\t2\t3\n"
         
         outdata = StringIO()
         outdata.close = Mock()
@@ -915,7 +915,7 @@ class FsdbTest(TestCase):
                         "set columns on init")
 
 
-    def test_incoming_datatype_columns(self):
+    def test_datatype_columns(self):
         from io import StringIO
 
         # no conversions:
@@ -953,6 +953,17 @@ class FsdbTest(TestCase):
                          return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
             row = next(f)
             self.assertEqual(row, {'a': "1", 'b': '2.1', 'c': "3"})
+
+    def test_auto_datatype_column_checks(self):
+        from io import StringIO
+        outh = StringIO()
+        outh.close = Mock()
+        with pyfsdb.Fsdb(out_file_handle=outh) as f:
+            f.out_column_names = ['a', 'b', 'c']
+            f.append(['str', 10, 20.5])
+        result = truncate_comments(outh.getvalue())
+        self.assertEqual(result,
+                         "#fsdb -F t a b:l c:d\nstr\t10\t20.5\n")
 
 
 if __name__ == "__main__":
