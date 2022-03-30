@@ -48,6 +48,21 @@ class test_add_types(unittest.TestCase):
         converters = f.guess_converters(row)
         self.assertEqual(converters, {'b': int, 'c': float})
 
+    def test_auto_convert(self):
+        indata = StringIO("#fsdb -F s a b c\na 1 2.3")
+        outdata = StringIO()
+        outdata.close = Mock()
+        add_types(indata, outdata, auto_convert=True)
+        self.assertEqual(truncate_comments(outdata.getvalue()),
+                         "#fsdb -F s a b:l c:d\na 1 2.3")
+
+    def test_auto_convert_overrides(self):
+        indata = StringIO("#fsdb -F s a b c\na 1 2.3")
+        outdata = StringIO()
+        outdata.close = Mock()
+        add_types(indata, outdata, types=['b=d'], auto_convert=True)
+        self.assertEqual(truncate_comments(outdata.getvalue()),
+                         "#fsdb -F s a b:d c:d\na 1 2.3")
 
 if __name__ == "__main__":
     import unittest
