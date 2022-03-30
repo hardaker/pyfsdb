@@ -41,6 +41,7 @@ setuptools.setup(
             'pdbcdf = pyfsdb.tools.pdbcdf:main',
             'pdbroc = pyfsdb.tools.pdbroc:main',
             'pdb2sql = pyfsdb.tools.pdb2sql:main',
+            'pdb2to1 = pyfsdb.tools.pdb2to1:main',
 
             # obsolete wrappers
             'dbtopn = pyfsdb.obsolete.dbtopn:main',
