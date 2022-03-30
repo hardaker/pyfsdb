@@ -482,6 +482,22 @@ class Fsdb(object):
                     converters.append(None)
             self._converters = converters
 
+    def guess_converters(self, example_row):
+        """Returns a best-guess effort list of converters after determining 
+           if floats/ints exist in the dataset"""
+        converters = {}
+        for column in example_row:
+            try:
+                int(example_row[column])
+                converters[column] = int
+            except Exception:
+                try:
+                    float(example_row[column])
+                    converters[column] = float
+                except Exception:
+                    pass
+        return converters
+
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."

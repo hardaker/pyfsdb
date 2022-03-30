@@ -37,6 +37,17 @@ class test_add_types(unittest.TestCase):
         self.assertEqual(truncate_comments(outdata.getvalue()),
                          "#fsdb -F s a b:d c:d\na 1 2.3")
 
+    def test_guess_converters(self):
+        import pyfsdb
+        indata = StringIO("#fsdb -F s a b c\na 1 2.3")
+        f = pyfsdb.Fsdb(file_handle=indata,
+                        return_type=pyfsdb.RETURN_AS_DICTIONARY)
+        row = next(f)
+        self.assertEqual(row, {'a': 'a', 'b': '1', 'c': '2.3'})
+
+        converters = f.guess_converters(row)
+        self.assertEqual(converters, {'b': int, 'c': float})
+
 
 if __name__ == "__main__":
     import unittest
