@@ -1,12 +1,14 @@
 # Objective
 
-A python implementation of the [FSDB] flat-file streaming database.
+A python implementation of the (perl) [FSDB] flat-file streaming
+database.  Also, so my [C implementation].
 
 [FSDB]: https://www.isi.edu/~johnh/SOFTWARE/FSDB/
+[C implementation]: https://github.com/hardaker/fsdb-clib
 
 # Installation
 
-Using pip:
+Using pip (or pipx):
 
 ```
 pip3 install pyfsdb
@@ -113,7 +115,7 @@ Or chain it together with multiple FSDB commands:
 
 ```
 # cat test.fsdb | ./mydemo | dbcolstats valueq
-cat test.fsdb | PYTHONPATH=pyfsdb python3 ./test.py | dbcolstats value | dbcol mean stddev sum min max | dbfilealter -R C
+cat test.fsdb | ./test.py | dbcolstats value | dbcol mean stddev sum min max | dbfilealter -R C
 #fsdb -R C mean stddev sum min max
 mean: 165
 stddev: 114.55
@@ -126,6 +128,58 @@ max: 246
 #   | dbcol mean stddev sum min max
 #   | dbfilealter -R C
 ```
+
+# Command line tools included
+
+All the command line utilities that come with `pyfsdb` start with `p`
+by convention so as not to conflict with the utilities from perl
+package.  The leading `p` also serves to distinguish the CLI argument
+differences as well (e.g. the python versions allow file names to be
+specified on the command line, and most keys must be passed with a
+`-k` flag).
+
+## Data processing tools
+
+- pdbtopn: given a key and a value column, print the top N rows with
+  unique keys and the highest values.
+- pdbaugment: a fast way to merge two fsdb files, where one is stored
+  entirely in memory for speed.  Unlike other tools, this does not
+  sort the data for speed purposes.
+- pdbcoluniq: find all unique values of a key column, optionally with
+  counting.  Requires no sorting (unlike dbrowuniq) at the cost of
+  greater memory usage.
+- pdbzerofill: fills a column with zeros if the value is otherwise blank
+- pdbkeyedsort: sorts a potentially large file that is already
+  "mostly" sorted by performing a double-pass on reading it.  This
+  will be less and less efficient the more random the rows are in
+  order.
+- pdbfullpivot: description TBD
+- pdbreescape: converts a column full of data to regex quoted for
+  safety
+- pdbensure:
+- pdbcdf: performs cdf analysis on a column
+
+## Conversion tools
+- bro2fsdb: converts a [zeek/bro](zeek.org) log into an fsdb
+- json2fsdb: converts a json file to fsdb
+- fsdb2json: converts an fsdb file to json
+- pdb2tex: converts a fsdb file to a latex table
+- pdbformat: generically formats each row according to a python column
+  specifier
+- pdbsplitter: splits a FSDB file into multiple sub-files based on a
+  column set
+- pdbdatetoepoch: converts columns from a date string to an integer
+  epoch column
+- pdbepochtodate: formats a unix epoch seconds date to human readable
+- pdbnormalize: normalizes a column to a limited range
+- pdbsum: tbd
+- pdbj2: formats results based on a jinja2 template
+- pdb2sql: converts a fsdb file into an sqlite3 database
+
+## graphical utilities
+- pdbheatmap: creates a heat map based on incoming data columns
+- pdbroc: creates a ROC graph for incoming fsdb data
+
 
 # Author
 
