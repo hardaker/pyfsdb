@@ -3,4 +3,4 @@ rowone info data
 # middle comment
 rowtwo other stuff
 # | manually generated
-#   | setup.py test
+#   | /usr/bin/pytest-3

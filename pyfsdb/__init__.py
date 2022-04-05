@@ -1,6 +1,6 @@
-__all__ = ["Fsdb"]
-from . import Fsdb
-__doc__=Fsdb.__doc__
-RETURN_AS_DICTIONARY = Fsdb.RETURN_AS_DICTIONARY
-RETURN_AS_ARRAY = Fsdb.RETURN_AS_ARRAY
-Fsdb = Fsdb.Fsdb
+__all__ = ["fsdb"]
+from . import fsdb
+__doc__=fsdb.__doc__
+RETURN_AS_DICTIONARY = fsdb.RETURN_AS_DICTIONARY
+RETURN_AS_ARRAY = fsdb.RETURN_AS_ARRAY
+Fsdb = fsdb.Fsdb

@@ -6,7 +6,6 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from logging import debug, info, warning, error, critical
 import logging
 import sys
-import sqlite3
 import pyfsdb
 
 
@@ -48,11 +47,16 @@ def parse_args():
     return args
 
 
-class FsdbSqlite3():
-    def __init__(self, fsdb_handle, output_sqlite3_filename, **kwargs):
+class FsdbSql():
+    def __init__(self, fsdb_handle, **kwargs):
+        self.arguments = kwargs
+
+        self.get_cursor()
+        
+        # get rid of other arguments
+        del kwargs['output_sqlite3_filename']
+
         self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
-        self.con = sqlite3.connect(output_sqlite3_filename)
-        self.cur = self.con.cursor()
 
         self.table_name = "fsdb_table"
         if 'table_name' in kwargs:
@@ -62,6 +66,10 @@ class FsdbSqlite3():
         self.converters = {}
         if 'converters' in kwargs:
             self.table_name = kwargs['converters']
+
+
+    def get_cursor():
+        error("illegal table usage")
 
     def create_table(self, indexes=[], table_name="fsdb_table", extra_columns=[]):
         "creates a new database from a definition within an FSDB handle"
@@ -97,7 +105,7 @@ class FsdbSqlite3():
             debug(statement)
             self.con.execute(statement)
 
-    def insert_into_to_table(self, extra_values=[], chunks=1000):
+    def insert_into_to_table(self, extra_values=[], chunks=10000, drop_columns=[]):
         """Insert the rows of the database into the sqlite3 table"""
 
         extra_columns_str = ""
@@ -111,13 +119,19 @@ class FsdbSqlite3():
                 extra_vals.append(f"{pair[1]}")
             extra_columns_str = ", ".join(extra_cols) + ","
 
-        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(self.fsdb.column_names)}) " + \
-            f"values({','.join(['?'] * (len(extra_vals) + len(self.fsdb.column_names)))})"
+        column_names = []
+        for col in self.fsdb.column_names:
+            if col not in drop_columns:
+                column_names.append(col)
+        
+        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) " + \
+            f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
         debug(statement)
 
         self.cur.execute('begin transaction')
         for n, row in enumerate(self.fsdb):
-            self.cur.execute(statement, extra_vals + row)
+            vals = [row[x] for x in column_names]
+            self.cur.execute(statement, extra_vals + vals)
             if (n % chunks == 0):
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
@@ -131,10 +145,18 @@ class FsdbSqlite3():
         self.con.commit()
 
 
+class FsdbSqlite3(FsdbSql):
+    def get_cursor(self):
+        import sqlite3
+        self.con = sqlite3.connect(self.arguments['output_sqlite3_filename'])
+        self.cur = self.con.cursor()
+
+
 def main():
     args = parse_args()
 
-    conv = FsdbSqlite3(args.input_file, args.output_file,
+    conv = FsdbSqlite3(args.input_file,
+                       output_sqlite3_filename=args.output_file,
                        converters=args.converters)
     conv.create_table(indexes=args.indexes, extra_columns=args.extra_columns)
     if args.delete:

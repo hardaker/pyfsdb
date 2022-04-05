@@ -42,6 +42,12 @@ def parse_args():
     parser.add_argument("-C", "--cmap", default="Blues_r", type=str,
                         help="matplotlib colormap to use (good choices: Blues_r, gray, PuBu_r, summer_r, YlGn_r)")
 
+    parser.add_argument("-xn", "--x-numeric", action="store_true",
+                        help="Sort the first axis numerically")
+
+    parser.add_argument("-yn", "--y-numeric", action="store_true",
+                        help="Sort the second axis numerically")
+
     parser.add_argument("--list-cmaps", action="store_true",
                         help="List the colormap values available for -C")
 
@@ -80,7 +86,8 @@ def maybe_shrink_label(label, length_limit=30):
     return label[0:part_length+1] + "..." + label[right_len:]
 
 
-def normalize(input_data, columns, value_column, label_column=None):
+def normalize(input_data, columns, value_column, label_column=None,
+              x_numeric=False, y_numeric=False):
     """Loops over all of the rows of dict data extracting a tuple of:
 
      data: the data in array/dict format, normalized to MIN->1.0
@@ -129,9 +136,20 @@ def normalize(input_data, columns, value_column, label_column=None):
         ycols[y_value] = 1
 
     # merge the data into a two dimensional array
+    def make_numeric(x):
+        return float(x)
+
+    keyf = None
+    if y_numeric:  # xcols is actually Y in the map
+        keyf = make_numeric
+    xcols = sorted(dataset.keys(), key=keyf)
+
+    keyf = None
+    if x_numeric:  # ycols is actually X in the map
+        keyf = make_numeric
+    ycols = sorted(ycols.keys(), key=keyf)
+
     data = []
-    xcols = sorted(dataset.keys())
-    ycols = sorted(ycols.keys())
     for first_column in xcols:
         newrow = []
         for second_column in ycols:
@@ -155,9 +173,11 @@ def create_heat_map(input_data, columns, value_column,
                     add_labels=False, add_raw=False,
                     add_fractions=False, invert=False,
                     font_size=None, max_label_size=20,
-                    cmap='Blues_r', label_column=None):
+                    cmap='Blues_r', label_column=None,
+                    x_numeric=False, y_numeric=False):
 
-    results = normalize(input_data, columns, value_column, label_column)
+    results = normalize(input_data, columns, value_column, label_column,
+                        x_numeric, y_numeric)
 
     (data, dataset, xcols, ycols, labelset) = \
         (results['data'],
@@ -243,7 +263,8 @@ def main():
                         args.add_labels, args.add_raw,
                         args.add_fractions, args.invert,
                         args.font_size, args.label_limit,
-                        args.cmap, args.label_column)
+                        args.cmap, args.label_column,
+                        args.x_numeric, args.y_numeric)
 
     fig.savefig(args.output_file,
                 bbox_inches="tight", pad_inches=0)
