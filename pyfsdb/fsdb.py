@@ -443,7 +443,7 @@ class Fsdb(object):
                 elif isinstance(converters, list) \
                      and converters[n] in outgoing_type_converters:
                     header_line += ":" + outgoing_type_converters[converters[n]]
-                elif init_row and type(init_row[n]) in outgoing_type_converters:
+                elif init_row and len(init_row) > n and type(init_row[n]) in outgoing_type_converters:
                     header_line += ":" + outgoing_type_converters[type(init_row[n])]
 
             header_line += " "
