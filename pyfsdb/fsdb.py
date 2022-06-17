@@ -888,6 +888,10 @@ class Fsdb(object):
                   index=False)
 
     def comment(self, line):
+        """Add a comment to an ouput FSDB file
+
+           Addition and its placement depends on the value of pass_comments"""
+
         if line[0] != '#':
             line = "# " + line
         if line[-1] != "\n":
