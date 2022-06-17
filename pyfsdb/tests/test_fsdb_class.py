@@ -183,7 +183,7 @@ class FsdbTest(TestCase):
             "rowone	info	data\n",
             "rowtwo	other	stuff\n",
         ]
-        
+
         for row in f:
             output_string = f.row_as_string()
             self.assertTrue(expected[0] == output_string,
@@ -193,7 +193,7 @@ class FsdbTest(TestCase):
     def test_setting_columns(self):
         f = pyfsdb.Fsdb()
         self.assertTrue(f, "opened ok")
-        
+
         testcols = ['colone','coltwo','col3']
         f.column_names = testcols
         self.assertTrue(f.column_names == testcols)
@@ -201,7 +201,7 @@ class FsdbTest(TestCase):
     def test_header(self):
         f = pyfsdb.Fsdb()
         self.assertTrue(f, "opened ok")
-        
+
         f.column_names = ['colone','coltwo','col3']
         self.assertTrue(f.header_line == "#fsdb -F t colone coltwo col3\n")
 
@@ -368,17 +368,25 @@ class FsdbTest(TestCase):
     def test_comments_passed_inline(self):
         out_file = self.OUT_FILE
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file = out_file,
-                      out_command_line = "test command init")
+                        out_command_line = "test command init")
+        f.comment("top comment")
         self.assertTrue(f, "opened ok")
+        did_one = False
         for row in f:
             f.write_row(row)
+            if not did_one:
+                f.comment("after row 1")
+                did_one = True
         f.write_finish()
-		
+
         lines = []
         f = open(out_file, "r")
         for line in f:
             lines.append(line)
 
+        self.assertTrue(lines[0] == "#fsdb -F t colone coltwo colthree\n")
+        self.assertTrue(lines[1] == "# top comment\n")
+        self.assertTrue(lines[3] == "# after row 1\n")
         self.assertTrue(lines[len(lines)-1] == "#   | test command init\n")
         self.assertTrue(lines[len(lines)-2] == "# | manually generated\n")
         self.assertTrue(lines[len(lines)-3] == "rowtwo	other	stuff\n")
@@ -387,13 +395,19 @@ class FsdbTest(TestCase):
     def test_comments_passed_at_end(self):
         out_file = self.OUT_FILE
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file = out_file,
-                      out_command_line = "test command init",
-					  pass_comments = 'e')
+                        out_command_line = "test command init",
+					    pass_comments = 'e')
         self.assertTrue(f, "opened ok")
+        f.comment("top comment")
+
+        did_one = False
         for row in f:
             f.write_row(row)
+            if not did_one:
+                f.comment("after row 1")
+                did_one = True
         f.write_finish()
-		
+
         lines = []
         f = open(out_file, "r")
         for line in f:
@@ -402,7 +416,9 @@ class FsdbTest(TestCase):
         self.assertTrue(lines[len(lines)-1] == "#   | test command init\n")
         self.assertTrue(lines[len(lines)-2] == "# | manually generated\n")
         self.assertTrue(lines[len(lines)-3] == "# middle comment\n")
-        self.assertTrue(lines[len(lines)-4] == "rowtwo	other	stuff\n")
+        self.assertTrue(lines[len(lines)-4] == "# after row 1\n")
+        self.assertTrue(lines[len(lines)-5] == "# top comment\n")
+        self.assertTrue(lines[len(lines)-6] == "rowtwo	other	stuff\n")
 
     def test_array_generator(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)

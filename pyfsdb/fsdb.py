@@ -887,6 +887,19 @@ class Fsdb(object):
         df.to_csv(self._out_file_handle, sep="\t", header=False,
                   index=False)
 
+    def comment(self, line):
+        if line[0] != '#':
+            line = "# " + line
+        if line[-1] != "\n":
+            line += "\n"
+
+        # TODO: merge with _handle_comment, which also does a next()
+        if self._pass_comments != 'n':
+            if self._header_written and self._pass_comments == 'y':
+                self._out_file_handle.write(line)
+            else:
+                self._comments.append(line)
+
     def foreach(self, fn, return_results=True, args=[]):
         """Applies a function fn to each row, returning an 
         aggregate list of results if desired."""
@@ -923,6 +936,9 @@ class Fsdb(object):
             self.append(row)
 
     def _write_header_line(self, init_row=None):
+        if not self._out_column_names and not self._header_line:
+            return  # we're unable to at this point
+        
         # maybe construct it
         if not self._out_header_line and self._out_column_names:
             self._out_header_line = self.create_header_line(init_row=init_row)
@@ -933,6 +949,12 @@ class Fsdb(object):
         elif self._header_line:
             # assuming copy the original
             self._out_file_handle.write(self._header_line)
+
+        # see if we have any early stored comments
+        if self._pass_comments == 'y' and self._comments:
+            for comment in self._comments:
+                self._out_file_handle.write(comment)
+            self._comments = []
 
         # if we write the header line,
         #    it's now ok to set the output function to the right function
