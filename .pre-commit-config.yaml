@@ -12,3 +12,11 @@ repos:
     rev: 22.3.0
     hooks:
     -   id: black
+- repo: local
+  hooks:
+    - id: pytest
+      name: pytest
+      entry: bash -c "PYTHONPATH=. pytest-3"
+      language: system
+      pass_filenames: false
+      always_run: true
