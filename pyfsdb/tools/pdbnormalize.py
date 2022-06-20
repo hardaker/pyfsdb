@@ -16,20 +16,36 @@ import sys
 
 
 def parse_args():
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
-                            description=__doc__,
-                            epilog="Exmaple Usage: dbnormalize -k column -- infile outfile")
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Exmaple Usage: dbnormalize -k column -- infile outfile",
+    )
 
-    parser.add_argument("-k", "--keys", default=["key"], nargs="+", type=str,
-                        help="The columns/keys to normalize across")
+    parser.add_argument(
+        "-k",
+        "--keys",
+        default=["key"],
+        nargs="+",
+        type=str,
+        help="The columns/keys to normalize across",
+    )
 
-    parser.add_argument("input_file", type=FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="The input file to read")
+    parser.add_argument(
+        "input_file",
+        type=FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="The input file to read",
+    )
 
-    parser.add_argument("output_file", type=FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="Where to write the results")
+    parser.add_argument(
+        "output_file",
+        type=FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="Where to write the results",
+    )
 
     args = parser.parse_args()
     return args
@@ -37,8 +53,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    fh = pyfsdb.Fsdb(file_handle=args.input_file,
-                     out_file_handle=args.output_file)
+    fh = pyfsdb.Fsdb(file_handle=args.input_file, out_file_handle=args.output_file)
     df = fh.get_pandas()
     maxval = df[args.keys].max().max()
     for key in args.keys:

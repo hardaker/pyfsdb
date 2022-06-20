@@ -18,28 +18,42 @@ import sys
 import argparse
 import pyfsdb
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__
+    )
 
-    parser.add_argument("-c", "--column", type=str, 
-                        help="The column to sort by")
+    parser.add_argument("-c", "--column", type=str, help="The column to sort by")
 
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Output number of rows cached to stderr")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Output number of rows cached to stderr",
+    )
 
-    parser.add_argument("input_file", type=str,
-                        help="The file to read (can't be stdin; must be seekable)")
+    parser.add_argument(
+        "input_file",
+        type=str,
+        help="The file to read (can't be stdin; must be seekable)",
+    )
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="The file to write to")
+    parser.add_argument(
+        "output_file",
+        type=argparse.FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="The file to write to",
+    )
 
     args = parser.parse_args()
 
-    if 'column' not in args:
-        raise ValueError('--column or -c is required')
+    if "column" not in args:
+        raise ValueError("--column or -c is required")
 
     return args
+
 
 def main():
     args = parse_args()
@@ -82,10 +96,10 @@ def main():
             key_counts[current_key] -= 1
 
             while key_counts[current_key] == 0:
-                #import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 # we're done with this key list
                 if len(key_list) == 0:
-                    break # done!
+                    break  # done!
 
                 # grab a new key
                 current_key = key_list.pop(0)
@@ -102,6 +116,6 @@ def main():
     if args.verbose:
         sys.stderr.write("cached %d/%d lines\n" % (cached_count, line_count))
 
+
 if __name__ == "__main__":
     main()
-

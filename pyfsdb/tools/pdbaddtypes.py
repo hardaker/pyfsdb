@@ -12,24 +12,40 @@ import pyfsdb
 import re
 import io
 
+
 def parse_args():
     formatter_class = argparse.ArgumentDefaultsHelpFormatter
-    parser = argparse.ArgumentParser(formatter_class=formatter_class,
-                                     description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=formatter_class, description=__doc__
+    )
 
-    parser.add_argument("-t", "--type-list", default=[], type=str, nargs="*",
-                        help="A list of column=type values, where type can be 'd' (float) or 'l' (integer)")
+    parser.add_argument(
+        "-t",
+        "--type-list",
+        default=[],
+        type=str,
+        nargs="*",
+        help="A list of column=type values, where type can be 'd' (float) or 'l' (integer)",
+    )
 
-    parser.add_argument("-a", "--auto-types", action="store_true",
-                        help="Guess at type values based on the first row")
+    parser.add_argument(
+        "-a",
+        "--auto-types",
+        action="store_true",
+        help="Guess at type values based on the first row",
+    )
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="")
+    parser.add_argument(
+        "input_file", type=argparse.FileType("r"), nargs="?", default=sys.stdin, help=""
+    )
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="")
+    parser.add_argument(
+        "output_file",
+        type=argparse.FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="",
+    )
 
     args = parser.parse_args()
     return args
@@ -41,8 +57,7 @@ def add_types(input_file, output_file, types=[], auto_convert=False):
     first_line = next(input_file)
     buffer = io.StringIO(fsdb_line + first_line)
 
-    fh = pyfsdb.Fsdb(file_handle=buffer,
-                     return_type=pyfsdb.RETURN_AS_DICTIONARY)
+    fh = pyfsdb.Fsdb(file_handle=buffer, return_type=pyfsdb.RETURN_AS_DICTIONARY)
     columns = fh.column_names
 
     converters = fh.converters
@@ -70,7 +85,7 @@ def add_types(input_file, output_file, types=[], auto_convert=False):
     output_file.write(first_line)
 
     # read the rest as chunks
-    while (data := input_file.read(1024*1024*1024)):  # 1M at a time
+    while data := input_file.read(1024 * 1024 * 1024):  # 1M at a time
         output_file.write(data)
 
 

@@ -55,7 +55,7 @@ def main():
 
     column_numbers = inh.get_column_numbers(columns)
 
-        
+
 
     # write out the header info
     outh.write("\\begin{table}\n")

@@ -187,6 +187,6 @@ Wes Hardaker @ USC/ISI
 
 # See also
 
-The FSDB website and manual page for the original perl module: 
+The FSDB website and manual page for the original perl module:
 
 https://www.isi.edu/~johnh/SOFTWARE/FSDB/

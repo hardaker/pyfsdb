@@ -9,27 +9,45 @@ import pyfsdb
 from dateparser import parse
 import time
 
+
 def parse_args():
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
-                            description=__doc__,
-	                        epilog="Exmaple Usage: dbdatetoepoch -d human_column -t timestamp_column input.fsdb output.fsdb")
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Exmaple Usage: dbdatetoepoch -d human_column -t timestamp_column input.fsdb output.fsdb",
+    )
 
-    parser.add_argument("-t", "--timestamp-column", default="timestamp",
-                        type=str, help="Column to use with the epoch timestamp")
+    parser.add_argument(
+        "-t",
+        "--timestamp-column",
+        default="timestamp",
+        type=str,
+        help="Column to use with the epoch timestamp",
+    )
 
-    parser.add_argument("-T", "--time-column", default="timestamp_human", type=str,
-                        help="The output time/date column to create")
+    parser.add_argument(
+        "-T",
+        "--time-column",
+        default="timestamp_human",
+        type=str,
+        help="The output time/date column to create",
+    )
 
-    parser.add_argument("-f", "--format", default="%Y-%m-%d %H:%M", type=str,
-                        help="The output format to use in the time column")
+    parser.add_argument(
+        "-f",
+        "--format",
+        default="%Y-%m-%d %H:%M",
+        type=str,
+        help="The output format to use in the time column",
+    )
 
-    parser.add_argument("input_file", type=FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="")
+    parser.add_argument(
+        "input_file", type=FileType("r"), nargs="?", default=sys.stdin, help=""
+    )
 
-    parser.add_argument("output_file", type=FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="")
+    parser.add_argument(
+        "output_file", type=FileType("w"), nargs="?", default=sys.stdout, help=""
+    )
 
     args = parser.parse_args()
     return args
@@ -37,9 +55,11 @@ def parse_args():
 
 def main():
     args = parse_args()
-    fh = pyfsdb.Fsdb(file_handle=args.input_file,
-                     out_file_handle=args.output_file,
-                     converters={args.timestamp_column: float})
+    fh = pyfsdb.Fsdb(
+        file_handle=args.input_file,
+        out_file_handle=args.output_file,
+        converters={args.timestamp_column: float},
+    )
     column_names = fh.column_names
     fh.out_column_names = column_names + [args.time_column]
 

@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 
 """
 pyfsdb.Fsdb - class for reading and writing Fsdb files
@@ -39,7 +39,7 @@ results = f.foreach(lambda x: x[2])
 
 # filter: reads the input file, filters it using myfilt, and writes to output
 def myfilt(row):
-    return [int(row['mycol']) * 2]    
+    return [int(row['mycol']) * 2]
 
 f = pyfsdb.Fsdb("data.fsdb", out_file="output.fsdb")
 results = f.filter(myfilt)
@@ -47,6 +47,7 @@ results = f.filter(myfilt)
 """
 
 import sys
+
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")
 
@@ -55,31 +56,32 @@ RETURN_AS_DICTIONARY = 2
 
 incoming_type_converters = {
     # python doesn't have different int sizes
-    'c': int,
-    'C': int,
-    's': int,
-    'S': int,
-    'i': int,
-    'l': int,
-    'L': int,
-    'q': int,
-    'Q': int,
+    "c": int,
+    "C": int,
+    "s": int,
+    "S": int,
+    "i": int,
+    "l": int,
+    "L": int,
+    "q": int,
+    "Q": int,
     # python doesn't have different float/double sizes
-    'f': float,
-    'd': float,
+    "f": float,
+    "d": float,
     # we leave strings (c and C) alone
 }
 
 outgoing_type_converters = {
-    int: 'l',
-    float: 'd',
+    int: "l",
+    float: "d",
 }
+
 
 class Fsdb(object):
     """Reads FSDB files from the perl FSDB module.
 
-       (see the fsdb module documentation for full details)
-       """
+    (see the fsdb module documentation for full details)
+    """
 
     fileh = None
     _header_line = None
@@ -100,41 +102,43 @@ class Fsdb(object):
     _out_column_names_set = False
     _out_separator = "\t"
     _out_separator_token = "t"
-    _out_command_line = "____BROKEN____" # ick, magic
+    _out_command_line = "____BROKEN____"  # ick, magic
     _save_command_history = True
     _handle_compressed = True
     _compression_checked = False
 
-    def __init__(self,
-                 filename = None,
-                 file_handle = None,
-                 return_type=RETURN_AS_ARRAY,
-                 out_file = None,
-                 out_file_handle = None,
-                 pass_comments = 'y',
-                 out_command_line = "____INTERNAL____",
-                 write_nones_as_blanks = True,
-                 column_names=None,
-                 converters=None,
-                 save_command_history=True,
-                 out_column_names=None,
-                 handle_compressed=True,
-                 no_auto_conversion=False):
+    def __init__(
+        self,
+        filename=None,
+        file_handle=None,
+        return_type=RETURN_AS_ARRAY,
+        out_file=None,
+        out_file_handle=None,
+        pass_comments="y",
+        out_command_line="____INTERNAL____",
+        write_nones_as_blanks=True,
+        column_names=None,
+        converters=None,
+        save_command_history=True,
+        out_column_names=None,
+        handle_compressed=True,
+        no_auto_conversion=False,
+    ):
         """Returns a Fsdb class that can be used as an iterator.
 
-           return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
-           RETURN_AS_DICTIONARY to return dictionary based rows with 
-           indexes as columns (this is slower).
+        return_type can be pyfsdb.RETURN_AS_ARRAY (default) or
+        RETURN_AS_DICTIONARY to return dictionary based rows with
+        indexes as columns (this is slower).
 
-           If `pass_comments` is True and both an input and output file
-           handle are available, any comments read in while reading
-           are printed to the output.
+        If `pass_comments` is True and both an input and output file
+        handle are available, any comments read in while reading
+        are printed to the output.
 
-           `converters` may be passed in as an array or dict of
-           converters to call (such as int, float, etc)
+        `converters` may be passed in as an array or dict of
+        converters to call (such as int, float, etc)
 
-           If `handle_compressed` is True (the default), the class will
-           do its best to handle compressed formats: bz2, gzip, and xz (lzma).
+        If `handle_compressed` is True (the default), the class will
+        do its best to handle compressed formats: bz2, gzip, and xz (lzma).
         """
 
         self.return_type = return_type
@@ -153,7 +157,7 @@ class Fsdb(object):
             self._out_column_names = out_column_names
             self._out_column_names_set = True
 
-        if pass_comments not in ['y', 'n', 'e']:
+        if pass_comments not in ["y", "n", "e"]:
             raise ValueError("pass_comments must be y/n/e")
 
         if out_file:
@@ -215,19 +219,19 @@ class Fsdb(object):
     @column_names.setter
     def column_names(self, values):
         mapping = self.__create_column_name_mapping__(values)
-        self._header_line = \
-            self.create_header_line(columns = values,
-                                    separator_token = self._separator_token)
+        self._header_line = self.create_header_line(
+            columns=values, separator_token=self._separator_token
+        )
         self.headers = self._header_line
 
     @property
     def separator(self):
-        """The 'separator_token' is the argument that comes after -F in the 
-           fsdb header and the separator is it's translation;
-           eg, for tab-based separator the separator_token would 
-           be the 't' character and the separator would be '\t'.
+        """The 'separator_token' is the argument that comes after -F in the
+        fsdb header and the separator is it's translation;
+        eg, for tab-based separator the separator_token would
+        be the 't' character and the separator would be '\t'.
 
-           Changing this will also change the stored separator_token value."""
+        Changing this will also change the stored separator_token value."""
         self.maybe_open_filehandle()
         if not self._separator:
             self.read_header()
@@ -237,17 +241,19 @@ class Fsdb(object):
     def separator(self, value):
         self._separator = value
         self._separator_token = self.convert_separator_token(value)
-        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+        self._header_line = self.create_header_line(
+            columns=self.column_names, separator_token=self._separator_token
+        )
 
     @property
     def separator_token(self):
         """The separator_token character for the file being read or written.
 
-           The 'separator_token' is the argument that comes after -F in the 
-           fsdb header; eg, for a tab-based separator the separator_token would 
-           be the 't' character and the separator would be '\t'.
+        The 'separator_token' is the argument that comes after -F in the
+        fsdb header; eg, for a tab-based separator the separator_token would
+        be the 't' character and the separator would be '\t'.
 
-           Changing this will also change the stored separator value."""
+        Changing this will also change the stored separator value."""
         self.maybe_open_filehandle()
         if not self._separator_token:
             self.read_header()
@@ -257,7 +263,9 @@ class Fsdb(object):
     def separator_token(self, value):
         self._separator_token = value
         self._separator = self.parse_separator(self.separator_token)
-        self._header_line = self.create_header_line(columns = self.column_names, separator_token = self._separator_token)
+        self._header_line = self.create_header_line(
+            columns=self.column_names, separator_token=self._separator_token
+        )
 
     def __create_column_name_mapping__(self, columns):
         """Internal
@@ -265,27 +273,28 @@ class Fsdb(object):
         Creates a list of columns and numbers for rapid mapping
         at the start to make more rapid lookups later.
         """
-        mapping = {'names': {}, 'numbers': {},
-                   'header': { 'separator': self.separator}}
+        mapping = {"names": {}, "numbers": {}, "header": {"separator": self.separator}}
 
         for argn, token in enumerate(columns):
             # find out if we have auto-type-converters in the column names
-            if not self._no_auto_conversion and token.find(':') != -1:
+            if not self._no_auto_conversion and token.find(":") != -1:
                 if self._converters is None:
                     self._converters = {}
-                (token, datatype) = token.split(':')
-                if datatype in incoming_type_converters and \
-                   token not in self._converters:
+                (token, datatype) = token.split(":")
+                if (
+                    datatype in incoming_type_converters
+                    and token not in self._converters
+                ):
                     if isinstance(self._converters, dict):
                         self._converters[token] = incoming_type_converters[datatype]
                     else:
                         self._converters[argn] = incoming_type_converters[datatype]
 
-            mapping['names'][token] = argn
-            mapping['numbers'][argn] = token
+            mapping["names"][token] = argn
+            mapping["numbers"][argn] = token
 
-        self._column_names = mapping['names']
-        self.column_nums = mapping['numbers']
+        self._column_names = mapping["names"]
+        self.column_nums = mapping["numbers"]
 
         if not self._out_column_names_set:
             self._out_column_names = self._column_names.keys()
@@ -331,11 +340,11 @@ class Fsdb(object):
     def out_separator(self):
         """The separator for the output.
 
-           Changing this will also change the stored
-           out_separator_taken value.
+        Changing this will also change the stored
+        out_separator_taken value.
 
-           This should not be changed after the header has 
-           already been written.
+        This should not be changed after the header has
+        already been written.
         """
         return self._out_separator
 
@@ -349,11 +358,11 @@ class Fsdb(object):
     def out_separator_token(self):
         """The separator for the output.
 
-           Changing this will also change the stored
-           out_separator value.
+        Changing this will also change the stored
+        out_separator value.
 
-           This should not be changed after the header has 
-           already been written.
+        This should not be changed after the header has
+        already been written.
         """
         return self._out_separator_token
 
@@ -382,10 +391,10 @@ class Fsdb(object):
     def out_command_line(self):
         """The output trailing command to print as the last line.
 
-         The out_command_line is printed with a '#   | ' prefix 
-         to preserve the history of the command run.  It defaults
-         to " ".join(sys.argv).  Set to None if you wish to surpress
-         printing of the line entirely."""
+        The out_command_line is printed with a '#   | ' prefix
+        to preserve the history of the command run.  It defaults
+        to " ".join(sys.argv).  Set to None if you wish to surpress
+        printing of the line entirely."""
         return self._out_command_line
 
     @out_command_line.setter
@@ -408,9 +417,7 @@ class Fsdb(object):
 
     # support functions
 
-    def create_header_line(self, columns = None,
-                           separator_token = None,
-                           init_row = None):
+    def create_header_line(self, columns=None, separator_token=None, init_row=None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
             columns = self.out_column_names
@@ -436,14 +443,22 @@ class Fsdb(object):
                 if not converters:
                     converters = {}
                 # if converters is a dictionary:
-                if isinstance(converters, dict) \
-                   and column in converters \
-                   and converters[column] in outgoing_type_converters:
+                if (
+                    isinstance(converters, dict)
+                    and column in converters
+                    and converters[column] in outgoing_type_converters
+                ):
                     header_line += ":" + outgoing_type_converters[converters[column]]
-                elif isinstance(converters, list) \
-                     and converters[n] in outgoing_type_converters:
+                elif (
+                    isinstance(converters, list)
+                    and converters[n] in outgoing_type_converters
+                ):
                     header_line += ":" + outgoing_type_converters[converters[n]]
-                elif init_row and len(init_row) > n and type(init_row[n]) in outgoing_type_converters:
+                elif (
+                    init_row
+                    and len(init_row) > n
+                    and type(init_row[n]) in outgoing_type_converters
+                ):
                     header_line += ":" + outgoing_type_converters[type(init_row[n])]
 
             header_line += " "
@@ -475,16 +490,17 @@ class Fsdb(object):
             converters = []
             # convert this to an array based on column names
             for column_name in self.column_names:
-                if column_name in self._converters and \
-                   callable(self._converters[column_name]):
+                if column_name in self._converters and callable(
+                    self._converters[column_name]
+                ):
                     converters.append(self._converters[column_name])
                 else:
                     converters.append(None)
             self._converters = converters
 
     def guess_converters(self, example_row):
-        """Returns a best-guess effort list of converters after determining 
-           if floats/ints exist in the dataset"""
+        """Returns a best-guess effort list of converters after determining
+        if floats/ints exist in the dataset"""
         converters = {}
         for column in example_row:
             try:
@@ -538,8 +554,9 @@ class Fsdb(object):
         "Internal"
 
         # the simple case:
-        if self.file_handle and \
-           (self._compression_checked or not self._handle_compressed):
+        if self.file_handle and (
+            self._compression_checked or not self._handle_compressed
+        ):
             return self.file_handle
 
         # don't try to do this twice
@@ -549,7 +566,6 @@ class Fsdb(object):
         if not self.file_handle and self.filename and not self._handle_compressed:
             self.file_handle = open(self.filename, mode)
             return self.file_handle
-
 
         # wrap this in case anything at all fails:
         try:
@@ -564,34 +580,39 @@ class Fsdb(object):
                 # see if we can determine the file type from the first few bytes
                 # https://stackoverflow.com/questions/13044562/python-mechanism-to-identify-compressed-file-type-and-uncompress
                 # XXX: there should be a package that does this...
-                
+
                 magic_dict = {
-                    bytes([0x1f,0x8b,0x08]): "gz",
-                    bytes([0x42,0x5a,0x68]): "bz2",
-                    bytes([0xfd,0x37,0x7a,0x58,0x5a,0x00]): "xz",
+                    bytes([0x1F, 0x8B, 0x08]): "gz",
+                    bytes([0x42, 0x5A, 0x68]): "bz2",
+                    bytes([0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00]): "xz",
                 }
 
                 max_len = max(len(x) for x in magic_dict)
 
-                with open(filename, 'rb') as f:
+                with open(filename, "rb") as f:
                     file_start = f.read(max_len)
                     for magic, filetype in magic_dict.items():
                         if file_start.startswith(magic):
                             try:
                                 if filetype == "gz":
                                     import gzip
-                                    self.file_handle = gzip.open(filename, 'rt')
+
+                                    self.file_handle = gzip.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "bz2":
                                     import bz2
-                                    self.file_handle = bz2.open(filename, 'rt')
+
+                                    self.file_handle = bz2.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "xz":
                                     import lzma
-                                    self.file_handle = lzma.open(filename, 'rt')
+
+                                    self.file_handle = lzma.open(filename, "rt")
                                     return self.file_handle
                             except Exception:
-                                sys.stderr.write(f"failed to use {filetype} module to decode the input stream")
+                                sys.stderr.write(
+                                    f"failed to use {filetype} module to decode the input stream"
+                                )
                                 raise ValueError("cannot decode file")
         except Exception:
             pass
@@ -604,8 +625,8 @@ class Fsdb(object):
 
     def __next__(self):
         """Returns the next array of data from an fsdb file.
-           Returns an array by default, or a dictionary if return_type 
-           was set to pyfsdb.RETURN_AS_DICTIONARY."""
+        Returns an array by default, or a dictionary if return_type
+        was set to pyfsdb.RETURN_AS_DICTIONARY."""
 
         fh = self.maybe_open_filehandle()
         if not self._header_line:
@@ -626,7 +647,7 @@ class Fsdb(object):
     def _handle_comment(self, line):
         """Handle a comment by printing it, possibly with header init first,
         and then returning the next line in the file"""
-        if self._pass_comments != 'n' and self._out_file_handle:
+        if self._pass_comments != "n" and self._out_file_handle:
 
             if self.append != self._append_really:
                 # we haven't printed anything yet, so we haven't written
@@ -634,7 +655,7 @@ class Fsdb(object):
 
                 self._write_header_line()
 
-            if self._pass_comments == 'y':
+            if self._pass_comments == "y":
                 self._out_file_handle.write(line)
             else:
                 self._comments.append(line)
@@ -650,22 +671,22 @@ class Fsdb(object):
         """Return the next object as an array of columns."""
 
         line = next(self.fileh)
-        while line and line[0] == '#':
+        while line and line[0] == "#":
             line = self._handle_comment(line)
 
         # return an array of data
         self.current_line = line
         self._current_row = line.rstrip("\n\r").split(self.separator)
         if len(self._current_row) < len(self._column_names):
-            n = (len(self._column_names))-len(self._current_row)
-            self._current_row.extend([''] * n)
+            n = (len(self._column_names)) - len(self._current_row)
+            self._current_row.extend([""] * n)
         if self._converters:
             self._current_row = self._convert_array_values(self._current_row)
         return self._current_row
 
     def _next_as_dict(self):
-        """Return the next object as a dictionary, with column 
-        names as the indexes.  
+        """Return the next object as a dictionary, with column
+        names as the indexes.
 
         Note: This is less efficient than returning data as an
         array using the normal __next__() routine."""
@@ -690,7 +711,7 @@ class Fsdb(object):
         try:
             line = next(self.fileh)
             while line:
-                while line and line[0] == '#':
+                while line and line[0] == "#":
                     line = self._handle_comment(line)
 
                 # return an array of data
@@ -712,7 +733,7 @@ class Fsdb(object):
         try:
             line = next(self.fileh)
             while line:
-                while line and line[0] == '#':
+                while line and line[0] == "#":
                     line = self._handle_comment(line)
 
                 # return an array of data
@@ -728,8 +749,8 @@ class Fsdb(object):
         except StopIteration as e:
             return
 
-    def parse_separator(self, separator = None):
-        """Converts a separator ("t") into a separator_token ("\t") """
+    def parse_separator(self, separator=None):
+        """Converts a separator ("t") into a separator_token ("\t")"""
         if separator == "t":
             return "\t"
         elif separator == "S":
@@ -739,11 +760,11 @@ class Fsdb(object):
         elif separator[0] == "c":
             return separator[1:]
         elif separator[0] == "C":
-            return separator[1:] # won't handle multiples like manual says
+            return separator[1:]  # won't handle multiples like manual says
         elif separator[0] == "x":
-            return chr(int("0x" + separator[1:],0))
-        elif separator[0] == "X": # won't handle multiples like manual says
-            return chr(int("0x" + separator[1:],0))
+            return chr(int("0x" + separator[1:], 0))
+        elif separator[0] == "X":  # won't handle multiples like manual says
+            return chr(int("0x" + separator[1:], 0))
         elif separator == "D":
             # python NONE to splits on all white space
             return None
@@ -751,8 +772,8 @@ class Fsdb(object):
         # unknown
         raise ValueError("Unknown separator value: " + separator)
 
-    def convert_separator_token(self, separator_token = None):
-        """Converts a separator ("\t") into a separator_token ("t") """
+    def convert_separator_token(self, separator_token=None):
+        """Converts a separator ("\t") into a separator_token ("t")"""
         if separator_token == "\t":
             return "t"
         elif separator_token == "  ":
@@ -763,12 +784,12 @@ class Fsdb(object):
             return "C" + separator_token
         elif separator_token == None:
             # XXX
-            separator_token = 'D'
+            separator_token = "D"
 
         # unknown
         raise ValueError("Unknown separator token value: " + separator_token)
 
-    def read_header(self, line = None):
+    def read_header(self, line=None):
         """Internal
 
         Returns a dict of header -> column numbers.
@@ -802,7 +823,7 @@ class Fsdb(object):
         # should we use argparse here?
         argn = 1
         separator = None  # (D)efault is all white space
-        while args[argn][0] == '-':
+        while args[argn][0] == "-":
             if args[argn] == "-F":
                 argn += 1
                 self._separator_token = args[argn]
@@ -821,11 +842,11 @@ class Fsdb(object):
         args = remainder.split(" ")
 
         mapping = self.__create_column_name_mapping__(args)
-        self._separator = mapping['header']['separator']
+        self._separator = mapping["header"]["separator"]
 
         return [0, mapping]
 
-    def row_as_string(self, row = None):
+    def row_as_string(self, row=None):
         """Converts an array row to an FSDB output line."""
         if not row:
             row = self._current_row
@@ -847,15 +868,17 @@ class Fsdb(object):
         for row in rows:
             self.append(row)
 
-    def get_pandas(self, usecols=None, comment="#",
-                   data_has_comment_chars=False, **kwargs):
+    def get_pandas(
+        self, usecols=None, comment="#", data_has_comment_chars=False, **kwargs
+    ):
         """Returns a pandas dataframe for the given data.  Warning: this
         cannot preserve comments in the files; FSDB comments are
         stripped from the output.  Any other args will be passed to
         pandas.read_csv()
         """
         import pandas
-        column_names = self.column_names # forces opening and reading headers
+
+        column_names = self.column_names  # forces opening and reading headers
 
         if data_has_comment_chars:
             # when data has the comment character in the middle,
@@ -874,38 +897,43 @@ class Fsdb(object):
 
             return df
         else:
-            return pandas.read_csv(self.file_handle, sep='\t', comment=comment,
-                                   names=column_names, usecols=usecols,
-                                   **kwargs)
+            return pandas.read_csv(
+                self.file_handle,
+                sep="\t",
+                comment=comment,
+                names=column_names,
+                usecols=usecols,
+                **kwargs,
+            )
 
     def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
         import pandas
+
         if not self._out_column_names:
             self.out_column_names = df.columns.values.tolist()
         self._write_header_line()
-        df.to_csv(self._out_file_handle, sep="\t", header=False,
-                  index=False)
+        df.to_csv(self._out_file_handle, sep="\t", header=False, index=False)
 
     def comment(self, line):
         """Add a comment to an ouput FSDB file
 
-           Addition and its placement depends on the value of pass_comments"""
+        Addition and its placement depends on the value of pass_comments"""
 
-        if line[0] != '#':
+        if line[0] != "#":
             line = "# " + line
         if line[-1] != "\n":
             line += "\n"
 
         # TODO: merge with _handle_comment, which also does a next()
-        if self._pass_comments != 'n':
-            if self._header_written and self._pass_comments == 'y':
+        if self._pass_comments != "n":
+            if self._header_written and self._pass_comments == "y":
                 self._out_file_handle.write(line)
             else:
                 self._comments.append(line)
 
     def foreach(self, fn, return_results=True, args=[]):
-        """Applies a function fn to each row, returning an 
+        """Applies a function fn to each row, returning an
         aggregate list of results if desired."""
         results = []
         if return_results:
@@ -930,11 +958,11 @@ class Fsdb(object):
     # writing functions
     #
 
-    def append(self, row = None):
+    def append(self, row=None):
         """Writes a passed in row (or the one previously read) to the output file."""
         self._append_init(row)
 
-    def extend(self, rows = None):
+    def extend(self, rows=None):
         """Writes multiple rows to the output FSDB"""
         for row in rows:
             self.append(row)
@@ -942,7 +970,7 @@ class Fsdb(object):
     def _write_header_line(self, init_row=None):
         if not self._out_column_names and not self._header_line:
             return  # we're unable to at this point
-        
+
         # maybe construct it
         if not self._out_header_line and self._out_column_names:
             self._out_header_line = self.create_header_line(init_row=init_row)
@@ -955,7 +983,7 @@ class Fsdb(object):
             self._out_file_handle.write(self._header_line)
 
         # see if we have any early stored comments
-        if self._pass_comments == 'y' and self._comments:
+        if self._pass_comments == "y" and self._comments:
             for comment in self._comments:
                 self._out_file_handle.write(comment)
             self._comments = []
@@ -965,26 +993,26 @@ class Fsdb(object):
         self.append = self._append_really
         self._header_written = True
 
-    def _append_init(self, row = None):
+    def _append_init(self, row=None):
         # internallly, if we haven't written the header out we do that first
         # then switch our operator for speed
 
         self._write_header_line(row)
         self.append(row)
 
-    def _append_really(self, row = None):
+    def _append_really(self, row=None):
         if not row:
             row = self._current_row
         if isinstance(row, dict):
             row = [row[x] for x in self.out_column_names]
         if self._write_nones_as_blanks:
-            for i in range(0,len(row)):
+            for i in range(0, len(row)):
                 if row[i] == None:
-                    row[i] = ''
-        self._out_file_handle.write(self._out_separator.join(map(str,row)) + "\n")
+                    row[i] = ""
+        self._out_file_handle.write(self._out_separator.join(map(str, row)) + "\n")
 
     # backwards compatible ... don't use
-    def write_row(self, row = None):
+    def write_row(self, row=None):
         self.append(row)
 
     def write_finish(self):
@@ -1018,5 +1046,3 @@ class Fsdb(object):
 
     def __exit__(self, type, value, tb):
         self.close()
-
-

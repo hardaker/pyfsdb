@@ -8,22 +8,38 @@
 import argparse
 import sys
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__
+    )
 
-    parser.add_argument("-l", "--leave-bro-headers", action="store_true",
-                        help="Leave the bro headers in place right after the new FSDB header")
+    parser.add_argument(
+        "-l",
+        "--leave-bro-headers",
+        action="store_true",
+        help="Leave the bro headers in place right after the new FSDB header",
+    )
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="The input file (bro log) to read")
+    parser.add_argument(
+        "input_file",
+        type=argparse.FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="The input file (bro log) to read",
+    )
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="The output file (FSDB log) to write back out")
+    parser.add_argument(
+        "output_file",
+        type=argparse.FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="The output file (FSDB log) to write back out",
+    )
 
     args = parser.parse_args()
     return args
+
 
 def main():
     args = parse_args()
@@ -35,7 +51,6 @@ def main():
     for line in args.input_file:
         if line[0] != "#":
             break
-
 
         if args.leave_bro_headers:
             leave_headers.append(line)
@@ -58,7 +73,7 @@ def main():
 
     # append our trailing command
     args.output_file.write("# " + sys.argv[0] + "\n")
-    
-        
+
+
 if __name__ == "__main__":
     main()

@@ -8,21 +8,32 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import json
 import pyfsdb
 
+
 def parse_args():
     """Parse command line arguments"""
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
-                            description=__doc__)
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter, description=__doc__
+    )
 
-    parser.add_argument("input_file", type=FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="The input file (json file) to read")
+    parser.add_argument(
+        "input_file",
+        type=FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="The input file (json file) to read",
+    )
 
-    parser.add_argument("output_file", type=FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="The output file (FSDB file) to write back out")
+    parser.add_argument(
+        "output_file",
+        type=FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="The output file (FSDB file) to write back out",
+    )
 
     args = parser.parse_args()
     return args
+
 
 def handle_rows(out_fsdb, rows, columns):
     "Output each row in an array to the output fsdb file"
@@ -32,8 +43,9 @@ def handle_rows(out_fsdb, rows, columns):
             if column in row:
                 out.append(row[column])
             else:
-                out.append('')
+                out.append("")
         out_fsdb.append(out)
+
 
 def json_to_fsdb(input_file, output_file):
     """A function that converts an input file stream of json dictionary
@@ -65,10 +77,12 @@ def json_to_fsdb(input_file, output_file):
         except Exception as exp:
             sys.stderr.write("failed to parse: " + line)
 
+
 def main():
     "CLI wrapper around json_to_fsdb"
     args = parse_args()
     json_to_fsdb(args.input_file, args.output_file)
+
 
 if __name__ == "__main__":
     main()

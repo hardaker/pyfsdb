@@ -8,26 +8,38 @@ import argparse
 import pyfsdb
 import re
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description=__doc__,
-                                     epilog="fsdb2many -c key -o outputdir/%s.fsdb mybigfile.fsdb")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="fsdb2many -c key -o outputdir/%s.fsdb mybigfile.fsdb",
+    )
 
-    parser.add_argument("-c", "--column", default="key", type=str,
-                        help="Column to split on")
+    parser.add_argument(
+        "-c", "--column", default="key", type=str, help="Column to split on"
+    )
 
-    parser.add_argument("-o", "--output-pattern",
-                        default="fsdb2many-out-%s.fsdb",
-                        type=str,
-                        help="Output pattern to split on, which should contain a PERCENT S to use for inserting the column value being saved to that file.")
+    parser.add_argument(
+        "-o",
+        "--output-pattern",
+        default="fsdb2many-out-%s.fsdb",
+        type=str,
+        help="Output pattern to split on, which should contain a PERCENT S to use for inserting the column value being saved to that file.",
+    )
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="str")
+    parser.add_argument(
+        "input_file",
+        type=argparse.FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="str",
+    )
 
     args = parser.parse_args()
 
     return args
+
 
 def main():
     args = parse_args()
@@ -55,6 +67,7 @@ def main():
     # clean up
     for handle in out_handles:
         out_handles[handle].close()
+
 
 if __name__ == "__main__":
     main()

@@ -13,23 +13,40 @@ import os
 import pyfsdb
 import jinja2
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__, epilog="Example: pdbj2 -j report.j2 input.fsdb output.txt")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Example: pdbj2 -j report.j2 input.fsdb output.txt",
+    )
 
-    parser.add_argument("-j", "--jinja2-template",
-                        type=argparse.FileType('r'),
-                        help="The jinja2 template file to use")
+    parser.add_argument(
+        "-j",
+        "--jinja2-template",
+        type=argparse.FileType("r"),
+        help="The jinja2 template file to use",
+    )
 
-    parser.add_argument("-i", "--include-file-path", type=str,
-                        help="Path to allow including files from")
+    parser.add_argument(
+        "-i", "--include-file-path", type=str, help="Path to allow including files from"
+    )
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
-                        nargs="?", default=sys.stdin,
-                        help="The input file to use")
+    parser.add_argument(
+        "input_file",
+        type=argparse.FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="The input file to use",
+    )
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="Where to write the results to")
+    parser.add_argument(
+        "output_file",
+        type=argparse.FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="Where to write the results to",
+    )
 
     args = parser.parse_args()
 
@@ -40,12 +57,14 @@ def parse_args():
     return args
 
 
-def process(input_file_handle, jinja2_template, output_file_handle,
-            include_file_path=None):
+def process(
+    input_file_handle, jinja2_template, output_file_handle, include_file_path=None
+):
     "Process an input data file file and template into an output file"
     # load the data
-    inh = pyfsdb.Fsdb(file_handle=input_file_handle,
-                      return_type=pyfsdb.RETURN_AS_DICTIONARY)
+    inh = pyfsdb.Fsdb(
+        file_handle=input_file_handle, return_type=pyfsdb.RETURN_AS_DICTIONARY
+    )
     rows = inh.get_all()
 
     # get jinja2 setup
@@ -55,7 +74,7 @@ def process(input_file_handle, jinja2_template, output_file_handle,
     # allowing including of other files?
     if include_file_path:
         if include_file_path[-1] != "/":
-            include_file_path += "/"   # think required?
+            include_file_path += "/"  # think required?
         loader = jinja2.FileStreamLoader(include_file_path)
 
     # create the actual template
@@ -63,7 +82,7 @@ def process(input_file_handle, jinja2_template, output_file_handle,
     template = template.from_string(jinja_template_data)
 
     # call j2 and write the results out to the file
-    output_file_handle.write(template.render({'rows': rows}))
+    output_file_handle.write(template.render({"rows": rows}))
 
 
 def main():
@@ -73,4 +92,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -10,18 +10,24 @@ import collections
 import pyfsdb
 import re
 
+
 def parse_args():
     formatter_class = argparse.ArgumentDefaultsHelpFormatter
-    parser = argparse.ArgumentParser(formatter_class=formatter_class,
-                                     description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=formatter_class, description=__doc__
+    )
 
-    parser.add_argument("input_file", type=argparse.FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="")
+    parser.add_argument(
+        "input_file", type=argparse.FileType("r"), nargs="?", default=sys.stdin, help=""
+    )
 
-    parser.add_argument("output_file", type=argparse.FileType('w'),
-                        nargs='?', default=sys.stdout,
-                        help="")
+    parser.add_argument(
+        "output_file",
+        type=argparse.FileType("w"),
+        nargs="?",
+        default=sys.stdout,
+        help="",
+    )
 
     args = parser.parse_args()
     return args
@@ -35,7 +41,7 @@ def main():
     fsdb_line = re.sub(r":\w+", "", fsdb_line)
     args.output_file.write(fsdb_line)
 
-    while (data := args.input_file.read(1024*1024*1024)):  # 1M at a time
+    while data := args.input_file.read(1024 * 1024 * 1024):  # 1M at a time
         args.output_file.write(data)
 
 

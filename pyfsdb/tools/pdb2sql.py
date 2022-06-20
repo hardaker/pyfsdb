@@ -11,62 +11,98 @@ import pyfsdb
 
 def parse_args():
     "Parse the command line arguments."
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
-                            description=__doc__,
-                            epilog="Exmaple Usage: db2sql input.fsdb output.sqlite3")
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Exmaple Usage: db2sql input.fsdb output.sqlite3",
+    )
 
-    parser.add_argument("-c", "--converters", default=[], type=str, nargs='*',
-                        help="Convert column names to these sql types.  Arguments should be name/type pairs separated by equal signs")
+    parser.add_argument(
+        "-c",
+        "--converters",
+        default=[],
+        type=str,
+        nargs="*",
+        help="Convert column names to these sql types.  Arguments should be name/type pairs separated by equal signs",
+    )
 
-    parser.add_argument("--delete", "--delete-existing-rows", action="store_true",
-                        help="Delete existing data before inserting new rows (ie, replace the data)")
+    parser.add_argument(
+        "--delete",
+        "--delete-existing-rows",
+        action="store_true",
+        help="Delete existing data before inserting new rows (ie, replace the data)",
+    )
 
-    parser.add_argument("--log-level", default="info",
-                        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).")
+    parser.add_argument(
+        "--log-level",
+        default="info",
+        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
+    )
 
-    parser.add_argument("-i", "--indexes", default=[], type=str, nargs="*",
-                        help="Index columns to use when creating the table")
+    parser.add_argument(
+        "-i",
+        "--indexes",
+        default=[],
+        type=str,
+        nargs="*",
+        help="Index columns to use when creating the table",
+    )
 
-    parser.add_argument("-e", "--extra-columns", default=[], type=str, nargs="*",
-                        help="Extra column specifiers to use when creating a table in name=type format")
+    parser.add_argument(
+        "-e",
+        "--extra-columns",
+        default=[],
+        type=str,
+        nargs="*",
+        help="Extra column specifiers to use when creating a table in name=type format",
+    )
 
-    parser.add_argument("-v", "--extra-values", default=[], type=str, nargs="*",
-                        help="Extra column values to use when inserting data")
+    parser.add_argument(
+        "-v",
+        "--extra-values",
+        default=[],
+        type=str,
+        nargs="*",
+        help="Extra column values to use when inserting data",
+    )
 
-    parser.add_argument("input_file", type=FileType('r'),
-                        nargs='?', default=sys.stdin,
-                        help="Input fsdb file to load")
+    parser.add_argument(
+        "input_file",
+        type=FileType("r"),
+        nargs="?",
+        default=sys.stdin,
+        help="Input fsdb file to load",
+    )
 
-    parser.add_argument("output_file", type=str,
-                        nargs='?', help="Output sqlite3 to create or augment")
+    parser.add_argument(
+        "output_file", type=str, nargs="?", help="Output sqlite3 to create or augment"
+    )
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
-    logging.basicConfig(level=log_level,
-                        format="%(levelname)-10s:\t%(message)s")
+    logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
     return args
 
 
-class FsdbSql():
+class FsdbSql:
     def __init__(self, fsdb_handle, **kwargs):
         self.arguments = kwargs
 
         self.get_cursor()
-        
+
         # get rid of other arguments
-        del kwargs['output_sqlite3_filename']
+        del kwargs["output_sqlite3_filename"]
 
         self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
 
         self.table_name = "fsdb_table"
-        if 'table_name' in kwargs:
-            self.table_name = kwargs['table_name']
-            del kwargs['table_name']
+        if "table_name" in kwargs:
+            self.table_name = kwargs["table_name"]
+            del kwargs["table_name"]
 
         self.converters = {}
-        if 'converters' in kwargs:
-            self.table_name = kwargs['converters']
-
+        if "converters" in kwargs:
+            self.table_name = kwargs["converters"]
 
     def get_cursor():
         error("illegal table usage")
@@ -77,7 +113,7 @@ class FsdbSql():
 
         column_strings = []
         for column in columns:
-            coltype = self.converters.get(column, 'string')
+            coltype = self.converters.get(column, "string")
             column_strings.append(f"{column} {coltype}")
 
         self.table_name = table_name
@@ -101,7 +137,9 @@ class FsdbSql():
             parts = index.split(",")
             idx_name = "idx_" + "_".join(parts)
             cols = ", ".join(parts)
-            statement = f"create index if not exists {idx_name} on {table_name} ({cols})"
+            statement = (
+                f"create index if not exists {idx_name} on {table_name} ({cols})"
+            )
             debug(statement)
             self.con.execute(statement)
 
@@ -123,16 +161,18 @@ class FsdbSql():
         for col in self.fsdb.column_names:
             if col not in drop_columns:
                 column_names.append(col)
-        
-        statement = f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) " + \
-            f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
+
+        statement = (
+            f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) "
+            + f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
+        )
         debug(statement)
 
-        self.cur.execute('begin transaction')
+        self.cur.execute("begin transaction")
         for n, row in enumerate(self.fsdb):
             vals = [row[x] for x in column_names]
             self.cur.execute(statement, extra_vals + vals)
-            if (n % chunks == 0):
+            if n % chunks == 0:
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
                 self.con.commit()
@@ -148,16 +188,19 @@ class FsdbSql():
 class FsdbSqlite3(FsdbSql):
     def get_cursor(self):
         import sqlite3
-        self.con = sqlite3.connect(self.arguments['output_sqlite3_filename'])
+
+        self.con = sqlite3.connect(self.arguments["output_sqlite3_filename"])
         self.cur = self.con.cursor()
 
 
 def main():
     args = parse_args()
 
-    conv = FsdbSqlite3(args.input_file,
-                       output_sqlite3_filename=args.output_file,
-                       converters=args.converters)
+    conv = FsdbSqlite3(
+        args.input_file,
+        output_sqlite3_filename=args.output_file,
+        converters=args.converters,
+    )
     conv.create_table(indexes=args.indexes, extra_columns=args.extra_columns)
     if args.delete:
         conv.clear_table()
