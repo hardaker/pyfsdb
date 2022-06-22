@@ -6,7 +6,15 @@ unix epoch timestamp column"""
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import sys
 import pyfsdb
+import warnings
 from dateparser import parse
+
+# from https://github.com/scrapinghub/dateparser/issues/1013
+# Ignore dateparser warnings regarding pytz
+warnings.filterwarnings(
+    "ignore",
+    message="The localize method is no longer necessary",
+)
 
 
 def parse_args():
