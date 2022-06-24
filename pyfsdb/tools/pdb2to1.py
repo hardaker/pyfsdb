@@ -41,7 +41,10 @@ def main():
     fsdb_line = re.sub(r":\w+", "", fsdb_line)
     args.output_file.write(fsdb_line)
 
-    while data := args.input_file.read(1024 * 1024 * 1024):  # 1M at a time
+    while True:
+        data = args.input_file.read(1024 * 1024 * 1024)  # 1M at a time
+        if not data:
+            break
         args.output_file.write(data)
 
 

@@ -85,7 +85,10 @@ def add_types(input_file, output_file, types=[], auto_convert=False):
     output_file.write(first_line)
 
     # read the rest as chunks
-    while data := input_file.read(1024 * 1024 * 1024):  # 1M at a time
+    while True:
+        data = input_file.read(1024 * 1024 * 1024)  # 1M at a time
+        if not data:
+            break
         output_file.write(data)
 
 
