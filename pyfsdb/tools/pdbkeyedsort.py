@@ -66,7 +66,7 @@ def main():
     cached_count = 0
 
     # memorize all the keys and the number of rows in each
-    for row in f.next_as_array():
+    for row in f:
         line_count += 1
         if row[key_column] not in key_counts:
             key_counts[row[key_column]] = 1
@@ -83,7 +83,7 @@ def main():
 
     # memorize all the keys and the number of rows in each
     current_key = key_list.pop(0)
-    for row in f.next_as_array():
+    for row in f:
         if row[key_column] != current_key:
             # the current lines are arriving too early; cache them
             cached_count += 1
