@@ -43,6 +43,8 @@ setuptools.setup(
             "pdb2sql = pyfsdb.tools.pdb2sql:main",
             "pdb2to1 = pyfsdb.tools.pdb2to1:main",
             "pdbaddtypes = pyfsdb.tools.pdbaddtypes:main",
+            "pdb2parque = pyfsdb.tools.fsdb2parque:main",
+            "parque2pdb = pyfsdb.tools.parque2fsdb:main",
             # obsolete wrappers
             "dbtopn = pyfsdb.obsolete.dbtopn:main",
             "dbaugment = pyfsdb.obsolete.dbaugment:main",
