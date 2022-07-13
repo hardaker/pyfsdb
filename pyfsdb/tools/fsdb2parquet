@@ -3,11 +3,9 @@
 """Save an FSDB file to an apache parquet file"""
 
 import pyfsdb
-import pyarrow.parquet
-
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 import sys
-
+import logging
 
 def parse_args():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
@@ -42,16 +40,22 @@ def parse_args():
 def main():
     args = parse_args()
 
+    try:
+        import pyarrow.parquet
+    except Exception:
+        error("Failed to load the pyarrow python module: use 'pip install pyarrow' to install it.")
+        exit()
+
     fh = pyfsdb.Fsdb(file_handle=args.input_file)
 
-    df = fh.get_pandas(data_has_comment_characters=(not args.fast_read))
+    df = fh.get_pandas(data_has_comment_chars=(not args.fast_read))
 
     if args.categories:
         for column in args.categories:
             df[column] = df[column].astype('category')
 
     table = pyarrow.Table.from_pandas(df)
-    pyarrow.parquet.write_table(table, args.output_file + ".arrow",
+    pyarrow.parquet.write_table(table, args.output_file,
                                 compression=args.compression_type,
                                 compression_level=args.compression_level)
 

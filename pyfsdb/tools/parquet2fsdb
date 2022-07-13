@@ -3,7 +3,6 @@
 """Load a parquet file and convert it to FSDB, with an optional column
 and filter list"""
 
-import fastparquet
 import pyfsdb
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
@@ -37,6 +36,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    try:
+        import fastparquet
+    except Exception:
+        error("Failed to load the fastparquet python module: use 'pip install fastparquet' to install it.")
+        exit()
 
     fh = pyfsdb.Fsdb(out_file_handle=args.output_file)
     pf = fastparquet.ParquetFile(args.input_file)
