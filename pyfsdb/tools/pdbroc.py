@@ -4,7 +4,8 @@ This requires both matplotlib and sklearn to function.
 """
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, plot_roc_curve, auc
+import numpy as np
+from roc_utils import compute_roc, plot_roc
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from logging import debug, info, warning, error, critical
 import logging
@@ -89,17 +90,6 @@ def parse_args():
     return args
 
 
-# taken from
-# https://www.codespeedy.com/how-to-plot-roc-curve-using-sklearn-library-in-python/
-def plot_roc(fpr, tpr, label="ROC"):
-    plt.plot([0, 1], [0, 1], linestyle=":", color="black")
-    plt.plot(fpr, tpr, color="blue", label=label)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.legend()
-    return plt
-
-
 def main():
     args = parse_args()
 
@@ -124,11 +114,11 @@ def main():
             else:
                 confidence.append(float(row[confidence_column]))
 
-    (tpr, fpr, thresholds) = roc_curve(trues, confidence)
-    plot_roc(fpr, tpr, label=args.label)
+    roc = compute_roc(confidence, trues, pos_label=1)
+    plot_roc(roc, label=args.label)
 
     if args.output_auc:
-        print(f"AUC: {auc(fpr, tpr)}")
+        print(f"AUC: {roc.auc}")
 
     if args.output_file:
         if args.output_file != "NONE":
