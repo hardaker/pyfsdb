@@ -663,7 +663,9 @@ class Fsdb(object):
 
     def _convert_array_values(self, row):
         for (n, converter) in enumerate(self._converters):
-            if converter is not None and row[n] is not None:
+            if row[n] == "-" or row[n] == "":
+                row[n] = None
+            elif converter is not None and row[n] is not None:
                 row[n] = converter(row[n])
         return row
 
