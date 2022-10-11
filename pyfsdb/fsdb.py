@@ -666,7 +666,10 @@ class Fsdb(object):
             if row[n] == "-" or row[n] == "":
                 row[n] = None
             elif converter is not None and row[n] is not None:
-                row[n] = converter(row[n])
+                try:
+                    row[n] = converter(row[n])
+                except Exception:
+                    row[n] = None
         return row
 
     def _next_as_array(self):
