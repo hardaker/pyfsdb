@@ -1013,6 +1013,16 @@ class FsdbTest(TestCase):
         result = truncate_comments(outh.getvalue())
         self.assertEqual(result, "#fsdb -F t a b:l c:d\nstr\t10\t20.5\n")
 
+    def test_failed_converter(self):
+        # note: fails float conversion to an int
+        input_data = StringIO("#fsdb -F t a:l b:l c:l\n1\t2.1\t3\n")
+        with pyfsdb.Fsdb(
+            file_handle=input_data,
+            return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        ) as f:
+            row = next(f)
+            self.assertEqual(row, {"a": 1, "b": None, "c": 3})
+
 
 if __name__ == "__main__":
     import unittest
