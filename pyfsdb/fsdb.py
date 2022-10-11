@@ -478,6 +478,9 @@ class Fsdb(object):
         This must be set before the file is opened/read.
 
         Useful converted may include int, float, etc.
+
+        Note: if a converter throws an exception, a value of None will
+        be placed into the returned row instead.
         """
         return self._converters
 
