@@ -76,6 +76,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-T",
+        "--table-name",
+        default="fsdb_table",
+        type=str,
+        help="The table name to create",
+    )
+
+    parser.add_argument(
         "input_file",
         type=FileType("r"),
         nargs="?",
@@ -111,12 +119,12 @@ class FsdbSql:
             debug(f"created converters: {self.converters}")
             kwargs["converters"] = self.converters
 
-        self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
-
         self.table_name = "fsdb_table"
         if "table_name" in kwargs:
             self.table_name = kwargs["table_name"]
             del kwargs["table_name"]
+
+        self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
 
         self.data_types = {
             int: "integer",
@@ -144,8 +152,9 @@ class FsdbSql:
     ):
         error("illegal base table usage")
 
-    def create_table(self, indexes=[], table_name="fsdb_table", extra_columns=[]):
+    def create_table(self, indexes=[], extra_columns=[]):
         "creates a new database from a definition within an FSDB handle"
+        table_name = self.table_name
         columns = self.fsdb.column_names
 
         column_strings = []
@@ -260,9 +269,13 @@ def main():
             args.input_file,
             output_sqlite3_filename=args.output_file,
             converters=args.converters,
+            table_name=args.table_name,
         )
     elif args.database_type == "print":
-        conv = FsdbSqlPrint(args.input_file)
+        conv = FsdbSqlPrint(
+            args.input_file,
+            table_name=args.table_name,
+        )
     else:
         error("unsupported database type: {args.database_type}")
 
