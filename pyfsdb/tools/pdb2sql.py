@@ -35,6 +35,7 @@ def parse_args():
 
     parser.add_argument(
         "--log-level",
+        "--ll",
         default="info",
         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
     )
@@ -67,6 +68,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-t",
+        "--database-type",
+        default="sqlite3",
+        type=str,
+        help="Type of database to use (sqlite3, pg, maria, print)",
+    )
+
+    parser.add_argument(
         "input_file",
         type=FileType("r"),
         nargs="?",
@@ -91,7 +100,16 @@ class FsdbSql:
         self.get_cursor()
 
         # get rid of other arguments
-        del kwargs["output_sqlite3_filename"]
+        if "output_sqlite3_filename" in kwargs:
+            del kwargs["output_sqlite3_filename"]
+
+        self.converters = {}
+        if "converters" in kwargs:
+            for converter in kwargs["converters"]:
+                (key, converter_type) = converter.split("=")
+                self.converters[key] = converter_type
+            debug(f"created converters: {self.converters}")
+            kwargs["converters"] = self.converters
 
         self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
 
@@ -100,12 +118,31 @@ class FsdbSql:
             self.table_name = kwargs["table_name"]
             del kwargs["table_name"]
 
-        self.converters = {}
-        if "converters" in kwargs:
-            self.table_name = kwargs["converters"]
+        self.data_types = {
+            int: "integer",
+            str: "string",
+            float: "float",
+        }
 
-    def get_cursor():
-        error("illegal table usage")
+    def get_datatype(self, from_column):
+        # see if we have a user specified type to use:
+        coltype = self.converters.get(from_column, None)
+
+        # else pull the datatype from the fsdb(v2) handle if possible:
+        if not coltype:
+            # this returns a python type converter (str, int, etc)
+            coltype = self.fsdb.converters.get(from_column, str)
+
+        if coltype in self.data_types:
+            # from the type, get the database string representation
+            coltype = self.data_types[coltype]
+
+        return coltype
+
+    def get_cursor(
+        self,
+    ):
+        error("illegal base table usage")
 
     def create_table(self, indexes=[], table_name="fsdb_table", extra_columns=[]):
         "creates a new database from a definition within an FSDB handle"
@@ -113,7 +150,7 @@ class FsdbSql:
 
         column_strings = []
         for column in columns:
-            coltype = self.converters.get(column, "string")
+            coltype = self.get_datatype(column)
             column_strings.append(f"{column} {coltype}")
 
         self.table_name = table_name
@@ -162,6 +199,8 @@ class FsdbSql:
             if col not in drop_columns:
                 column_names.append(col)
 
+        column_nums = self.fsdb.get_column_numbers(column_names)
+
         statement = (
             f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) "
             + f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
@@ -170,13 +209,15 @@ class FsdbSql:
 
         self.cur.execute("begin transaction")
         for n, row in enumerate(self.fsdb):
-            vals = [row[x] for x in column_names]
+            vals = [row[x] for x in column_nums]
             self.cur.execute(statement, extra_vals + vals)
             if n % chunks == 0:
                 self.cur.execute("end transaction")
                 self.cur.execute("begin transaction")
                 self.con.commit()
-        self.cur.execute("end transaction")
+        if n % chunks != 0:
+            # (if it's zero we just created the transaction)
+            self.cur.execute("end transaction")
         self.con.commit()
 
     def clear_table(self):
@@ -193,14 +234,38 @@ class FsdbSqlite3(FsdbSql):
         self.cur = self.con.cursor()
 
 
+class FsdbSqlPrint(FsdbSql):
+    "A wrapper to just print the resulting output of sql statements"
+
+    def get_cursor(self):
+        self.con = self
+        self.cur = self
+        return self
+
+    def execute(self, statement, values=[]):
+        print(statement)
+        if values:
+            sys.stdout.write("  ")
+            print(values)
+
+    def commit(self):
+        print("# commit")
+
+
 def main():
     args = parse_args()
 
-    conv = FsdbSqlite3(
-        args.input_file,
-        output_sqlite3_filename=args.output_file,
-        converters=args.converters,
-    )
+    if args.database_type == "sqlite3":
+        conv = FsdbSqlite3(
+            args.input_file,
+            output_sqlite3_filename=args.output_file,
+            converters=args.converters,
+        )
+    elif args.database_type == "print":
+        conv = FsdbSqlPrint(args.input_file)
+    else:
+        error("unsupported database type: {args.database_type}")
+
     conv.create_table(indexes=args.indexes, extra_columns=args.extra_columns)
     if args.delete:
         conv.clear_table()
