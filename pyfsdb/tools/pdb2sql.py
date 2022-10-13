@@ -252,7 +252,7 @@ class FsdbSql:
         column_nums = self.fsdb.get_column_numbers(column_names)
 
         statement = (
-            f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) "
+            f"insert into {self.table_name} ({extra_columns_str}{','.join(column_names)}) "
             + f"values({','.join([self.param_string] * (len(extra_vals) + len(column_names)))})"
         )
         debug(statement)
