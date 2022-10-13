@@ -76,6 +76,38 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-H",
+        "--database-hostname",
+        default=None,
+        type=str,
+        help="Hostname to connect to for host-based datatypes",
+    )
+
+    parser.add_argument(
+        "-D",
+        "--database-name",
+        default="fsdb",
+        type=str,
+        help="Database name to connect to for host-based datatypes",
+    )
+
+    parser.add_argument(
+        "-U",
+        "--database-user",
+        default=None,
+        type=str,
+        help="Database user name to connect with for host-based datatypes",
+    )
+
+    parser.add_argument(
+        "-P",
+        "--database-password",
+        default=None,
+        type=str,
+        help="Database password to connect with for host-based datatypes",
+    )
+
+    parser.add_argument(
         "-T",
         "--table-name",
         default="fsdb_table",
@@ -92,7 +124,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "output_file", type=str, nargs="?", help="Output sqlite3 to create or augment"
+        "database_name",
+        type=str,
+        nargs="?",
+        help="Output sqlite3 file or database name to use",
     )
 
     args = parser.parse_args()
@@ -105,12 +140,14 @@ class FsdbSql:
     def __init__(self, fsdb_handle, **kwargs):
         self.arguments = kwargs
 
-        self.get_cursor()
+        # extract various parameters from the CLI arguments
+        self.table_name = self.get_and_remove_value("table_name", kwargs, "fsdb_table")
+        self.database_name = self.get_and_remove_value("database_name", kwargs, "fsdb")
+        self.database_hostname = self.get_and_remove_value("database_hostname", kwargs)
+        self.database_user = self.get_and_remove_value("database_user", kwargs)
+        self.database_password = self.get_and_remove_value("database_password", kwargs)
 
-        # get rid of other arguments
-        if "output_sqlite3_filename" in kwargs:
-            del kwargs["output_sqlite3_filename"]
-
+        # set up type converter list
         self.converters = {}
         if "converters" in kwargs:
             for converter in kwargs["converters"]:
@@ -119,18 +156,22 @@ class FsdbSql:
             debug(f"created converters: {self.converters}")
             kwargs["converters"] = self.converters
 
-        self.table_name = "fsdb_table"
-        if "table_name" in kwargs:
-            self.table_name = kwargs["table_name"]
-            del kwargs["table_name"]
-
-        self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle, **kwargs)
-
         self.data_types = {
             int: "integer",
             str: "string",
             float: "float",
         }
+        self.param_string = "?"
+
+        # bootstrap the database and input file
+        self.get_cursor()
+        self.fsdb = pyfsdb.Fsdb(file_handle=fsdb_handle)  # , **kwargs
+
+    def get_and_remove_value(self, name, kwargs, default=None):
+        if name in kwargs:
+            default = kwargs[name]
+            del kwargs[name]
+        return default
 
     def get_datatype(self, from_column):
         # see if we have a user specified type to use:
@@ -176,7 +217,7 @@ class FsdbSql:
         # create the table
         statement = f"create table if not exists {table_name} ({extra_columns_str} {', '.join(column_strings)})"
         debug(statement)
-        self.con.execute(statement)
+        self.execute(statement)
 
         # create any indexes
         for index in indexes:
@@ -212,34 +253,56 @@ class FsdbSql:
 
         statement = (
             f"insert into {self.table_name} ({extra_columns_str} {','.join(column_names)}) "
-            + f"values({','.join(['?'] * (len(extra_vals) + len(column_names)))})"
+            + f"values({','.join([self.param_string] * (len(extra_vals) + len(column_names)))})"
         )
         debug(statement)
 
-        self.cur.execute("begin transaction")
+        self.execute("begin transaction")
         for n, row in enumerate(self.fsdb):
             vals = [row[x] for x in column_nums]
-            self.cur.execute(statement, extra_vals + vals)
+            self.execute(statement, extra_vals + vals)
             if n % chunks == 0:
-                self.cur.execute("end transaction")
-                self.cur.execute("begin transaction")
-                self.con.commit()
+                self.execute("end transaction")
+                self.execute("begin transaction")
+                self.commit()
         if n % chunks != 0:
             # (if it's zero we just created the transaction)
-            self.cur.execute("end transaction")
-        self.con.commit()
+            self.execute("end transaction")
+        self.commit()
 
     def clear_table(self):
         """Deletes existing rows from the table"""
-        self.con.execute(f"delete from {self.table_name}")
-        self.con.commit()
+        self.execute(f"delete from {self.table_name}")
+        self.commit()
+
+    def execute(self, *args, **kwargs):
+        self.cur.execute(*args, **kwargs)
+
+    def commit(self, *args, **kwargs):
+        self.con.commit(*args, **kwargs)
 
 
 class FsdbSqlite3(FsdbSql):
     def get_cursor(self):
         import sqlite3
 
-        self.con = sqlite3.connect(self.arguments["output_sqlite3_filename"])
+        self.con = sqlite3.connect(self.database_name)
+        self.cur = self.con.cursor()
+
+
+class PgSql(FsdbSql):
+    def get_cursor(self):
+        import psycopg2
+
+        self.data_types[str] = "text"
+        self.param_string = "%s"
+
+        self.con = psycopg2.connect(
+            database=self.database_name,
+            user=self.database_user,
+            password=self.database_password,
+            host=self.database_hostname,
+        )
         self.cur = self.con.cursor()
 
 
@@ -267,14 +330,24 @@ def main():
     if args.database_type == "sqlite3":
         conv = FsdbSqlite3(
             args.input_file,
-            output_sqlite3_filename=args.output_file,
+            database_name=args.database_name,
             converters=args.converters,
             table_name=args.table_name,
+        )
+    elif args.database_type == "pg":
+        conv = PgSql(
+            args.input_file,
+            table_name=args.table_name,
+            database_name=args.database_name,
+            user=args.database_user,
+            password=args.database_password,
+            host=args.database_hostname,
         )
     elif args.database_type == "print":
         conv = FsdbSqlPrint(
             args.input_file,
             table_name=args.table_name,
+            database_name=args.database_name,
         )
     else:
         error("unsupported database type: {args.database_type}")
