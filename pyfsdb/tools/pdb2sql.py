@@ -178,13 +178,16 @@ class FsdbSql:
         coltype = self.converters.get(from_column, None)
 
         # else pull the datatype from the fsdb(v2) handle if possible:
-        if not coltype:
+        if not coltype and self.fsdb.converters:
             # this returns a python type converter (str, int, etc)
             coltype = self.fsdb.converters.get(from_column, str)
 
         if coltype in self.data_types:
             # from the type, get the database string representation
             coltype = self.data_types[coltype]
+
+        if not coltype:
+            return self.data_types[str]
 
         return coltype
 
@@ -228,7 +231,7 @@ class FsdbSql:
                 f"create index if not exists {idx_name} on {table_name} ({cols})"
             )
             debug(statement)
-            self.con.execute(statement)
+            self.execute(statement)
 
     def insert_into_to_table(self, extra_values=[], chunks=10000, drop_columns=[]):
         """Insert the rows of the database into the sqlite3 table"""
@@ -331,8 +334,8 @@ def main():
         conv = FsdbSqlite3(
             args.input_file,
             database_name=args.database_name,
-            converters=args.converters,
             table_name=args.table_name,
+            converters=args.converters,
         )
     elif args.database_type == "pg":
         conv = PgSql(
@@ -342,12 +345,14 @@ def main():
             user=args.database_user,
             password=args.database_password,
             host=args.database_hostname,
+            converters=args.converters,
         )
     elif args.database_type == "print":
         conv = FsdbSqlPrint(
             args.input_file,
             table_name=args.table_name,
             database_name=args.database_name,
+            converters=args.converters,
         )
     else:
         error("unsupported database type: {args.database_type}")
