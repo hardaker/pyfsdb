@@ -84,14 +84,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-D",
-        "--database-name",
-        default="fsdb",
-        type=str,
-        help="Database name to connect to for host-based datatypes",
-    )
-
-    parser.add_argument(
         "-U",
         "--database-user",
         default=None,
@@ -127,6 +119,7 @@ def parse_args():
         "database_name",
         type=str,
         nargs="?",
+        default="database.fsdb",
         help="Output sqlite3 file or database name to use",
     )
 
@@ -342,9 +335,9 @@ def main():
             args.input_file,
             table_name=args.table_name,
             database_name=args.database_name,
-            user=args.database_user,
-            password=args.database_password,
-            host=args.database_hostname,
+            database_user=args.database_user,
+            database_password=args.database_password,
+            database_hostname=args.database_hostname,
             converters=args.converters,
         )
     elif args.database_type == "print":
