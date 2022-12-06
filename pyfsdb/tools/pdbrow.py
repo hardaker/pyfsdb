@@ -85,6 +85,10 @@ def process_pdbrow(
         output_file,
         expression,
 ):
+
+    result_name = "__pdb_result"
+
+
     # open input and output fsdb handles
     fh = pyfsdb.Fsdb(file_handle=input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
@@ -92,10 +96,23 @@ def process_pdbrow(
     # crate output columns
     oh.out_column_names = fh.column_names
 
+    compiled_expression = compile(f"{result_name} = ({expression})", '<string>', 'exec')
+
     # process the rows
     for row in fh:
-        oh.append(row)
 
+        # Use the row itself as a set of local variables, and add in an eval variable
+        row[result_name] = False
+
+        # execute the expression and check its result
+        exec(compiled_expression, {}, row)
+        if (row[result_name]):
+
+            # remove the added local variable, and save the results
+            del row[result_name]
+            oh.append(row)
+
+    oh.close()
 
 def main():
     args = parse_args()
