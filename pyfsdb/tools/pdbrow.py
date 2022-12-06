@@ -70,20 +70,14 @@ def process_pdbrow(
     if init_code:
         exec(compile(init_code, '<string>', 'exec'), globals)
 
-    compiled_expression = compile(f"{result_name} = ({expression})", '<string>', 'exec')
+    compiled_expression = compile(f"{expression}", '<string>', 'eval')
 
     # process the rows
     for row in fh:
 
-        # Use the row itself as a set of local variables, and add in an eval variable
-        row[result_name] = False
-
         # execute the expression and check its result
-        exec(compiled_expression, globals, row)
-        if (row[result_name]):
-
-            # remove the added local variable, and save the results
-            del row[result_name]
+        result = eval(compiled_expression, globals, row)
+        if result:
             oh.append(row)
 
     oh.close()
