@@ -140,6 +140,8 @@ specified on the command line, and most keys must be passed with a
 
 ## Data processing tools
 
+- pdbrow: select rows based on logic criteria
+- pdbroweval: modify rows based on python code
 - pdbtopn: given a key and a value column, print the top N rows with
   unique keys and the highest values.
 - pdbaugment: a fast way to merge two fsdb files, where one is stored
