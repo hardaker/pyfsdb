@@ -77,4 +77,5 @@ class test_pdbroweval(unittest.TestCase):
         self.base_test_and_eval("b = re.sub('3', 'x', str(a))", results,
                                 "import re")
 
-        
+    def test_other_var_creation(self):
+        self.base_test_and_eval("d = 2", self.input_data)
