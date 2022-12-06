@@ -55,4 +55,17 @@ class test_pdbroweval(unittest.TestCase):
         for row in results:
             row['a'] *= 2
         self.base_test_and_eval("a *= 2", results)
+
+    def test_change_letter_x_a(self):
+        results = copy.deepcopy(self.input_data)
+        for row in results:
+            row['c'] = 'x' * row['a']
+        self.base_test_and_eval("c = 'x' * a", results)
+
+    def test_change_b_two_passes(self):
+        results = copy.deepcopy(self.input_data)
+        for row in results:
+            row['b'] = str(row['a'])
+            row['c'] = row['b'] * row['a']
+        self.base_test_and_eval("b = str(a); c = b * a", results)
         
