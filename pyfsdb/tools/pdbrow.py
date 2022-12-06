@@ -11,7 +11,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: pdbrow 'column_a == 5'",
+        epilog="Exmaple Usage: pdbrow 'column_a == 5' input.fsdb output.fsdb",
     )
 
     parser.add_argument("-i", "--init-code",

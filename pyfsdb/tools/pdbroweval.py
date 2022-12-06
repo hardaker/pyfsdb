@@ -1,4 +1,4 @@
-"""Selects rows based on python boolean expressions"""
+"""Modifies rows based on python code passed as an expression (or file)"""
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from logging import debug, info, warning, error, critical
@@ -11,7 +11,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: pdbroweval 'column_a = column_a * 5'",
+        epilog="Exmaple Usage: pdbroweval 'column_a = column_a * 5' input.fsdb output.fsdb",
     )
 
     parser.add_argument("-i", "--init-code",
