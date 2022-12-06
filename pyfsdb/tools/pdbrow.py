@@ -14,6 +14,9 @@ def parse_args():
         epilog="Exmaple Usage: pdbrow 'column_a == 5'",
     )
 
+    parser.add_argument("-i", "--init-code",
+                        help="Initialization code to execute first (eg, imports)")
+
     parser.add_argument(
         "--log-level", default="info", help="Define the logging verbosity level."
     )
@@ -49,6 +52,7 @@ def process_pdbrow(
         input_file,
         output_file,
         expression,
+        init_code = None,
 ):
 
     result_name = "__pdb_result"
@@ -61,6 +65,11 @@ def process_pdbrow(
     # crate output columns
     oh.out_column_names = fh.column_names
 
+    globals = {}
+
+    if init_code:
+        exec(compile(init_code, '<string>', 'exec'), globals)
+
     compiled_expression = compile(f"{result_name} = ({expression})", '<string>', 'exec')
 
     # process the rows
@@ -70,7 +79,7 @@ def process_pdbrow(
         row[result_name] = False
 
         # execute the expression and check its result
-        exec(compiled_expression, {}, row)
+        exec(compiled_expression, globals, row)
         if (row[result_name]):
 
             # remove the added local variable, and save the results
@@ -86,6 +95,7 @@ def main():
         args.input_file,
         args.output_file,
         args.expression,
+        args.init_code,
     )
 
 

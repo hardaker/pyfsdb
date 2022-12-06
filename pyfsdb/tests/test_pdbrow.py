@@ -103,3 +103,20 @@ class test_pdbrow(unittest.TestCase):
         # result should be a slice of elements 0 and 2
         assert data == [self.input_data[0], self.input_data[2]]
         
+
+    def test_regex(self):
+        from pyfsdb.tools.pdbrow import process_pdbrow
+
+        input_data_fsdb = self.get_standard_input()
+        output_data = StringIO()
+        output_data.close = noop
+
+        process_pdbrow(input_data_fsdb, output_data, "re.match('3', str(a))",
+                       'import re')
+    
+        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
+                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
+
+        # result should be a slice of elements 0 and 2
+        assert data == [self.input_data[2]]
+        
