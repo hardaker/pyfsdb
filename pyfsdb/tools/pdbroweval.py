@@ -11,7 +11,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: pdbrow 'column_a == 5'",
+        epilog="Exmaple Usage: pdbroweval 'column_a = column_a * 5'",
     )
 
     parser.add_argument("-i", "--init-code",
