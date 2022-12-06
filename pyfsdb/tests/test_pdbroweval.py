@@ -70,10 +70,10 @@ class test_pdbroweval(unittest.TestCase):
         self.base_test_and_eval("b = str(a); c = b * a", results)
         
     def test_init(self):
-        import re
+        import re as relonger
         results = copy.deepcopy(self.input_data)
         for row in results:
-            row['b'] = re.sub('3', 'x', str(row['a']))
+            row['b'] = relonger.sub('3', 'x', str(row['a']))
         self.base_test_and_eval("b = re.sub('3', 'x', str(a))", results,
                                 "import re")
 
