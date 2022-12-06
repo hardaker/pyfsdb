@@ -182,6 +182,13 @@ class FsdbTest(TestCase):
         self.assertTrue(cols[2] == "colthree", "column three ok")
         self.assertTrue(f.column_names[2] == "colthree", "column three ok")
 
+    def test_basic_writing(self):
+        outstring = StringIO()
+        f = pyfsdb.Fsdb(out_file_handle=outstring)
+        f.out_column_names = ['a']
+        f.append([1])
+        self.assertEqual(outstring.getvalue(), "#fsdb -F t a:l\n1\n")
+
     def test_output(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
