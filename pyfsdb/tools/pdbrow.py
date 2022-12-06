@@ -55,9 +55,6 @@ def process_pdbrow(
         init_code = None,
 ):
 
-    result_name = "__pdb_result"
-
-
     # open input and output fsdb handles
     fh = pyfsdb.Fsdb(file_handle=input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
