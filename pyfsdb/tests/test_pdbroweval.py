@@ -1,6 +1,7 @@
 from io import StringIO
 import unittest
 import pyfsdb
+import copy
 from logging import error
 
 def noop():
@@ -46,6 +47,12 @@ class test_pdbroweval(unittest.TestCase):
 
         self.assertEqual(data, expected_result)
 
-    def test_true_no_changes(self):
+    def test_no_changes(self):
         self.base_test_and_eval("pass", self.input_data)
 
+    def test_change_a_x_2(self):
+        results = copy.deepcopy(self.input_data)
+        for row in results:
+            row['a'] *= 2
+        self.base_test_and_eval("a *= 2", results)
+        
