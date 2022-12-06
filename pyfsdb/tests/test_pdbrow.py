@@ -70,7 +70,7 @@ class test_pdbrow(unittest.TestCase):
         data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
                            return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
 
-        # result should be a slice of element 1
+        # result should be a slice of elements 0 and 2
         assert data == [self.input_data[0], self.input_data[2]]
 
     def test_filtering_math(self):
@@ -88,18 +88,18 @@ class test_pdbrow(unittest.TestCase):
         # result should be a slice of element 1
         assert data == self.input_data[1:2]
 
-    def test_filtering_(self):
+    def test_filtering_logic(self):
         from pyfsdb.tools.pdbrow import process_pdbrow
 
         input_data_fsdb = self.get_standard_input()
         output_data = StringIO()
         output_data.close = noop
 
-        process_pdbrow(input_data_fsdb, output_data, "c == a*a*a")
+        process_pdbrow(input_data_fsdb, output_data, "c == a*3 and b == a*2")
     
         data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
                            return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
 
-        # result should be a slice of element 1
-        assert data == self.input_data[1:2]
+        # result should be a slice of elements 0 and 2
+        assert data == [self.input_data[0], self.input_data[2]]
         
