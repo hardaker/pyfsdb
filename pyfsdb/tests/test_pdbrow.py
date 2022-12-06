@@ -32,14 +32,14 @@ class test_pdbrow(unittest.TestCase):
     def get_standard_input(self):
         return self.convert_to_stringio(self.input_data)
 
-    def base_test_and_assert(self, expression, expected_result):
+    def base_test_and_assert(self, expression, expected_result, init_code=None):
         from pyfsdb.tools.pdbrow import process_pdbrow
 
         input_data_fsdb = self.get_standard_input()
         output_data = StringIO()
         output_data.close = noop
 
-        process_pdbrow(input_data_fsdb, output_data, expression)
+        process_pdbrow(input_data_fsdb, output_data, expression, init_code=init_code)
         
         data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
                            return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
@@ -70,19 +70,15 @@ class test_pdbrow(unittest.TestCase):
         
 
     def test_regex(self):
-        from pyfsdb.tools.pdbrow import process_pdbrow
-
-        input_data_fsdb = self.get_standard_input()
-        output_data = StringIO()
-        output_data.close = noop
-
-        process_pdbrow(input_data_fsdb, output_data, "re.match('3', str(a))",
-                       'import re')
-    
-        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
-                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
-
         # result should be a slice of elements 0 and 2
-        assert data == [self.input_data[2]]
+        self.base_test_and_assert("re.match('3', str(a))",
+                                  [self.input_data[2]],
+                                  'import re')
         
+    def test_defun(self):
+        # result should be a slice of elements 0 and 2
+        self.base_test_and_assert("testfun(a)",
+                                  [self.input_data[2]],
+                                  "def testfun(x):\n  return x == 3")
+
 
