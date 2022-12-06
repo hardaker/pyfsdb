@@ -7,6 +7,14 @@ def noop():
     pass
 
 class test_pdbrow(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(test_pdbrow, self).__init__(*args, **kwargs)
+        self.input_data = [
+            {'a': 5, 'b': 10, 'c': 15},
+            {'a': 2, 'b': 4, 'c': 8},
+            {'a': 3, 'b': 6, 'c': 9},            
+        ]
+
     def test_load(self):
         from pyfsdb.tools.pdbrow import process_pdbrow
         self.assertTrue(True, "could load")
@@ -22,86 +30,43 @@ class test_pdbrow(unittest.TestCase):
         return StringIO(outh.getvalue())
 
     def get_standard_input(self):
-        self.input_data = [
-            {'a': 5, 'b': 10, 'c': 15},
-            {'a': 2, 'b': 4, 'c': 8},
-            {'a': 3, 'b': 6, 'c': 9},            
-        ]
         return self.convert_to_stringio(self.input_data)
 
-    def test_true_filtering(self):
+    def base_test_and_assert(self, expression, expected_result):
         from pyfsdb.tools.pdbrow import process_pdbrow
 
         input_data_fsdb = self.get_standard_input()
         output_data = StringIO()
         output_data.close = noop
 
-        process_pdbrow(input_data_fsdb, output_data, "True")
+        process_pdbrow(input_data_fsdb, output_data, expression)
         
         data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
                            return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
 
-        assert data == self.input_data
+        self.assertEqual(data, expected_result)
+
+    def test_true_filtering(self):
+        self.base_test_and_assert("True", self.input_data)
 
     def test_filtering_equality(self):
-        from pyfsdb.tools.pdbrow import process_pdbrow
-
-        input_data_fsdb = self.get_standard_input()
-        output_data = StringIO()
-        output_data.close = noop
-
-        process_pdbrow(input_data_fsdb, output_data, "a == 2")
-    
-        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
-                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
-
         # result should be a slice of element 1
-        assert data == self.input_data[1:2]
+        self.base_test_and_assert("a == 2", self.input_data[1:2])
 
     def test_filtering_multiplication(self):
-        from pyfsdb.tools.pdbrow import process_pdbrow
-
-        input_data_fsdb = self.get_standard_input()
-        output_data = StringIO()
-        output_data.close = noop
-
-        process_pdbrow(input_data_fsdb, output_data, "c == a*3")
-    
-        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
-                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
-
         # result should be a slice of elements 0 and 2
-        assert data == [self.input_data[0], self.input_data[2]]
+        self.base_test_and_assert("c == a*3", 
+                                  [self.input_data[0], self.input_data[2]])
 
     def test_filtering_math(self):
-        from pyfsdb.tools.pdbrow import process_pdbrow
-
-        input_data_fsdb = self.get_standard_input()
-        output_data = StringIO()
-        output_data.close = noop
-
-        process_pdbrow(input_data_fsdb, output_data, "c == a*a*a")
-    
-        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
-                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
-
         # result should be a slice of element 1
-        assert data == self.input_data[1:2]
+        self.base_test_and_assert("c == a*a*a", 
+                                  self.input_data[1:2])
 
     def test_filtering_logic(self):
-        from pyfsdb.tools.pdbrow import process_pdbrow
-
-        input_data_fsdb = self.get_standard_input()
-        output_data = StringIO()
-        output_data.close = noop
-
-        process_pdbrow(input_data_fsdb, output_data, "c == a*3 and b == a*2")
-    
-        data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
-                           return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
-
         # result should be a slice of elements 0 and 2
-        assert data == [self.input_data[0], self.input_data[2]]
+        self.base_test_and_assert("c == a*3 and b == a*2",
+                                  [self.input_data[0], self.input_data[2]])
         
 
     def test_regex(self):
@@ -120,3 +85,4 @@ class test_pdbrow(unittest.TestCase):
         # result should be a slice of elements 0 and 2
         assert data == [self.input_data[2]]
         
+
