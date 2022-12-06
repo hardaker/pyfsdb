@@ -17,6 +17,12 @@ def parse_args():
     parser.add_argument("-i", "--init-code",
                         help="Initialization code to execute first (eg, imports)")
 
+    parser.add_argument("-f", "--expression-is-file", action="store_true",
+                        help="The expression is actually a python code file to lead")
+
+    parser.add_argument("-I", "--init-code-is-file", action="store_true",
+                        help="The expression is actually a python code file to lead")
+
     parser.add_argument(
         "--log-level", default="info", help="Define the logging verbosity level."
     )
@@ -53,6 +59,8 @@ def process_pdbroweval(
         output_file,
         expression,
         init_code = None,
+        from_file = False,
+        init_code_file = False,
 ):
 
     # open input and output fsdb handles
@@ -65,8 +73,13 @@ def process_pdbroweval(
     globals = {}
 
     if init_code:
+        if init_code_file:
+            init_code = init_code.read()
         exec(compile(init_code, '<string>', 'exec'), globals)
 
+    if from_file:
+        expression = expression.read()
+        error(expression)
     compiled_expression = compile(f"{expression}", '<string>', 'exec')
 
     # process the rows
@@ -81,11 +94,12 @@ def process_pdbroweval(
 def main():
     args = parse_args()
 
-    process_pdbrow(
+    process_pdbroweval(
         args.input_file,
         args.output_file,
         args.expression,
         args.init_code,
+        args.expression_is_code,
     )
 
 

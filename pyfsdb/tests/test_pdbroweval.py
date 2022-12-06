@@ -33,14 +33,16 @@ class test_pdbroweval(unittest.TestCase):
     def get_standard_input(self):
         return self.convert_to_stringio(self.input_data)
 
-    def base_test_and_eval(self, expression, expected_result, init_code=None):
+    def base_test_and_eval(self, expression, expected_result, init_code=None,
+                           from_file=False, init_code_file=False):
         from pyfsdb.tools.pdbroweval import process_pdbroweval
 
         input_data_fsdb = self.get_standard_input()
         output_data = StringIO()
         output_data.close = noop
 
-        process_pdbroweval(input_data_fsdb, output_data, expression, init_code=init_code)
+        process_pdbroweval(input_data_fsdb, output_data, expression, init_code=init_code,
+                           from_file=from_file, init_code_file=init_code_file)
         
         data = pyfsdb.Fsdb(file_handle=StringIO(output_data.getvalue()),
                            return_type=pyfsdb.RETURN_AS_DICTIONARY).get_all()
@@ -79,3 +81,17 @@ class test_pdbroweval(unittest.TestCase):
 
     def test_other_var_creation(self):
         self.base_test_and_eval("d = 2", self.input_data)
+
+    def test_filehandle_code(self):
+        code = StringIO("a = 1\nb = 2\nc = 3")
+        results = [{'a': 1, 'b': 2, 'c': 3}] * 3
+        self.base_test_and_eval(code, results, from_file=True)
+
+    def test_init_code_file(self):
+        import re as relonger
+        results = copy.deepcopy(self.input_data)
+        for row in results:
+            row['b'] = relonger.sub('3', 'x', str(row['a']))
+        self.base_test_and_eval("b = re.sub('3', 'x', str(a))", results,
+                                StringIO("import re"), init_code_file=True)
+
