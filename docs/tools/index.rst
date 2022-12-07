@@ -6,8 +6,12 @@ command line processing of FSDB data.  We break the list of tools up
 into different categories (although some tools may technical belong to
 multiple categories, we place them in only one).
 
+Note: the `python` based tools begin with the `pdb` prefix to
+distinguish themselves from their `perl` counter-parts (which begin
+with `db`).
 
-Data filtering tools
+
+Data filtering and modification tools
 --------------------
 
 .. toctree::
@@ -15,6 +19,7 @@ Data filtering tools
    :caption: Contents:
 
    pdbrow
+   pdbroweval
 
 
 Data analysis tools
