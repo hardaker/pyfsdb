@@ -7,7 +7,7 @@ import sys
 import pyfsdb
 
 
-def parse_args():
+def get_parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
@@ -48,6 +48,10 @@ def parse_args():
         help="Where to write the output FSDB to",
     )
 
+    return parser
+
+def parse_args():
+    parser = get_parse_args()
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
