@@ -99,7 +99,7 @@ def main():
         args.output_file,
         args.expression,
         args.init_code,
-        args.expression_is_code,
+        args.expression_is_file,
     )
 
 
