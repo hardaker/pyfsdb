@@ -21,6 +21,7 @@ Data filtering and modification tools
    pdbrow
    pdbroweval
    pdbensure
+   pdb2to1
 
 
 Data analysis tools
