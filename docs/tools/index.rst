@@ -30,6 +30,7 @@ Data conversion tools
    :caption: Contents:
 
    pdb2to1
+   pdbaddtypes
    pdb2tex
    pdb2sql
 
