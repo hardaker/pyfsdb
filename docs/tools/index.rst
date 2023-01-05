@@ -21,7 +21,16 @@ Data filtering and modification tools
    pdbrow
    pdbroweval
    pdbensure
+
+Data conversion tools
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
    pdb2to1
+   pdb2tex
 
 
 Data analysis tools
