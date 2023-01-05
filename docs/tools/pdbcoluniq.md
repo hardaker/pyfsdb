@@ -8,7 +8,7 @@ dbrowuniq equivelent) at the potential cost of higher memory usage.
 #### Example input (*myfile.fsdb*):
 
 ```
-#fsdb -F s col1:l two:s andthree:d
+#fsdb -F s col1:l two:a andthree:d
 1	key1	42.0
 2	key2	123.0
 3	key1    90.2

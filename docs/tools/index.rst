@@ -12,7 +12,7 @@ with `db`).
 
 
 Data filtering and modification tools
---------------------
+-------------------------------------
 
 .. toctree::
    :maxdepth: 1
@@ -20,6 +20,7 @@ Data filtering and modification tools
 
    pdbrow
    pdbroweval
+   pdbensure
 
 
 Data analysis tools
