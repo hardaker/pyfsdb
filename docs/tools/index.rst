@@ -31,6 +31,7 @@ Data conversion tools
 
    pdb2to1
    pdb2tex
+   pdb2sql
 
 
 Data analysis tools
