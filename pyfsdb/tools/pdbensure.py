@@ -59,7 +59,7 @@ def parse_args():
 
 def filter_row(row, columns, fill_value, print_error):
     for column in columns:
-        if row[column] == "":
+        if row[column] == "" or row[column] is None:
             if fill_value:
                 row[column] = fill_value
             else:
