@@ -21,6 +21,7 @@ Data filtering and modification tools
    pdbrow
    pdbroweval
    pdbensure
+   pdbaugment
 
 Data conversion tools
 ---------------------
