@@ -23,6 +23,7 @@ Data filtering and modification tools
    pdbensure
    pdbaugment
    pdbcdf
+   pdbdatetoepoch
 
 Data conversion tools
 ---------------------
