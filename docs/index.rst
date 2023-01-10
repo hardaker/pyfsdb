@@ -11,7 +11,7 @@ Welcome to PyFSDB's documentation!
    :caption: Contents:
 
    introduction
-
+   class
    tools/index
 
 Indices and tables
