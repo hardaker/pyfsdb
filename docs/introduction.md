@@ -73,6 +73,8 @@ for row in db:
 
 ## Example writing an FSDB formatted file.
 
+### Code:
+
 ```
 import pyfsdb
 db = pyfsdb.Fsdb(out_file="myfile.fsdb")
@@ -81,5 +83,9 @@ db.append([4, 'hello world'])
 db.close()
 ```
 
-Read below for further usage details.
+### Output:
 
+```
+#fsdb -F t one:l two
+4	hello world
+```
