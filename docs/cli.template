@@ -1,0 +1,10 @@
+
+
+Command Line Arguments
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. sphinx_argparse_cli::
+   :module: pyfsdb.tools.TOOL
+   :func: parse_args
+   :hook:
+   :prog: TOOL
