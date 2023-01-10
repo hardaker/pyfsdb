@@ -1,7 +1,8 @@
 ### pdbdatetoepoch - translate a date-string based column to unix epochs
 
 `pdbdatetoepoch` translates one date/time based column column to
-another unix epoch seconds (since Jan 1 1970) column.
+another unix epoch seconds (since Jan 1 1970) column.  This
+tool is the inverse of the `pdbepochtodate` tool.
 
 #### Example input (*mytime.fsdb*):
 
