@@ -24,6 +24,7 @@ Data filtering and modification tools
    pdbaugment
    pdbcdf
    pdbdatetoepoch
+   pdbepochtodate
 
 Data conversion tools
 ---------------------
@@ -46,5 +47,3 @@ Data analysis tools
    :caption: Contents:
 
    pdbcoluniq
-
-
