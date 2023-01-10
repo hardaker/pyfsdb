@@ -32,8 +32,8 @@ release = "2.1"
 # ones.
 extensions = [
     "myst_parser",
-    #    "sphinxarg.ext",
-    "sphinx_argparse_cli",
+    "sphinxarg.ext",
+    # "sphinx_argparse_cli",
     "sphinx.ext.autodoc",
 ]
 
