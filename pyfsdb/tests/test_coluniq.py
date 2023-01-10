@@ -28,7 +28,7 @@ class TestColUniq(unittest.TestCase):
         # check the the result
         self.assertEqual(
             truncate_comments(outh.getvalue()),
-            "#fsdb -F t a\na\nb\n",
+            "#fsdb -F t a:a\na\nb\n",
             "resulting values are right from uniq",
         )
 
@@ -40,7 +40,7 @@ class TestColUniq(unittest.TestCase):
         # check the the result
         self.assertEqual(
             truncate_comments(outh.getvalue()),
-            "#fsdb -F t a count:l\na\t2\nb\t1\n",
+            "#fsdb -F t a:a count:l\na\t2\nb\t1\n",
             "resulting values are right from uniq",
         )
 
@@ -59,14 +59,14 @@ class TestColUniq(unittest.TestCase):
         # check the the result
         self.assertEqual(
             truncate_comments(outh.getvalue()),
-            "#fsdb -F t a b\na\tb\nb\tc\n",
+            "#fsdb -F t a:a b:a\na\tb\nb\tc\n",
             "resulting values are right from uniq",
         )
 
         #
         # three columns with counting
         #
-        data = "#fsdb -F t x y z\na\tb\tc\nb\tc\td\na\tb\td\na\tb\tc\n"
+        data = "#fsdb -F t x:a y:a z:a\na\tb\tc\nb\tc\td\na\tb\td\na\tb\tc\n"
 
         from pyfsdb.tools.pdbcoluniq import filter_unique_columns
 
@@ -78,7 +78,7 @@ class TestColUniq(unittest.TestCase):
         # check the the result
         self.assertEqual(
             truncate_comments(outh.getvalue()),
-            "#fsdb -F t x y z count:l\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n",
+            "#fsdb -F t x:a y:a z:a count:l\na\tb\tc\t2\na\tb\td\t1\nb\tc\td\t1\n",
             "resulting values are right from uniq",
         )
 
@@ -98,9 +98,8 @@ class TestColUniq(unittest.TestCase):
 
         # check the the result
         output = outh.getvalue()
-        sys.stderr.write(f"here: {output}")
         self.assertEqual(
             truncate_comments(output),
-            "#fsdb -F t a b c count:l\na\tb\tc\t12\nb\tc\td\t4\n",
+            "#fsdb -F t a:a b:a c:a count:l\na\tb\tc\t12\nb\tc\td\t4\n",
             "resulting values are right from uniq",
         )

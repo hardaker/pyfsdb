@@ -22,7 +22,7 @@ class test_json_functions(unittest.TestCase):
 
         self.assertEqual(
             output.getvalue(),
-            "#fsdb -F t a d\nc\tf\nb\te\ny\tx\n\tx\n",
+            "#fsdb -F t a:a d:a\nc\tf\nb\te\ny\tx\n\tx\n",
             "output of json_to_fsdb is correct",
         )
 

@@ -185,7 +185,7 @@ class FsdbTest(TestCase):
     def test_basic_writing(self):
         outstring = StringIO()
         f = pyfsdb.Fsdb(out_file_handle=outstring)
-        f.out_column_names = ['a']
+        f.out_column_names = ["a"]
         f.append([1])
         self.assertEqual(outstring.getvalue(), "#fsdb -F t a:l\n1\n")
 
@@ -402,7 +402,7 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertTrue(lines[0] == "#fsdb -F t colone coltwo colthree\n")
+        self.assertTrue(lines[0] == "#fsdb -F t colone:a coltwo:a colthree:a\n")
         self.assertTrue(lines[1] == "# top comment\n")
         self.assertTrue(lines[3] == "# after row 1\n")
         self.assertTrue(lines[len(lines) - 1] == "#   | test command init\n")
@@ -663,7 +663,7 @@ class FsdbTest(TestCase):
 
         self.assertEqual(
             outh.getvalue(),
-            "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
+            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
             "filter properly double the middle column",
         )
 
@@ -685,7 +685,7 @@ class FsdbTest(TestCase):
 
         self.assertEqual(
             outh.getvalue(),
-            "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
+            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
             "filter properly double the middle column",
         )
 
@@ -713,7 +713,7 @@ class FsdbTest(TestCase):
 
         self.assertEqual(
             outh.getvalue(),
-            "#fsdb -F t a b:l c\n1\t4\t3\n4\t10\t6\n",
+            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
             "filter properly double the middle column",
         )
 
@@ -897,8 +897,11 @@ class FsdbTest(TestCase):
         f.close()
 
         # ignore headers
+        output = outdata.getvalue()
+        print(output)
+        print(expected)
         self.assertTrue(
-            outdata.getvalue().startswith(expected), "read and write to the same handle"
+            output.startswith(expected), "read and write to the same handle"
         )
 
         outdata.close.assert_called()
@@ -907,7 +910,7 @@ class FsdbTest(TestCase):
         from io import StringIO
 
         data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
-        expected = "#fsdb -F t a b:l c d\n1\t4\t3\ty\n4\t10\t6\ty\n"
+        expected = "#fsdb -F t a:a b:l c:a d:a\n1\t4\t3\ty\n4\t10\t6\ty\n"
 
         indata = StringIO(data)
         outdata = StringIO()
@@ -936,7 +939,7 @@ class FsdbTest(TestCase):
         # ignore headers
         result = outdata.getvalue()
         self.assertTrue(
-            result.startswith(expected), "read and write to the same handle"
+            result.startswith(expected), "read and write to the same handle adding one"
         )
 
         outdata.close.assert_called()
@@ -958,8 +961,6 @@ class FsdbTest(TestCase):
 
         # ignore headers
         result = outdata.getvalue()
-        print(result)
-        print(expected)
         self.assertTrue(result.startswith(expected), "set columns on init")
 
     def test_datatype_columns(self):
@@ -1018,7 +1019,7 @@ class FsdbTest(TestCase):
             f.out_column_names = ["a", "b", "c"]
             f.append(["str", 10, 20.5])
         result = truncate_comments(outh.getvalue())
-        self.assertEqual(result, "#fsdb -F t a b:l c:d\nstr\t10\t20.5\n")
+        self.assertEqual(result, "#fsdb -F t a:a b:l c:d\nstr\t10\t20.5\n")
 
     def test_failed_converter(self):
         # note: fails float conversion to an int
