@@ -88,7 +88,7 @@ all interchange FSDB formatted files.  This allows chaining multiple
 commands together to achieve a goal.  Though the original base set of
 tools are in perl, you don't need to know perl for most of them.
 
-## Let's create a ./mydemo command:
+## Let's create a ./mydemo.py script:
 
 ``` python
 import sys, pyfsdb
@@ -115,26 +115,24 @@ We can run it thus'ly:
 
 
 ``` sh
-# cat test.fsdb | ./mydemo
+# cat test.fsdb | ./mydemo.py
 #fsdb -F t col1 value
 1	84.0
 2	246.0
-#   | ./test.py
+#   | ./mydemo.py
 ```
 
 Or chain it together with multiple FSDB commands:
 
 ```
-# cat test.fsdb | ./mydemo | dbcolstats valueq
-cat test.fsdb | ./test.py | dbcolstats value | dbcol mean stddev sum min max | dbfilealter -R C
+# cat test.fsdb | ./mydemo | dbcolstats value | dbcol mean stddev sum min max | dbfilealter -R C
 #fsdb -R C mean stddev sum min max
 mean: 165
 stddev: 114.55
 sum: 330
 min: 84
 max: 246
-
-#   | ./test.py
+#   | ./mydemo.py
 #   | dbcolstats value
 #   | dbcol mean stddev sum min max
 #   | dbfilealter -R C
