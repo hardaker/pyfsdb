@@ -1,10 +1,21 @@
 # Objective
 
-A python implementation of the (perl) [FSDB] flat-file streaming
-database.  Also, so my [C implementation].
+The [FSDB] "flat-file streaming database" is a structured data file
+that includes column names, formatting specifications (e.g. tab vs
+space vs comma), and a command history that generated each file.
+PyFSDB is a a python implementation of the original functionality that
+was implemented in perl.  Both the perl and python version come with a
+long list of [command line tools] that can be used to quickly process
+datasets using traditional unix pipeline processing.  There is also a
+[C implementation] and a Go implementation (ref needed) of FSDB.
+
+Getting started documentation is below, but also see the [full
+documentation] over on readthedocs.
 
 [FSDB]: https://www.isi.edu/~johnh/SOFTWARE/FSDB/
 [C implementation]: https://github.com/hardaker/fsdb-clib
+[full documentation]: https://fsdb.readthedocs.io/en/latest/
+[command line tools]: https://fsdb.readthedocs.io/en/latest/tools/index.html
 
 # Installation
 
