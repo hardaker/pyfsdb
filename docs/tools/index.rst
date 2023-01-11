@@ -35,9 +35,9 @@ Data conversion tools
 
    pdb2to1
    pdbaddtypes
+   pdbformat
    pdb2tex
    pdb2sql
-
 
 Data analysis tools
 -------------------
