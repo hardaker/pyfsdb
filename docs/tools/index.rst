@@ -38,6 +38,7 @@ Data conversion tools
    pdbformat
    pdb2tex
    pdb2sql
+   pdbfullpivot
 
 Data analysis tools
 -------------------
