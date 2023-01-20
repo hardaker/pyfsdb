@@ -48,3 +48,4 @@ Data analysis tools
    :caption: Contents:
 
    pdbcoluniq
+   pdbheatmap
