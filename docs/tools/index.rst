@@ -36,6 +36,7 @@ Data conversion tools
    pdb2to1
    pdbaddtypes
    pdbformat
+   pdbjinja
    pdb2tex
    pdb2sql
    pdbfullpivot

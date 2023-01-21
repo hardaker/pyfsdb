@@ -6,6 +6,8 @@ output lines of text based on the column values from each row.  The
 column names maybe enclosed in curly braces to indicate where
 replacement should happen.
 
+*See also:* `pdbjinja`
+
 #### Example input (*myfile.fsdb*):
 
 ```
