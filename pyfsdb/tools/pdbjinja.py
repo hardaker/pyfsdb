@@ -18,7 +18,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Example: pdbj2 -j report.j2 input.fsdb output.txt",
+        epilog="Example: pdbjinja -j report.jinja input.fsdb output.txt",
     )
 
     parser.add_argument(
@@ -81,7 +81,7 @@ def process(
     template = jinja2.Environment(loader=loader)
     template = template.from_string(jinja_template_data)
 
-    # call j2 and write the results out to the file
+    # call jinja and write the results out to the file
     output_file_handle.write(template.render({"rows": rows}))
 
 

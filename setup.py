@@ -37,7 +37,7 @@ setuptools.setup(
             "pdbepochtodate = pyfsdb.tools.pdbepochtodate:main",
             "pdbnormalize = pyfsdb.tools.pdbnormalize:main",
             "pdbsum = pyfsdb.tools.pdbsum:main",
-            "pdbj2 = pyfsdb.tools.pdbj2:main",
+            "pdbjinja = pyfsdb.tools.pdbjinja:main",
             "pdbcdf = pyfsdb.tools.pdbcdf:main",
             "pdbroc = pyfsdb.tools.pdbroc:main",
             "pdb2sql = pyfsdb.tools.pdb2sql:main",
