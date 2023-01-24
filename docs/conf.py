@@ -33,7 +33,7 @@ release = "2.1"
 extensions = [
     "myst_parser",
     "sphinxarg.ext",
-    # "sphinx_argparse_cli",
+    "sphinx_argparse_cli",
     "sphinx.ext.autodoc",
 ]
 
