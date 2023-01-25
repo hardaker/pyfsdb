@@ -68,7 +68,8 @@ incoming_type_converters = {
     # python doesn't have different float/double sizes
     "f": float,
     "d": float,
-    # we leave strings (a) alone
+    # we leave strings as strings
+    "a": str,
 }
 
 outgoing_type_converters = {
