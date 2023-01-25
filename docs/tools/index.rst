@@ -42,6 +42,7 @@ Data conversion tools
    pdb2tex
    pdb2sql
    pdbfullpivot
+   pdbreescape
 
 Data analysis tools
 -------------------
