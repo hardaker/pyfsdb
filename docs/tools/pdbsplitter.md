@@ -1,6 +1,8 @@
 ### pdbsplitter - split an FSDB file into multiple files
 
-`pdbsplitter` splits a single FSDB file into a series of output files.
+`pdbsplitter` splits a single FSDB file into a series of output
+files.  This could be achieved by running `dbcol` multiple times, but
+`pdbsplitter` should be faster when processing many columns.
 
 #### Example input (*myfile.fsdb*):
 
