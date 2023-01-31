@@ -41,6 +41,7 @@ Data conversion tools
    pdbjinja
    pdb2tex
    pdb2sql
+   pdbsplitter
    pdbfullpivot
    pdbreescape
 
