@@ -54,4 +54,5 @@ Data analysis tools
    :caption: Contents:
 
    pdbcoluniq
+   pdbtopn
    pdbheatmap
