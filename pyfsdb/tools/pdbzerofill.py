@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-"""Fills a column with zeros if it was otherwise blank"""
+"""Fills a row that is missing in a series of rows with a numerical
+increasing (frequently a timestamp) index"""
 
 import sys
 import argparse
