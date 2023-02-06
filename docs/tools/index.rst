@@ -27,6 +27,7 @@ Data filtering and modification tools
    pdbdatetoepoch
    pdbepochtodate
    pdbkeyedsort
+   pdbsum
    pdbzerofill
 
 Data conversion tools
@@ -42,6 +43,7 @@ Data conversion tools
    pdbjinja
    pdb2tex
    pdb2sql
+   pdbsplitter
    pdbfullpivot
    pdbreescape
 
@@ -53,4 +55,5 @@ Data analysis tools
    :caption: Contents:
 
    pdbcoluniq
+   pdbtopn
    pdbheatmap
