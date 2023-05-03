@@ -1,7 +1,7 @@
 dbcolhisto - compute a histogram over a column of Fsdb data
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------

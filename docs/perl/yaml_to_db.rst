@@ -1,7 +1,7 @@
 yaml_to_db - convert a subset of YAML into fsdb
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------

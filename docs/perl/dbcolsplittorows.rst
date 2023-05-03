@@ -1,7 +1,7 @@
 dbcolsplittorows - split an existing column into multiple new rows
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------

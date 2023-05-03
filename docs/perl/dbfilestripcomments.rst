@@ -1,7 +1,7 @@
 dbfilestripcomments - remove comments from a fsdb file
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------

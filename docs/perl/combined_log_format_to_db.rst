@@ -1,7 +1,7 @@
 combined_log_format_to_db - convert Apache Combined Log Format to Fsdb
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------

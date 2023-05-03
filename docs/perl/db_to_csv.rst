@@ -1,7 +1,7 @@
 db_to_csv - convert fsdb to the comma-separated-value file-format
 ======================================================================
 
-*NOTE: this page was directly converted from the perl manual page*
+*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version 3.1*
 
 SYNOPSIS
 --------
