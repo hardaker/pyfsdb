@@ -28,6 +28,7 @@ Data filtering and modification tools
    pdbepochtodate
    pdbkeyedsort
    pdbsum
+   pdbzerofill
 
 Data conversion tools
 ---------------------
