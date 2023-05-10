@@ -14,14 +14,30 @@ def get_parse_args():
         epilog="Exmaple Usage: pdbroweval 'column_a = column_a * 5' input.fsdb output.fsdb",
     )
 
-    parser.add_argument("-i", "--init-code",
-                        help="Initialization code to execute first (eg, imports)")
+    parser.add_argument(
+        "-u",
+        "--underbars",
+        action="store_true",
+        help="Use variable names with _ prefixes to the column names",
+    )
 
-    parser.add_argument("-f", "--expression-is-file", action="store_true",
-                        help="The expression is actually a python code file to lead")
+    parser.add_argument(
+        "-i", "--init-code", help="Initialization code to execute first (eg, imports)"
+    )
 
-    parser.add_argument("-I", "--init-code-is-file", action="store_true",
-                        help="The expression is actually a python code file to lead")
+    parser.add_argument(
+        "-f",
+        "--expression-is-file",
+        action="store_true",
+        help="The expression is actually a python code file to lead",
+    )
+
+    parser.add_argument(
+        "-I",
+        "--init-code-is-file",
+        action="store_true",
+        help="The expression is actually a python code file to lead",
+    )
 
     parser.add_argument(
         "--log-level", default="info", help="Define the logging verbosity level."
@@ -50,6 +66,7 @@ def get_parse_args():
 
     return parser
 
+
 def parse_args():
     parser = get_parse_args()
     args = parser.parse_args()
@@ -59,12 +76,13 @@ def parse_args():
 
 
 def process_pdbroweval(
-        input_file,
-        output_file,
-        expression,
-        init_code = None,
-        from_file = False,
-        init_code_file = False,
+    input_file,
+    output_file,
+    expression,
+    init_code=None,
+    from_file=False,
+    init_code_file=False,
+    use_underbars=False,
 ):
 
     # open input and output fsdb handles
@@ -79,21 +97,28 @@ def process_pdbroweval(
     if init_code:
         if init_code_file:
             init_code = init_code.read()
-        exec(compile(init_code, '<string>', 'exec'), globals)
+        exec(compile(init_code, "<string>", "exec"), globals)
 
     if from_file:
         expression = expression.read()
         error(expression)
-    compiled_expression = compile(f"{expression}", '<string>', 'exec')
+    compiled_expression = compile(f"{expression}", "<string>", "exec")
+
+    # if they wanted under-bar based names
+    if use_underbars:
+        fh.column_names = ["_" + x for x in fh.column_names]
 
     # process the rows
     for row in fh:
 
         # execute the expression and check its result
         exec(compiled_expression, globals, row)
+        if use_underbars:
+            row = {k[1:]: v for k, v in row.items()}
         oh.append(row)
 
     oh.close()
+
 
 def main():
     args = parse_args()
@@ -104,9 +129,9 @@ def main():
         args.expression,
         args.init_code,
         args.expression_is_file,
+        args.underbars,
     )
 
 
 if __name__ == "__main__":
     main()
-
