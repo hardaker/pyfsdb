@@ -1,9 +1,4 @@
-.. PyFSDB documentation master file, created by
-   sphinx-quickstart on Tue Dec  6 13:25:10 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to PyFSDB's documentation!
+FSDB - File System Data Base
 ==================================
 
 .. toctree::
@@ -12,6 +7,7 @@ Welcome to PyFSDB's documentation!
 
    introduction
    tools/index
+   perltools
    class
 
 Indices and tables

@@ -29,14 +29,14 @@ def get_parse_args():
         "-f",
         "--expression-is-file",
         action="store_true",
-        help="The expression is actually a python code file to lead",
+        help="The expression is actually a python code file to load",
     )
 
     parser.add_argument(
         "-I",
         "--init-code-is-file",
         action="store_true",
-        help="The expression is actually a python code file to lead",
+        help="The expression is actually a python code file to load",
     )
 
     parser.add_argument(
