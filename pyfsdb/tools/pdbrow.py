@@ -103,6 +103,7 @@ def main():
         args.output_file,
         args.expression,
         args.init_code,
+        args.underbars,
     )
 
 

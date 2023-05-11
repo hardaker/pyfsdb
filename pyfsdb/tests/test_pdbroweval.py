@@ -56,8 +56,8 @@ class test_pdbroweval(unittest.TestCase):
             output_data,
             expression,
             init_code=init_code,
-            from_file=from_file,
-            init_code_file=init_code_file,
+            expression_is_file=from_file,
+            init_code_is_file=init_code_file,
             use_underbars=underbars,
         )
 

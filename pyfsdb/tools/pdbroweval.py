@@ -80,8 +80,8 @@ def process_pdbroweval(
     output_file,
     expression,
     init_code=None,
-    from_file=False,
-    init_code_file=False,
+    expression_is_file=False,
+    init_code_is_file=False,
     use_underbars=False,
 ):
 
@@ -95,11 +95,11 @@ def process_pdbroweval(
     globals = {}
 
     if init_code:
-        if init_code_file:
+        if init_code_is_file:
             init_code = init_code.read()
         exec(compile(init_code, "<string>", "exec"), globals)
 
-    if from_file:
+    if expression_is_file:
         expression = expression.read()
         error(expression)
     compiled_expression = compile(f"{expression}", "<string>", "exec")
@@ -107,6 +107,7 @@ def process_pdbroweval(
     # if they wanted under-bar based names
     if use_underbars:
         fh.column_names = ["_" + x for x in fh.column_names]
+        fh.converters = {"_" + x: y for x, y in fh.converters.items()}
 
     # process the rows
     for row in fh:
@@ -126,10 +127,11 @@ def main():
     process_pdbroweval(
         args.input_file,
         args.output_file,
-        args.expression,
-        args.init_code,
-        args.expression_is_file,
-        args.underbars,
+        expression=args.expression,
+        init_code=args.init_code,
+        expression_is_file=args.expression_is_file,
+        init_code_is_file=args.init_code_is_file,
+        use_underbars=args.underbars,
     )
 
 
