@@ -36,7 +36,12 @@ class test_pdbrow(unittest.TestCase):
         return self.convert_to_stringio(self.input_data)
 
     def base_test_and_assert(
-        self, expression, expected_result, init_code=None, use_underbars=False
+        self,
+        expression,
+        expected_result,
+        init_code=None,
+        use_underbars=False,
+        use_namedtuple=None,
     ):
         from pyfsdb.tools.pdbrow import process_pdbrow
 
@@ -50,6 +55,7 @@ class test_pdbrow(unittest.TestCase):
             expression,
             init_code=init_code,
             use_underbars=use_underbars,
+            use_namedtuple=use_namedtuple,
         )
 
         data = pyfsdb.Fsdb(
@@ -98,4 +104,11 @@ class test_pdbrow(unittest.TestCase):
         # result should be a slice of elements 0 and 2
         self.base_test_and_assert(
             "testfun(a)", [self.input_data[2]], "def testfun(x):\n  return x == 3"
+        )
+
+    def test_by_namedtupel(self):
+        self.base_test_and_assert(
+            "row.c == row.a * 3 and row.b == row.a * 2",
+            [self.input_data[0], self.input_data[2]],
+            use_namedtuple="row",
         )

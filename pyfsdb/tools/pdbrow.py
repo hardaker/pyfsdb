@@ -22,6 +22,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-n",
+        "--namedtuple",
+        default=None,
+        type=str,
+        help="Use a namedtuple under this name to store data",
+    )
+
+    parser.add_argument(
         "-i", "--init-code", help="Initialization code to execute first (eg, imports)"
     )
 
@@ -62,10 +70,15 @@ def process_pdbrow(
     expression,
     init_code=None,
     use_underbars=False,
+    use_namedtuple=None,
 ):
 
+    return_type = pyfsdb.RETURN_AS_DICTIONARY
+    if use_namedtuple:
+        return_type = pyfsdb.RETURN_AS_ARRAY
+
     # open input and output fsdb handles
-    fh = pyfsdb.Fsdb(file_handle=input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY)
+    fh = pyfsdb.Fsdb(file_handle=input_file, return_type=return_type)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
 
     # crate output columns
@@ -78,6 +91,11 @@ def process_pdbrow(
 
     compiled_expression = compile(f"{expression}", "<string>", "eval")
 
+    if use_namedtuple:
+        from collections import namedtuple
+
+        named_row = namedtuple("named_row", fh.column_names)
+
     # process the rows
     for row in fh:
 
@@ -86,6 +104,11 @@ def process_pdbrow(
             result = eval(
                 compiled_expression, globals, {"_" + k: v for k, v in row.items()}
             )
+
+        elif use_namedtuple:
+            contents = named_row(*row)
+            result = eval(compiled_expression, globals, {use_namedtuple: contents})
+
         else:
             result = eval(compiled_expression, globals, row)
 
@@ -104,6 +127,7 @@ def main():
         args.expression,
         args.init_code,
         args.underbars,
+        args.namedtuple,
     )
 
 
