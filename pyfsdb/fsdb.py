@@ -413,6 +413,11 @@ class Fsdb(object):
             self._out_column_names = self.column_names
         return self._out_column_names
 
+    @property
+    def comments(self):
+        """Returns a list of comments seen in the document"""
+        return self._comments
+
     @out_column_names.setter
     def out_column_names(self, values):
         mapping = self.__create_column_name_mapping__(values)
@@ -664,6 +669,9 @@ class Fsdb(object):
                 self._out_file_handle.write(line)
             else:
                 self._comments.append(line)
+        elif self._save_command_history:
+            self._comments.append(line)
+
         return next(self.fileh)
 
     def _convert_array_values(self, row):
