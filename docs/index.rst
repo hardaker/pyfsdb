@@ -6,6 +6,7 @@ FSDB - File System Data Base
    :caption: Contents:
 
    introduction
+   perlover
    tools/index
    perltools
    class
