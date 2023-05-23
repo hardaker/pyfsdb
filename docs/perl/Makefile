@@ -1,9 +1,11 @@
 VERSION=3.1
 SRC=~/src/Fsdb-$(VERSION)
 
-all: buildperl scripts perlindex
+BUILD=buildperl scripts perlindex perloverview
 
-.PHONY: buildperl scripts # always rebuild
+all: $(BUILD)
+
+.PHONY: $(BUILD)
 
 buildperl:
 	cd $(SRC) ; \
@@ -16,7 +18,8 @@ scripts:
 	for i in * ; do \
 		pod2man $$i | \
 		pandoc -f man -i - -t rst -o - | \
-		perl -n -e 'if (/^NAME$$/) { $$_ = <>; $$_ = <>; $$_ = <>; print("$$_" . "=" x 70 . "\n\n"); $$printit = 1; $$_ = <>; $$_ = <>; } if (/^SYNOPSIS$$/) { print("*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version $(VERSION)*\n\n")} ; if ("$$printit" eq "1") { s/^(==+)/"-" x length($$1)/e; print; }' > $$outdir/$$(basename $$i).rst ; \
+		perl -n -e 'if (/^NAME$$/) { $$_ = <>; $$_ = <>; $$_ = <>; print("$$_" . "=" x 70 . "\n\n"); $$printit = 1; $$_ = <>; $$_ = <>; } if (/^SYNOPSIS$$/) { print("*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version $(VERSION)*\n\n")} ; if ("$$printit" eq "1") { s/^(==+)/"-" x length($$1)/e; print; }' \
+		> $$outdir/$$(basename $$i).rst ; \
 	done
 
 perlindex:
@@ -25,3 +28,9 @@ perlindex:
 	for i in *.rst ; do \
 		echo "   perl/$$i" >> $$outfile ; \
 	done
+
+perloverview:
+	pod2man $(SRC)/lib/Fsdb.pm | \
+	pandoc -f man -i - -t rst -o - | \
+	perl -n -e 'if (/^NAME$$/) { $$_ = <>; $$_ = <>; $$_ = <>; print("$$_" . "=" x 70 . "\n\n"); $$printit = 1; $$_ = <>; $$_ = <>; } if (/^SYNOPSIS$$/) { print("*NOTE: this page was directly converted from the perl FSDB manual pages from FSDB version $(VERSION)*\n\n")} ; if ("$$printit" eq "1") { s/^(==+)/"-" x length($$1)/e; print; }' \
+	> ../perloverview.rst
