@@ -1,7 +1,7 @@
 ### pdbrow - select a subset of rows based on a filter
 
 `pdbrow` can apply an arbitrary logical python expression that selects
-matching rows for passing to the output. 
+matching rows for passing to the output.
 
 #### Example input (*myfile.fsdb*):
 
@@ -43,3 +43,17 @@ $ pdbrow -i "import re" 're.match("key1", two)' myfile.fsdb
 #   | pdbrow -i 'import re' 're.match("key1", two)' myfile.fsdb
 ```
 
+#### Example command usage with namedtuple based rows
+
+```
+$ pdbrow -n row 'row.two == "key1"' myfile.fsdb
+```
+
+#### Example output
+
+```
+#fsdb -F t col1:l two andthree:d
+1	key1	42.0
+3	key1	90.2
+#   | pdbrow -n row row.two == "key1"
+```

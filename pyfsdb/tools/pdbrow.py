@@ -14,8 +14,24 @@ def parse_args():
         epilog="Exmaple Usage: pdbrow 'column_a == 5' input.fsdb output.fsdb",
     )
 
-    parser.add_argument("-i", "--init-code",
-                        help="Initialization code to execute first (eg, imports)")
+    parser.add_argument(
+        "-u",
+        "--underbars",
+        action="store_true",
+        help="Use variable names with _ prefixes to the column names",
+    )
+
+    parser.add_argument(
+        "-n",
+        "--namedtuple",
+        default=None,
+        type=str,
+        help="Use a namedtuple under this name to store data",
+    )
+
+    parser.add_argument(
+        "-i", "--init-code", help="Initialization code to execute first (eg, imports)"
+    )
 
     parser.add_argument(
         "--log-level", default="info", help="Define the logging verbosity level."
@@ -49,14 +65,20 @@ def parse_args():
 
 
 def process_pdbrow(
-        input_file,
-        output_file,
-        expression,
-        init_code = None,
+    input_file,
+    output_file,
+    expression,
+    init_code=None,
+    use_underbars=False,
+    use_namedtuple=None,
 ):
 
+    return_type = pyfsdb.RETURN_AS_DICTIONARY
+    if use_namedtuple:
+        return_type = pyfsdb.RETURN_AS_ARRAY
+
     # open input and output fsdb handles
-    fh = pyfsdb.Fsdb(file_handle=input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY)
+    fh = pyfsdb.Fsdb(file_handle=input_file, return_type=return_type)
     oh = pyfsdb.Fsdb(out_file_handle=output_file)
 
     # crate output columns
@@ -65,19 +87,36 @@ def process_pdbrow(
     globals = {}
 
     if init_code:
-        exec(compile(init_code, '<string>', 'exec'), globals)
+        exec(compile(init_code, "<string>", "exec"), globals)
 
-    compiled_expression = compile(f"{expression}", '<string>', 'eval')
+    compiled_expression = compile(f"{expression}", "<string>", "eval")
+
+    if use_namedtuple:
+        from collections import namedtuple
+
+        named_row = namedtuple("named_row", fh.column_names)
 
     # process the rows
     for row in fh:
 
-        # execute the expression and check its result
-        result = eval(compiled_expression, globals, row)
+        # if they wanted under-bar based names, add them
+        if use_underbars:
+            result = eval(
+                compiled_expression, globals, {"_" + k: v for k, v in row.items()}
+            )
+
+        elif use_namedtuple:
+            contents = named_row(*row)
+            result = eval(compiled_expression, globals, {use_namedtuple: contents})
+
+        else:
+            result = eval(compiled_expression, globals, row)
+
         if result:
             oh.append(row)
 
     oh.close()
+
 
 def main():
     args = parse_args()
@@ -87,9 +126,10 @@ def main():
         args.output_file,
         args.expression,
         args.init_code,
+        args.underbars,
+        args.namedtuple,
     )
 
 
 if __name__ == "__main__":
     main()
-
