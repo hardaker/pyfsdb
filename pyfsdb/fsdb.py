@@ -136,12 +136,8 @@ class Fsdb(object):
         handle are available, any comments read in while reading
         are printed to the output.
 
-        If `pass_comments` is "e" and both an input and output file
-        handle are available, any comments read in will be stored in
-        _comments and not passed to the output handle.
-
-        If `pass_comments` is "y" and there is no output file
-        handle available, any comments are stored in _comments.
+        If `save_command_history` is True, then comments will be saved
+        to _comments.
 
         `converters` may be passed in as an array or dict of
         converters to call (such as int, float, etc)
@@ -420,6 +416,11 @@ class Fsdb(object):
         if len(self._out_column_names) == 0:
             self._out_column_names = self.column_names
         return self._out_column_names
+
+    @property
+    def comments(self):
+        """Returns a list of comments seen in the document"""
+        return self._comments
 
     @out_column_names.setter
     def out_column_names(self, values):
