@@ -94,21 +94,21 @@ def main():
     columns = args.columns
 
     # open the input file stream
-    input = pyfsdb.Fsdb(
+    fh = pyfsdb.Fsdb(
         file_handle=args.input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
     )
     output = pyfsdb.Fsdb(out_file_handle=args.output_file)
     output.out_column_names = [key_column, value_column] + other_columns
 
     # for each row, remember each value based on time and key
-    for row in input:
+    for row in fh:
         for column in columns:
             out_row = [column, row[column]]
             for other in other_columns:
                 out_row.append(row[other])
             output.append(out_row)
 
-    output.close()
+    output.close(copy_comments_from=fh)
 
 
 if __name__ == "__main__":

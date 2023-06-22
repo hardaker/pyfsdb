@@ -115,7 +115,7 @@ def process_pdbrow(
         if result:
             oh.append(row)
 
-    oh.close()
+    oh.close(copy_comments_from=fh)
 
 
 def main():

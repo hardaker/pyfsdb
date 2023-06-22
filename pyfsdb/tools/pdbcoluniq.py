@@ -111,7 +111,7 @@ def filter_unique_columns(
     # (if statement at outer tier for speed)
     output_results(ofh, [], counters, count)
 
-    ofh.close()
+    ofh.close(copy_comments_from=fh)
 
 
 def main():

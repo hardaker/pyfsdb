@@ -118,7 +118,7 @@ def process_pdbroweval(
             row = {k[1:]: v for k, v in row.items()}
         oh.append(row)
 
-    oh.close()
+    oh.close(copy_comments_from=fh)
 
 
 def main():

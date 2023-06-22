@@ -132,15 +132,23 @@ class Fsdb(object):
         RETURN_AS_DICTIONARY to return dictionary based rows with
         indexes as columns (this is slower).
 
-        If `pass_comments` is True and both an input and output file
+        If `pass_comments` is "y" and both an input and output file
         handle are available, any comments read in while reading
         are printed to the output.
+
+        If `pass_comments` is "e" and both an input and output file
+        handle are available, any comments read in will be stored in
+        _comments and not passed to the output handle.
+
+        If `pass_comments` is "y" and there is no output file
+        handle available, any comments are stored in _comments.
 
         `converters` may be passed in as an array or dict of
         converters to call (such as int, float, etc)
 
         If `handle_compressed` is True (the default), the class will
         do its best to handle compressed formats: bz2, gzip, and xz (lzma).
+
         """
 
         self.return_type = return_type
@@ -664,6 +672,9 @@ class Fsdb(object):
                 self._out_file_handle.write(line)
             else:
                 self._comments.append(line)
+        elif self._pass_comments == "y":
+            self._comments.append(line)
+
         return next(self.fileh)
 
     def _convert_array_values(self, row):
@@ -1028,11 +1039,18 @@ class Fsdb(object):
     def write_finish(self):
         self.close()
 
-    def close(self):
+    def import_comments(self, from_fsdb):
+        for comment in from_fsdb._comments:
+            self._comments.append(comment)
+
+    def close(self, copy_comments_from=None):
         """Writes final processing command comment to the output file and closes it."""
         if self.fileh:
             self.fileh.close()
             self.fileh = None
+
+        if copy_comments_from:
+            self.import_comments(copy_comments_from)
 
         if self._out_file_handle:
             # ignore closing errors
