@@ -18,3 +18,6 @@ class TestCommandParsing(unittest.TestCase):
         fh = pyfsdb.Fsdb(self.DATA_FILE)
         read_commands = fh.commands
         self.assertEqual(self.commands, read_commands)
+
+        # make sure we can read data too even after reading ahead
+        self.assertEqual(next(fh), ["rowone", "info", "data"])
