@@ -108,6 +108,7 @@ class Fsdb(object):
     _save_command_history = True
     _handle_compressed = True
     _compression_checked = False
+    _commands = False
 
     def __init__(
         self,
@@ -137,7 +138,7 @@ class Fsdb(object):
         are printed to the output.
 
         If `save_command_history` is True, then comments will be saved
-        to _comments.
+        to the comments attribute.
 
         `converters` may be passed in as an array or dict of
         converters to call (such as int, float, etc)
@@ -421,6 +422,10 @@ class Fsdb(object):
     def comments(self):
         """Returns a list of comments seen in the document"""
         return self._comments
+
+    @property
+    def commands(self):
+        return self.parse_commands()
 
     @out_column_names.setter
     def out_column_names(self, values):
@@ -1043,6 +1048,23 @@ class Fsdb(object):
     def import_comments(self, from_fsdb):
         for comment in from_fsdb._comments:
             self._comments.append(comment)
+
+    def parse_commands(self):
+        """parses the list of stored comments for any saved commands
+
+        Assumes saved commands will be prefixed with '#  |' per convention"""
+        if self._commands:
+            return self._commands
+        # TODO: read-ahead to end if fh is seekable()
+        if not self._comments:
+            return []
+
+        command_list = []
+        for comment in self._comments:
+            if comment.startswith("#  | "):
+                command_list.append(comment[5:].strip())
+
+        return command_list
 
     def close(self, copy_comments_from=None):
         """Writes final processing command comment to the output file and closes it."""
