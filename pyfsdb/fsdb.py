@@ -1068,7 +1068,7 @@ class Fsdb(object):
         guess_length = 10
 
         # save our spot
-        position = self.file_handle.tell()
+        position = self.file_handle.seek(0)
 
         # get the file size
         file_size = self.get_file_size()
