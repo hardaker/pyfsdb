@@ -2,5 +2,6 @@
 rowone info data
 # middle comment
 rowtwo other stuff
-# | manually generated
+#  | command1
+#  | command2
 #   | /usr/bin/pytest-3

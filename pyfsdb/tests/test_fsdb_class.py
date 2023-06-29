@@ -402,13 +402,14 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertTrue(lines[0] == "#fsdb -F t colone:a coltwo:a colthree:a\n")
-        self.assertTrue(lines[1] == "# top comment\n")
-        self.assertTrue(lines[3] == "# after row 1\n")
-        self.assertTrue(lines[len(lines) - 1] == "#   | test command init\n")
-        self.assertTrue(lines[len(lines) - 2] == "# | manually generated\n")
-        self.assertTrue(lines[len(lines) - 3] == "rowtwo	other	stuff\n")
-        self.assertTrue(lines[len(lines) - 4] == "# middle comment\n")
+        self.assertEqual(lines[0], "#fsdb -F t colone:a coltwo:a colthree:a\n")
+        self.assertEqual(lines[1], "# top comment\n")
+        self.assertEqual(lines[3], "# after row 1\n")
+        self.assertEqual(lines[len(lines) - 1], "#   | test command init\n")
+        self.assertEqual(lines[len(lines) - 2], "#  | command2\n")
+        self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
+        self.assertEqual(lines[len(lines) - 4], "rowtwo	other	stuff\n")
+        self.assertEqual(lines[len(lines) - 5], "# middle comment\n")
 
     def test_comments_passed_at_end(self):
         out_file = self.OUT_FILE
@@ -434,12 +435,13 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertTrue(lines[len(lines) - 1] == "#   | test command init\n")
-        self.assertTrue(lines[len(lines) - 2] == "# | manually generated\n")
-        self.assertTrue(lines[len(lines) - 3] == "# middle comment\n")
-        self.assertTrue(lines[len(lines) - 4] == "# after row 1\n")
-        self.assertTrue(lines[len(lines) - 5] == "# top comment\n")
-        self.assertTrue(lines[len(lines) - 6] == "rowtwo	other	stuff\n")
+        self.assertEqual(lines[len(lines) - 1], "#   | test command init\n")
+        self.assertEqual(lines[len(lines) - 2], "#  | command2\n")
+        self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
+        self.assertEqual(lines[len(lines) - 4], "# middle comment\n")
+        self.assertEqual(lines[len(lines) - 5], "# after row 1\n")
+        self.assertEqual(lines[len(lines) - 6], "# top comment\n")
+        self.assertEqual(lines[len(lines) - 7], "rowtwo	other	stuff\n")
 
     def test_array_generator(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)

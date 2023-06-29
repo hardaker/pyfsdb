@@ -47,6 +47,8 @@ results = f.filter(myfilt)
 """
 
 import sys
+import os
+import io
 
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")
@@ -1049,22 +1051,91 @@ class Fsdb(object):
         for comment in from_fsdb._comments:
             self._comments.append(comment)
 
+    def get_file_size(self):
+        return os.stat(self.fileh.name).st_size
+
+    def read_commands_ahead(self):
+        """reads the command list at the bottom of the input stream if the input stream can seek.
+
+        returns a list of commands found in comments in the input stream
+        returns None when the input is not seekable"""
+
+        self.maybe_open_filehandle()
+
+        if not self.file_handle.seekable():
+            return None
+
+        guess_length = 10
+
+        # save our spot
+        position = self.file_handle.tell()
+
+        # get the file size
+        file_size = self.get_file_size()
+        multiplier = 1
+
+        # move to the bottom minus the guess length
+        self.file_handle.seek(file_size - guess_length)
+
+        # poor man's search from the back
+        while True:
+            data = self.file_handle.read(guess_length * multiplier)
+            first_newline = data.find("\n")
+
+            if first_newline != -1 and (
+                first_newline == len(data) - 1 or data[first_newline + 1] == "#"
+            ):
+                # keep rewinding (x2 since we read x1 in already)
+                multiplier += 1
+                if file_size - guess_length * multiplier < 0:
+                    return None
+
+                self.file_handle.seek(file_size - guess_length * multiplier)
+                continue
+
+            break
+
+        # now extract all the commands from where we've found things
+        commands = []
+        iowrapper = io.StringIO(data)
+        for line in iowrapper:
+            if line.startswith("#  | "):
+                commands.append(line[5:].strip())
+
+        self.file_handle.seek(position)
+        return commands
+
     def parse_commands(self):
         """parses the list of stored comments for any saved commands
 
-        Assumes saved commands will be prefixed with '#  |' per convention"""
+        Note: Assumes saved commands will be prefixed with '#  |' per convention
+
+        Returns a list of strings when commands can be found.
+
+        Returns None when we don't have the information yet, such as when
+        we have a non-seekable stream input.
+        """
+
+        self.maybe_open_filehandle()
+
+        # we already have some stored
         if self._commands:
             return self._commands
-        # TODO: read-ahead to end if fh is seekable()
-        if not self._comments:
-            return []
 
-        command_list = []
+        # see if we can read them from the end of the file
+        if not self._comments:
+            if self.file_handle.seekable():
+                self._commands = self.read_commands_ahead()
+                return self._commands
+            return None
+
+        # parse them from the comments
+        self._commands = []
         for comment in self._comments:
             if comment.startswith("#  | "):
-                command_list.append(comment[5:].strip())
+                self._commands.append(comment[5:].strip())
 
-        return command_list
+        return self._commands
 
     def close(self, copy_comments_from=None):
         """Writes final processing command comment to the output file and closes it."""
