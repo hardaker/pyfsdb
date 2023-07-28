@@ -22,7 +22,7 @@ copyright = "2020-2023, Wes Hardaker"
 author = "Wes Hardaker"
 
 # The full version, including alpha/beta/rc tags
-release = "2.1.5"
+release = "2.2.1"
 
 
 # -- General configuration ---------------------------------------------------
