@@ -7,7 +7,7 @@
    file will be augmented to using data from the 'values' columns is
    the augment file.
 
-   This duplicates dbjoin to a large extent, but dbaugment is faster
+   This duplicates dbjoin to a large extent, but pdbaugment is faster
    when one side is small because it avoids sorting.  dbaugment can
    also operate on streaming data, since sorting isn't required.
 """
