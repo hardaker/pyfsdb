@@ -78,7 +78,7 @@ def parse_args():
     return args
 
 
-def maybe_add_data(data_by_key, row, key_column, value_column, max_value, max_rows):
+def maybe_add_data(data_by_key, row, key_column, value_column, min_add_value, max_rows):
     if row[key_column] in data_by_key:
         # update the existing
         data_by_key[row[key_column]] = row
@@ -87,17 +87,19 @@ def maybe_add_data(data_by_key, row, key_column, value_column, max_value, max_ro
         data_by_key[row[key_column]] = row
         # and maybe drop an old row
         if len(data_by_key) > max_rows:
-            # need to drop the lowest, which also has max_value
+            # need to drop the lowest, which also has min_add_value
             delete_this = min(
                 data_by_key, key=lambda x: float(data_by_key[x][value_column])
             )
             del data_by_key[delete_this]
 
-    # calculate he new minimum
-    min_key = min(data_by_key, key=lambda x: float(data_by_key[x][value_column]))
-    max_value = float(data_by_key[min_key][value_column])
+            # calculate he new minimum
+            min_key = min(
+                data_by_key, key=lambda x: float(data_by_key[x][value_column])
+            )
+            min_add_value = float(data_by_key[min_key][value_column])
 
-    return max_value
+    return min_add_value
 
 
 def main():
@@ -108,24 +110,34 @@ def main():
     fout.column_names = fin.column_names
 
     (key_column, value_column) = fin.get_column_numbers([args.key, args.value])
-    max_value = None
+    min_add_value = None
     data_by_key = {}
     data_values = []
     for row in fin:
         if (
             row[value_column] is not None
-            and row[value_column] is not "-"
-            and row[value_column] is not ""
+            and row[value_column] != "-"
+            and row[value_column] != ""
         ):
-            if max_value is None or max_value < float(row[value_column]):
-                max_value = maybe_add_data(
-                    data_by_key, row, key_column, value_column, max_value, args.max_rows
+            if min_add_value is None or min_add_value < float(row[value_column]):
+                min_add_value = maybe_add_data(
+                    data_by_key,
+                    row,
+                    key_column,
+                    value_column,
+                    min_add_value,
+                    args.max_rows,
                 )
             elif row[key_column] in data_by_key and float(
                 data_by_key[row[key_column]][value_column]
             ) < float(row[value_column]):
-                max_value = maybe_add_data(
-                    data_by_key, row, key_column, value_column, max_value, args.max_rows
+                min_add_value = maybe_add_data(
+                    data_by_key,
+                    row,
+                    key_column,
+                    value_column,
+                    min_add_value,
+                    args.max_rows,
                 )
 
     for key in data_by_key:
