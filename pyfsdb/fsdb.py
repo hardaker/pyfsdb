@@ -111,6 +111,7 @@ class Fsdb(object):
     _handle_compressed = True
     _compression_checked = False
     _commands = False
+    _seekable = True
 
     def __init__(
         self,
@@ -618,16 +619,21 @@ class Fsdb(object):
                                 if filetype == "gz":
                                     import gzip
 
+                                    self._seekable = False  # unlikely
                                     self.file_handle = gzip.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "bz2":
                                     import bz2
 
+                                    self._seekable = False  # unlikely
                                     self.file_handle = bz2.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "xz":
                                     import lzma
 
+                                    self._seekable = (
+                                        False  # say they are when they're not
+                                    )
                                     self.file_handle = lzma.open(filename, "rt")
                                     return self.file_handle
                             except Exception:
@@ -1062,7 +1068,7 @@ class Fsdb(object):
 
         self.maybe_open_filehandle()
 
-        if not self.file_handle.seekable():
+        if not self._seekable or not self.file_handle.seekable():
             return None
 
         guess_length = 10
@@ -1127,7 +1133,7 @@ class Fsdb(object):
 
         # see if we can read them from the end of the file
         if not self._comments:
-            if self.file_handle.seekable():
+            if self._seekable and self.file_handle.seekable():
                 self._commands = self.read_commands_ahead()
                 return self._commands
             return None
