@@ -7,6 +7,14 @@ from logging import error
 class TestCommandParsing(unittest.TestCase):
     commands = ["command1", "command2"]
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
+    test_data = "#fsdb -f s a b c\n1 2 3\n4 5 6\n# | command one"
+
+    def test_history_from_stringio_fails(self):
+        test_file = StringIO(self.test_data)
+        fh = pyfsdb.Fsdb(file_handle=test_file)
+
+        history_data = fh.commands
+        self.assertEqual(history_data, None)
 
     def test_get_commands_at_end(self):
         fh = pyfsdb.Fsdb(self.DATA_FILE)

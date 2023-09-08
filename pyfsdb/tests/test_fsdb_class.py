@@ -1033,6 +1033,18 @@ class FsdbTest(TestCase):
             row = next(f)
             self.assertEqual(row, {"a": 1, "b": None, "c": 3})
 
+    def test_columns_still_with_empty_data(self):
+        # note: fails float conversion to an int
+        input_data = StringIO("#fsdb -F t a:l b:l c:l\n# | previous command\n")
+        with pyfsdb.Fsdb(
+            file_handle=input_data,
+            return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        ) as f:
+            columns = f.column_names
+            for row in f:
+                pass
+            self.assertTrue(True, "got to end")
+
 
 if __name__ == "__main__":
     import unittest

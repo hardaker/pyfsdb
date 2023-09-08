@@ -1071,7 +1071,10 @@ class Fsdb(object):
         position = self.file_handle.seek(0)
 
         # get the file size
-        file_size = self.get_file_size()
+        try:
+            file_size = self.get_file_size()
+        except Exception:
+            return None
         multiplier = 1
 
         # move to the bottom minus the guess length
