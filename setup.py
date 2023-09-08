@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyfsdb",
-    version="2.2.1",
+    version="2.3.2",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A python implementation of the flat-file streaming database",
@@ -18,6 +18,7 @@ setuptools.setup(
             # migrating to pdb prefixes
             "pdbtopn = pyfsdb.tools.pdbtopn:main",
             "pdbaugment = pyfsdb.tools.pdbaugment:main",
+            "pdbfgrep = pyfsdb.tools.pdbfgrep:main",
             "bro2fsdb = pyfsdb.tools.bro2fsdb:main",
             "pdbcoluniq = pyfsdb.tools.pdbcoluniq:main",
             "pdbfullpivot = pyfsdb.tools.pdbfullpivot:main",

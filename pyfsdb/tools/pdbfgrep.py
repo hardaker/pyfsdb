@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 
-"""This script expects to augment a FSDB stream (or file) with
+"""This script expects to grep from a FSDB stream (or file) using
    additional information found in another FSDB file.  The second file
    is loaded entirely into memory in order to accomplish this.  Any
    row in the stream file that has exactly matching keys in the second
-   file will be augmented to using data from the 'values' columns is
-   the augment file.
+   file will be output, otherwise dropped.
 
-   This duplicates dbjoin to a large extent, but pdbaugment is faster
-   when one side is small because it avoids sorting.  dbaugment can
-   also operate on streaming data, since sorting isn't required.
+   This duplicates dbjoin/pdbrow or pdbaugment/pdbrow to a large
+   extent, but pdbgrep should faster when one side is small because it
+   avoids sorting.
 """
 
 import argparse
@@ -34,28 +33,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-v", "--values", type=str, nargs="*", help="Value columns to insert on a match"
-    )
-
-    parser.add_argument(
-        "-V",
-        "--include-all-values",
+        "-v",
+        "--invert-match",
         action="store_true",
-        help="Include all the value columns from the matching row",
-    )
-
-    parser.add_argument(
-        "-i",
-        "--include-unmatched-augment-rows",
-        action="store_true",
-        help="Include (at the bottom) any rows from the augment file that failed to match any stream rows.",
-    )
-
-    parser.add_argument(
-        "-n",
-        "--mark-new",
-        type=str,
-        help="Mark new columns in `stream_file` not present in `augument_file` with a 1 in this new column name, else a 0",
+        help="Output the non-matching rows instead (similar to grep -v)",
     )
 
     parser.add_argument(
@@ -83,12 +64,6 @@ def parse_args():
     )
 
     args = parser.parse_args()
-
-    if (
-        (not args.values or len(args.values) == 0) and not args.mark_new
-    ) and not args.include_all_values:
-        sys.stderr.write("Either -v, -V or -n is required\n")
-        exit(1)
 
     return args
 
@@ -181,24 +156,9 @@ def main():
     # read in stream file, and augment each row with the new columns
     streamh = pyfsdb.Fsdb(file_handle=args.stream_file)
 
-    # determine which columns need to be added on (potentially all)
-    if args.include_all_values or (
-        (not args.values or len(args.values) == 0) and not args.mark_new
-    ):
-        columns = augh.column_names
-        args.values = []
-        for column in columns:
-            if column not in args.keys:
-                args.values.append(column)
-    elif not args.values:
-        args.values = []
-
     # create the output stream to store the data
     outh = pyfsdb.Fsdb(out_file_handle=args.output_file)
-    other_columns = []
-    if args.mark_new:
-        other_columns = [args.mark_new]
-    outh.out_column_names = streamh.column_names + args.values + other_columns
+    outh.out_column_names = streamh.column_names
 
     key_columns = streamh.get_column_numbers(args.keys)
 
@@ -207,29 +167,10 @@ def main():
         current = find_row(cache, key_columns, row, return_data=False)
 
         # on a deep match finding
-        if current:
-            current["used"] = 1
-            current = current["data"]
-            for value in args.values:
-                row.append(current[value])
-            if args.mark_new:
-                row.append(0)
-        elif args.mark_new:
-            row.extend([None] * len(args.values) + [1])
-
-        outh.append(row)
-
-    # Now loop through all data adding any rows
-    if args.include_unmatched_augment_rows:
-        dump_remaining(
-            outh,
-            cache,
-            # total original column numbers - key count
-            len(streamh.column_names) - len(args.keys),
-            args.keys,
-            args.values,
-            mark_new=args.mark_new,
-        )
+        if current and not args.invert_match:
+            outh.append(row)
+        elif not current and args.invert_match:
+            outh.append(row)
 
 
 if __name__ == "__main__":

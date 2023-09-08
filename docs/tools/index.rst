@@ -22,6 +22,7 @@ Data filtering and modification tools
    pdbroweval
    pdbensure
    pdbaugment
+   pdbfgrep
    pdbnormalize
    pdbcdf
    pdbdatetoepoch

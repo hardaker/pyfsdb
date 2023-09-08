@@ -50,6 +50,25 @@ Example output
    3   key1    90.2
    #   | pdbrow -i 'import re' 're.match("key1", two)' myfile.fsdb
 
+Example command usage with namedtuple based rows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+   $ pdbrow -n row 'row.two == "key1"' myfile.fsdb
+
+.. _example-output-2:
+
+Example output
+^^^^^^^^^^^^^^
+
+::
+
+   #fsdb -F t col1:l two andthree:d
+   1   key1    42.0
+   3   key1    90.2
+   #   | pdbrow -n row row.two == "key1"
+
 
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
