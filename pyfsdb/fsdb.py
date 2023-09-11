@@ -1107,9 +1107,15 @@ class Fsdb(object):
         # now extract all the commands from where we've found things
         commands = []
         iowrapper = io.StringIO(data)
+
+        import re
+
+        command_matcher = re.compile("# +\| (.*)")
+
         for line in iowrapper:
-            if line.startswith("#  | "):
-                commands.append(line[5:].strip())
+            result = command_matcher.match(line)
+            if result:
+                commands.append(result.group(1))
 
         self.file_handle.seek(position)
         return commands
@@ -1138,11 +1144,16 @@ class Fsdb(object):
                 return self._commands
             return None
 
+        import re
+
+        command_matcher = re.compile("# +\| (.*)")
+
         # parse them from the comments
         self._commands = []
         for comment in self._comments:
-            if comment.startswith("#  | "):
-                self._commands.append(comment[5:].strip())
+            results = command_matcher.match(comment)
+            if results:
+                self._commands.append(results.group(1))
 
         return self._commands
 
@@ -1163,7 +1174,7 @@ class Fsdb(object):
                 if self._save_command_history and self.out_command_line:
                     for comment_line in self._comments:
                         self._out_file_handle.write(comment_line)
-                    self._out_file_handle.write("#   | " + self.out_command_line + "\n")
+                    self._out_file_handle.write("#  | " + self.out_command_line + "\n")
                 self._out_file_handle.close()
             except:
                 pass
