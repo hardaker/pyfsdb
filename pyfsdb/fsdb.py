@@ -1071,7 +1071,7 @@ class Fsdb(object):
         if not self._seekable or not self.file_handle.seekable():
             return None
 
-        guess_length = 10
+        guess_length = 512
 
         # save our spot
         position = self.file_handle.seek(0)
@@ -1084,6 +1084,9 @@ class Fsdb(object):
         multiplier = 1
 
         # move to the bottom minus the guess length
+        start_seek = file_size - guess_length
+        if start_seek < file_size:
+            guess_length = file_size
         self.file_handle.seek(file_size - guess_length)
 
         # poor man's search from the back
@@ -1096,10 +1099,11 @@ class Fsdb(object):
             ):
                 # keep rewinding (x2 since we read x1 in already)
                 multiplier += 1
-                if file_size - guess_length * multiplier < 0:
+
+                if file_size - guess_length * multiplier <= 0:
                     return None
 
-                self.file_handle.seek(file_size - guess_length * multiplier)
+                actual = self.file_handle.seek(file_size - guess_length * multiplier)
                 continue
 
             break
