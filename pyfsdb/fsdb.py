@@ -111,6 +111,7 @@ class Fsdb(object):
     _handle_compressed = True
     _compression_checked = False
     _commands = False
+    _seekable = True
 
     def __init__(
         self,
@@ -618,16 +619,21 @@ class Fsdb(object):
                                 if filetype == "gz":
                                     import gzip
 
+                                    self._seekable = False  # unlikely
                                     self.file_handle = gzip.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "bz2":
                                     import bz2
 
+                                    self._seekable = False  # unlikely
                                     self.file_handle = bz2.open(filename, "rt")
                                     return self.file_handle
                                 elif filetype == "xz":
                                     import lzma
 
+                                    self._seekable = (
+                                        False  # say they are when they're not
+                                    )
                                     self.file_handle = lzma.open(filename, "rt")
                                     return self.file_handle
                             except Exception:
@@ -1062,19 +1068,25 @@ class Fsdb(object):
 
         self.maybe_open_filehandle()
 
-        if not self.file_handle.seekable():
+        if not self._seekable or not self.file_handle.seekable():
             return None
 
-        guess_length = 10
+        guess_length = 512
 
         # save our spot
         position = self.file_handle.seek(0)
 
         # get the file size
-        file_size = self.get_file_size()
+        try:
+            file_size = self.get_file_size()
+        except Exception:
+            return None
         multiplier = 1
 
         # move to the bottom minus the guess length
+        start_seek = file_size - guess_length
+        if start_seek < file_size:
+            guess_length = file_size
         self.file_handle.seek(file_size - guess_length)
 
         # poor man's search from the back
@@ -1087,10 +1099,11 @@ class Fsdb(object):
             ):
                 # keep rewinding (x2 since we read x1 in already)
                 multiplier += 1
-                if file_size - guess_length * multiplier < 0:
+
+                if file_size - guess_length * multiplier <= 0:
                     return None
 
-                self.file_handle.seek(file_size - guess_length * multiplier)
+                actual = self.file_handle.seek(file_size - guess_length * multiplier)
                 continue
 
             break
@@ -1098,9 +1111,15 @@ class Fsdb(object):
         # now extract all the commands from where we've found things
         commands = []
         iowrapper = io.StringIO(data)
+
+        import re
+
+        command_matcher = re.compile("# +\| (.*)")
+
         for line in iowrapper:
-            if line.startswith("#  | "):
-                commands.append(line[5:].strip())
+            result = command_matcher.match(line)
+            if result:
+                commands.append(result.group(1))
 
         self.file_handle.seek(position)
         return commands
@@ -1124,16 +1143,21 @@ class Fsdb(object):
 
         # see if we can read them from the end of the file
         if not self._comments:
-            if self.file_handle.seekable():
+            if self._seekable and self.file_handle.seekable():
                 self._commands = self.read_commands_ahead()
                 return self._commands
             return None
 
+        import re
+
+        command_matcher = re.compile("# +\| (.*)")
+
         # parse them from the comments
         self._commands = []
         for comment in self._comments:
-            if comment.startswith("#  | "):
-                self._commands.append(comment[5:].strip())
+            results = command_matcher.match(comment)
+            if results:
+                self._commands.append(results.group(1))
 
         return self._commands
 
@@ -1154,7 +1178,7 @@ class Fsdb(object):
                 if self._save_command_history and self.out_command_line:
                     for comment_line in self._comments:
                         self._out_file_handle.write(comment_line)
-                    self._out_file_handle.write("#   | " + self.out_command_line + "\n")
+                    self._out_file_handle.write("#  | " + self.out_command_line + "\n")
                 self._out_file_handle.close()
             except:
                 pass

@@ -354,7 +354,7 @@ class FsdbTest(TestCase):
         f.out_command_line = "test command"
         f.write_finish()
 
-        self.check_last_line(self.OUT_FILE, "#   | test command\n")
+        self.check_last_line(self.OUT_FILE, "#  | test command\n")
 
     def test_save_out_command_on_del(self):
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
@@ -363,15 +363,15 @@ class FsdbTest(TestCase):
         f.out_command_line = "test command on del"
         del f
 
-        self.check_last_line(self.OUT_FILE, "#   | test command on del\n")
+        self.check_last_line(self.OUT_FILE, "#  | test command on del\n")
 
     def test_dont_save_command(self):
         f = pyfsdb.Fsdb(out_file=self.OUT_FILE)
         f.out_command_line = None
-        f.out_file_handle.write("#   | test nowrite\n")
+        f.out_file_handle.write("#  | test nowrite\n")
         del f
 
-        self.check_last_line(self.OUT_FILE, "#   | test nowrite\n")
+        self.check_last_line(self.OUT_FILE, "#  | test nowrite\n")
 
     def test_save_out_command_from_init(self):
         f = pyfsdb.Fsdb(
@@ -380,7 +380,7 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
         del f
 
-        self.check_last_line(self.OUT_FILE, "#   | test command init\n")
+        self.check_last_line(self.OUT_FILE, "#  | test command init\n")
 
     def test_comments_passed_inline(self):
         out_file = self.OUT_FILE
@@ -405,8 +405,8 @@ class FsdbTest(TestCase):
         self.assertEqual(lines[0], "#fsdb -F t colone:a coltwo:a colthree:a\n")
         self.assertEqual(lines[1], "# top comment\n")
         self.assertEqual(lines[3], "# after row 1\n")
-        self.assertEqual(lines[len(lines) - 1], "#   | test command init\n")
-        self.assertEqual(lines[len(lines) - 2], "#  | command2\n")
+        self.assertEqual(lines[len(lines) - 1], "#  | test command init\n")
+        self.assertEqual(lines[len(lines) - 2], "#   | command2\n")
         self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
         self.assertEqual(lines[len(lines) - 4], "rowtwo	other	stuff\n")
         self.assertEqual(lines[len(lines) - 5], "# middle comment\n")
@@ -435,8 +435,8 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertEqual(lines[len(lines) - 1], "#   | test command init\n")
-        self.assertEqual(lines[len(lines) - 2], "#  | command2\n")
+        self.assertEqual(lines[len(lines) - 1], "#  | test command init\n")
+        self.assertEqual(lines[len(lines) - 2], "#   | command2\n")
         self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
         self.assertEqual(lines[len(lines) - 4], "# middle comment\n")
         self.assertEqual(lines[len(lines) - 5], "# after row 1\n")
@@ -1032,6 +1032,18 @@ class FsdbTest(TestCase):
         ) as f:
             row = next(f)
             self.assertEqual(row, {"a": 1, "b": None, "c": 3})
+
+    def test_columns_still_with_empty_data(self):
+        # note: fails float conversion to an int
+        input_data = StringIO("#fsdb -F t a:l b:l c:l\n# | previous command\n")
+        with pyfsdb.Fsdb(
+            file_handle=input_data,
+            return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        ) as f:
+            columns = f.column_names
+            for row in f:
+                pass
+            self.assertTrue(True, "got to end")
 
 
 if __name__ == "__main__":
