@@ -799,6 +799,8 @@ class Fsdb(object):
             return "  "
         elif separator == "s":
             return " "
+        elif separator == "m":
+            return "m"
         elif separator[0] == "c":
             return separator[1:]
         elif separator[0] == "C":
@@ -807,6 +809,7 @@ class Fsdb(object):
             return chr(int("0x" + separator[1:], 0))
         elif separator[0] == "X":  # won't handle multiples like manual says
             return chr(int("0x" + separator[1:], 0))
+
         elif separator == "D":
             # python NONE to splits on all white space
             return None
