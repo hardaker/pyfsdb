@@ -1114,7 +1114,7 @@ class Fsdb(object):
 
         import re
 
-        command_matcher = re.compile("# +\| (.*)")
+        command_matcher = re.compile("# +\\| (.*)")
 
         for line in iowrapper:
             result = command_matcher.match(line)
@@ -1150,7 +1150,7 @@ class Fsdb(object):
 
         import re
 
-        command_matcher = re.compile("# +\| (.*)")
+        command_matcher = re.compile("# +\\| (.*)")
 
         # parse them from the comments
         self._commands = []
