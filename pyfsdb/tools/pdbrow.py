@@ -44,7 +44,7 @@ def parse_args():
 
     parser.add_argument(
         "input_file",
-        type=FileType("r"),
+        type=FileType("rb"),
         nargs="?",
         default=sys.stdin,
         help="The input FSDB file",

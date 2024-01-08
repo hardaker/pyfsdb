@@ -183,6 +183,7 @@ class Fsdb(object):
 
         self._comments = []
         self.__real_next__ = None
+        self.unpacker = None
 
     @property
     def file_handle(self):
@@ -573,7 +574,7 @@ class Fsdb(object):
         # XXX: throw error on -1 parse
         return self
 
-    def maybe_open_filehandle(self, mode="r"):
+    def maybe_open_filehandle(self, mode="rb"):
         "Internal"
 
         # the simple case:
@@ -712,18 +713,32 @@ class Fsdb(object):
     def _next_as_array(self):
         """Return the next object as an array of columns."""
 
-        line = next(self.fileh)
-        while line and line[0] == "#":
-            line = self._handle_comment(line)
+        if self.separator == "m":
+            # msgpack encoded
+            import msgpack
 
-        # return an array of data
-        self.current_line = line
-        self._current_row = line.rstrip("\n\r").split(self.separator)
-        if len(self._current_row) < len(self._column_names):
-            n = (len(self._column_names)) - len(self._current_row)
-            self._current_row.extend([""] * n)
-        if self._converters:
-            self._current_row = self._convert_array_values(self._current_row)
+            if not self.unpacker:
+                self.unpacker = msgpack.Unpacker(self.fileh)
+            self._current_row = next(self.unpacker)
+
+        else:
+            # normal text file
+            line = next(self.fileh)
+            if isinstance(line, bytes):
+                line = line.decode()
+
+            while line and line[0] == "#":
+                line = self._handle_comment(line)
+
+            # return an array of data
+            self.current_line = line
+            self._current_row = line.rstrip("\n\r").split(self.separator)
+            if len(self._current_row) < len(self._column_names):
+                n = (len(self._column_names)) - len(self._current_row)
+                self._current_row.extend([""] * n)
+            if self._converters:
+                self._current_row = self._convert_array_values(self._current_row)
+
         return self._current_row
 
     def _next_as_dict(self):
@@ -857,7 +872,16 @@ class Fsdb(object):
         self._have_read_header = True
 
         if not line:
-            line = next(self.file_handle)
+            # we read a byte at a time to allow binary beyond the header
+            # ie, next() doesn't work on mostly binary files
+            line = ""
+            addition = ""
+            while addition != "\n":
+                addition = self.fileh.read(1).decode()
+                line += addition
+
+            # place = self.fileh.tell()
+
         self._header_line = line
         self._headers = [self._header_line]
 

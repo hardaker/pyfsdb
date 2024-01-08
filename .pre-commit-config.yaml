@@ -12,6 +12,11 @@ repos:
     rev: 22.3.0
     hooks:
     -   id: black
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.0.290
+  hooks:
+    - id: ruff
 - repo: local
   hooks:
     - id: pytest
@@ -20,8 +25,3 @@ repos:
       language: system
       pass_filenames: false
       always_run: true
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  # Ruff version.
-  rev: v0.0.290
-  hooks:
-    - id: ruff
