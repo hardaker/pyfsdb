@@ -25,8 +25,6 @@ def parse_args():
         epilog="Exmaple Usage: ",
     )
 
-    parser.add_argument("-y", "--full-arg", default="full-arg", type=str, help="help")
-
     parser.add_argument(
         "--log-level",
         "--ll",
