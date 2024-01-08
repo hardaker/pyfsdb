@@ -83,7 +83,6 @@ def main():
         file_handle=io.StringIO(header),
     )
     columns = in_fsdb.column_names
-    print(columns)
 
     # eventually:
     out_fsdb = pyfsdb.Fsdb(
@@ -97,7 +96,6 @@ def main():
     args.input_file.close()
     newh = open(args.input_file.name, "rb")
     newh.seek(place)
-    print(f"seeking: {place}")
     unpacker = msgpack.Unpacker(newh)
     for row in unpacker:
         out_fsdb.append(row)
