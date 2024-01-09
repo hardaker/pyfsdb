@@ -229,7 +229,7 @@ class Fsdb(object):
 
     @column_names.setter
     def column_names(self, values):
-        mapping = self.__create_column_name_mapping__(values)
+        self.__create_column_name_mapping__(values)
         self._header_line = self.create_header_line(
             columns=values, separator_token=self._separator_token
         )
@@ -344,7 +344,7 @@ class Fsdb(object):
         elif self.out_file_handle:
             try:
                 self._out_file = self._out_file_handle.name
-            except:
+            except Exception:
                 pass
 
     @property
@@ -433,7 +433,7 @@ class Fsdb(object):
 
     @out_column_names.setter
     def out_column_names(self, values):
-        mapping = self.__create_column_name_mapping__(values)
+        self.__create_column_name_mapping__(values)
 
     # support functions
 
@@ -748,7 +748,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        fh = self.maybe_open_filehandle()
+        self.maybe_open_filehandle()
 
         try:
             line = next(self.fileh)
@@ -761,7 +761,7 @@ class Fsdb(object):
                 self._current_row = line.rstrip("\n\r").split(self.separator)
                 yield self._current_row
                 line = next(self.fileh)
-        except StopIteration as e:
+        except StopIteration:
             return
 
     def next_as_dict(self):
@@ -770,7 +770,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        fh = self.maybe_open_filehandle()
+        self.maybe_open_filehandle()
 
         try:
             line = next(self.fileh)
@@ -788,7 +788,7 @@ class Fsdb(object):
 
                 yield return_dict
                 line = next(self.fileh)
-        except StopIteration as e:
+        except StopIteration:
             return
 
     def parse_separator(self, separator=None):
@@ -824,7 +824,7 @@ class Fsdb(object):
             return "s"
         elif len(separator_token) == 1:
             return "C" + separator_token
-        elif separator_token == None:
+        elif separator_token is None:
             # XXX
             separator_token = "D"
 
@@ -864,7 +864,7 @@ class Fsdb(object):
 
         # should we use argparse here?
         argn = 1
-        separator = None  # (D)efault is all white space
+        self._separator = None  # (D)efault is all white space
         while args[argn][0] == "-":
             if args[argn] == "-F":
                 argn += 1
@@ -934,7 +934,7 @@ class Fsdb(object):
             for column in column_names:
                 try:
                     df[column] = pandas.to_numeric(df[column])
-                except:
+                except Exception:
                     pass
 
             return df
@@ -950,8 +950,6 @@ class Fsdb(object):
 
     def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
-        import pandas
-
         if not self._out_column_names:
             self.out_column_names = df.columns.values.tolist()
         self._write_header_line()
@@ -1049,7 +1047,7 @@ class Fsdb(object):
             row = [row[x] for x in self.out_column_names]
         if self._write_nones_as_blanks:
             for i in range(0, len(row)):
-                if row[i] == None:
+                if row[i] is None:
                     row[i] = ""
         self._out_file_handle.write(self._out_separator.join(map(str, row)) + "\n")
 
@@ -1110,7 +1108,7 @@ class Fsdb(object):
                 if file_size - guess_length * multiplier <= 0:
                     return None
 
-                actual = self.file_handle.seek(file_size - guess_length * multiplier)
+                self.file_handle.seek(file_size - guess_length * multiplier)
                 continue
 
             break
@@ -1187,7 +1185,7 @@ class Fsdb(object):
                         self._out_file_handle.write(comment_line)
                     self._out_file_handle.write("#  | " + self.out_command_line + "\n")
                 self._out_file_handle.close()
-            except:
+            except Exception:
                 pass
             self._out_file_handle = None
 
