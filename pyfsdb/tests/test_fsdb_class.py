@@ -126,7 +126,7 @@ class FsdbTest(TestCase):
         self.assertTrue(f.file_handle == fh, "file_handle was set properly")
 
         row = next(f)
-        self.assertTrue(f.__next__ == f._next_as_array, "read type was set")
+        self.assertTrue(f.__real_next__ == f._next_as_array, "read type was set")
         self.assertTrue(row, "row one is returned")
         self.assertTrue(row[0] == "rowone")
 

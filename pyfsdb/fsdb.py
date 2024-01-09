@@ -182,6 +182,7 @@ class Fsdb(object):
             self.out_command_line = out_command_line
 
         self._comments = []
+        self.__real_next__ = None
 
     @property
     def file_handle(self):
@@ -655,21 +656,27 @@ class Fsdb(object):
         Returns an array by default, or a dictionary if return_type
         was set to pyfsdb.RETURN_AS_DICTIONARY."""
 
+        # if we've initialized already, use the real path:
+        if self.__real_next__:
+            return self.__real_next__()
+
+        # open the file handle and get ready for reading
         fh = self.maybe_open_filehandle()
+
+        if not fh:
+            raise ValueError("no filehandle specified")
+
         if not self._header_line:
             self.read_header()
 
         self._convert_converters()
 
         if self.return_type == RETURN_AS_DICTIONARY:
-            self.__next__ = self._next_as_dict
+            self.__real_next__ = self._next_as_dict
         else:
-            self.__next__ = self._next_as_array
+            self.__real_next__ = self._next_as_array
 
-        if not fh:
-            return None
-
-        return self.__next__()
+        return self.__real_next__()
 
     def _handle_comment(self, line):
         """Handle a comment by printing it, possibly with header init first,
