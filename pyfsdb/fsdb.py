@@ -574,7 +574,7 @@ class Fsdb(object):
         # XXX: throw error on -1 parse
         return self
 
-    def maybe_open_filehandle(self, mode="rb"):
+    def maybe_open_filehandle(self):
         "Internal"
 
         # the simple case:
@@ -588,7 +588,7 @@ class Fsdb(object):
 
         # the simple case, open it if we don't need to detect compressed
         if not self.file_handle and self.filename and not self._handle_compressed:
-            self.file_handle = open(self.filename, mode)
+            self.file_handle = open(self.filename, "rb")
             return self.file_handle
 
         # wrap this in case anything at all fails:
@@ -622,13 +622,13 @@ class Fsdb(object):
                                     import gzip
 
                                     self._seekable = False  # unlikely
-                                    self.file_handle = gzip.open(filename, "rt")
+                                    self.file_handle = gzip.open(filename, "rb")
                                     return self.file_handle
                                 elif filetype == "bz2":
                                     import bz2
 
                                     self._seekable = False  # unlikely
-                                    self.file_handle = bz2.open(filename, "rt")
+                                    self.file_handle = bz2.open(filename, "rb")
                                     return self.file_handle
                                 elif filetype == "xz":
                                     import lzma
@@ -636,7 +636,7 @@ class Fsdb(object):
                                     self._seekable = (
                                         False  # say they are when they're not
                                     )
-                                    self.file_handle = lzma.open(filename, "rt")
+                                    self.file_handle = lzma.open(filename, "rb")
                                     return self.file_handle
                             except Exception:
                                 sys.stderr.write(
@@ -648,7 +648,7 @@ class Fsdb(object):
 
         # fall back to just opening it and hope its raw
         if self.filename:
-            self.file_handle = open(self.filename, mode)
+            self.file_handle = open(self.filename, "rb")
 
         return self.file_handle
 
@@ -697,7 +697,7 @@ class Fsdb(object):
         elif self._pass_comments == "y":
             self._comments.append(line)
 
-        return next(self.fileh)
+        return self._next_line()
 
     def _convert_array_values(self, row):
         for (n, converter) in enumerate(self._converters):
@@ -710,6 +710,22 @@ class Fsdb(object):
                     row[n] = None
         return row
 
+    def _next_line(self):
+        # return next(self.fileh)
+        return self._next_line_binary()
+
+    def _next_line_binary(self):
+        line = next(self.fileh)
+        if isinstance(line, bytes):
+            line = line.decode()
+
+        while line and line[0] == "#":
+            line = self._handle_comment(line)
+            if isinstance(line, bytes):
+                line = line.decode()
+
+        return line
+
     def _next_as_array(self):
         """Return the next object as an array of columns."""
 
@@ -718,17 +734,14 @@ class Fsdb(object):
             import msgpack
 
             if not self.unpacker:
-                self.unpacker = msgpack.Unpacker(self.fileh)
+                self.unpacker = msgpack.Unpacker(
+                    getattr(self.fileh, "buffer", self.fileh)
+                )
             self._current_row = next(self.unpacker)
 
         else:
             # normal text file
-            line = next(self.fileh)
-            if isinstance(line, bytes):
-                line = line.decode()
-
-            while line and line[0] == "#":
-                line = self._handle_comment(line)
+            line = self._next_line()
 
             # return an array of data
             self.current_line = line
@@ -766,7 +779,7 @@ class Fsdb(object):
         self.maybe_open_filehandle()
 
         try:
-            line = next(self.fileh)
+            line = self._next_line()
             while line:
                 while line and line[0] == "#":
                     line = self._handle_comment(line)
@@ -775,7 +788,7 @@ class Fsdb(object):
                 self.current_line = line
                 self._current_row = line.rstrip("\n\r").split(self.separator)
                 yield self._current_row
-                line = next(self.fileh)
+                line = self._next_line()
         except StopIteration:
             return
 
@@ -788,7 +801,7 @@ class Fsdb(object):
         self.maybe_open_filehandle()
 
         try:
-            line = next(self.fileh)
+            line = self._next_line()
             while line:
                 while line and line[0] == "#":
                     line = self._handle_comment(line)
@@ -802,7 +815,7 @@ class Fsdb(object):
                     return_dict[self.column_nums[index]] = self._current_row[index]
 
                 yield return_dict
-                line = next(self.fileh)
+                line = self._next_line()
         except StopIteration:
             return
 
@@ -871,13 +884,17 @@ class Fsdb(object):
             return [0, self._mapping]
         self._have_read_header = True
 
+        # we read a byte at a time to allow binary beyond the header
+        # ie, next() doesn't work on mostly binary files
+        # self.fileh.buffer is the raw (binary mode) buffer of normal files
+        readh = getattr(self.fileh, "buffer", self.fileh)
         if not line:
-            # we read a byte at a time to allow binary beyond the header
-            # ie, next() doesn't work on mostly binary files
             line = ""
-            addition = ""
-            while addition != "\n":
-                addition = self.fileh.read(1).decode()
+            addition = None
+            while addition != "\n" and addition != "":
+                addition = readh.read(1)
+                if getattr(addition, "decode", False):
+                    addition = addition.decode()
                 line += addition
 
             # place = self.fileh.tell()
@@ -1124,6 +1141,8 @@ class Fsdb(object):
         # poor man's search from the back
         while True:
             data = self.file_handle.read(guess_length * multiplier)
+            if isinstance(data, bytes):
+                data = data.decode()
             first_newline = data.find("\n")
 
             if first_newline != -1 and (
