@@ -71,35 +71,13 @@ def main():
         return_type=pyfsdb.RETURN_AS_ARRAY,
     )
 
-    header = ""
-    addition = ""
-    while addition != "\n":
-        addition = args.input_file.read(1).decode()
-        header += addition
-
-    place = args.input_file.tell()
-
-    in_fsdb = pyfsdb.Fsdb(
-        file_handle=io.StringIO(header),
-    )
-    columns = in_fsdb.column_names
-
-    # eventually:
-    out_fsdb = pyfsdb.Fsdb(
-        # out_file_handle=args.output_file,
+    oh = pyfsdb.Fsdb(
         out_file_handle=args.output_file,
-        out_column_names=columns,
+        out_column_names=in_fsdb.column_names,
     )
 
-    import msgpack
-
-    args.input_file.close()
-    newh = open(args.input_file.name, "rb")
-    newh.seek(place)
-    unpacker = msgpack.Unpacker(newh)
-    for row in unpacker:
-        out_fsdb.append(row)
-    out_fsdb.close()
+    for row in in_fsdb:
+        oh.append(row)
 
 
 if __name__ == "__main__":

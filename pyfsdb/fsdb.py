@@ -1076,6 +1076,10 @@ class Fsdb(object):
             output_header = self._out_header_line
 
         if self.out_separator == "m":
+            # switch to the internal binary buffer if possible
+            self.out_file_handle = getattr(
+                self.out_file_handle, "buffer", self.out_file_handle
+            )
             self._out_file_handle.write(bytes(output_header, encoding="utf-8"))
         else:
             self._out_file_handle.write(output_header)
