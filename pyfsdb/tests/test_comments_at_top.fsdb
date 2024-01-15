@@ -1,4 +1,4 @@
-#fsdb -F t one two
+#fsdb -F t one:a two:a
 # another comment
 1	2
 # done
