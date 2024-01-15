@@ -569,6 +569,7 @@ class Fsdb(object):
 
     def __iter__(self):
         """Returns an iterator object for looping over an fsdb file."""
+        self.bootstrap()
         if not self.filename and not self.file_handle:
             raise ValueError("No filename or handle currently available for reading")
         # XXX: throw error on -1 parse
@@ -652,16 +653,8 @@ class Fsdb(object):
 
         return self.file_handle
 
-    def __next__(self):
-        """Returns the next array of data from an fsdb file.
-        Returns an array by default, or a dictionary if return_type
-        was set to pyfsdb.RETURN_AS_DICTIONARY."""
-
-        # if we've initialized already, use the real path:
-        if self.__real_next__:
-            return self.__real_next__()
-
-        # open the file handle and get ready for reading
+    def bootstrap(self):
+        "Performs initialization and sets up function handlers"
         fh = self.maybe_open_filehandle()
 
         if not fh:
@@ -677,6 +670,20 @@ class Fsdb(object):
         else:
             self.__real_next__ = self._next_as_array
 
+        # sigh this doesn't work as the python iterator code caches the next pointer
+        # TODO: see if we can override this
+        self.__next__ = self.__real_next__
+
+    def __next__(self):
+        """Returns the next array of data from an fsdb file.
+        Returns an array by default, or a dictionary if return_type
+        was set to pyfsdb.RETURN_AS_DICTIONARY."""
+
+        # if we've initialized already, use the real path:
+        if self.__real_next__:
+            return self.__real_next__()
+
+        self.bootstrap()
         return self.__real_next__()
 
     def _handle_comment(self, line):
@@ -853,6 +860,8 @@ class Fsdb(object):
             return "S"
         elif separator_token == " ":
             return "s"
+        elif separator_token == "m":
+            return "m"
         elif len(separator_token) == 1:
             return "C" + separator_token
         elif separator_token is None:
@@ -1053,18 +1062,33 @@ class Fsdb(object):
 
     def _write_header_line(self, init_row=None):
         if not self._out_column_names and not self._header_line:
+            raise ValueError("no output column names specified")
             return  # we're unable to at this point
 
         # maybe construct it
         if not self._out_header_line and self._out_column_names:
             self._out_header_line = self.create_header_line(init_row=init_row)
 
-        # write out the correct header
+        # start by assuming copy the original
+        output_header = self._header_line
         if self._out_header_line:
-            self._out_file_handle.write(self._out_header_line)
-        elif self._header_line:
-            # assuming copy the original
-            self._out_file_handle.write(self._header_line)
+            # otherwise use a specified one
+            output_header = self._out_header_line
+
+        if self.out_separator == "m":
+            self._out_file_handle.write(bytes(output_header, encoding="utf-8"))
+        else:
+            self._out_file_handle.write(output_header)
+
+        # if we're in msgpack/binary mode, stop here
+        if self.out_separator == "m":
+            self.append = self._append_msgpack
+            self._header_written = True
+            # TODO: ie, we need to deal with storing comments at some point
+            self._pass_comments = False
+            # TODO: and command history
+            self._save_command_history = False
+            return
 
         # see if we have any early stored comments
         if self._pass_comments == "y" and self._comments:
@@ -1094,6 +1118,11 @@ class Fsdb(object):
                 if row[i] is None:
                     row[i] = ""
         self._out_file_handle.write(self._out_separator.join(map(str, row)) + "\n")
+
+    def _append_msgpack(self, row=None):
+        import msgpack
+
+        self._out_file_handle.write(msgpack.packb(row, use_bin_type=True))
 
     # backwards compatible ... don't use
     def write_row(self, row=None):

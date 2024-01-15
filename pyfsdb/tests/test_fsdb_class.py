@@ -349,6 +349,7 @@ class FsdbTest(TestCase):
     def test_out_command_line(self):
 
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
 
         f.out_command_line = "test command"
@@ -358,6 +359,7 @@ class FsdbTest(TestCase):
 
     def test_save_out_command_on_del(self):
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
 
         f.out_command_line = "test command on del"
@@ -377,6 +379,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(
             self.DATA_FILE, out_file=self.OUT_FILE, out_command_line="test command init"
         )
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
         del f
 
@@ -555,7 +558,6 @@ class FsdbTest(TestCase):
 
         # check that its' right
         results = out.getvalue()
-        import sys
 
         sys.stderr.write(results)
         self.assertEqual(results[0 : len(outstr)], outstr, "put_pandas worked")
@@ -616,7 +618,7 @@ class FsdbTest(TestCase):
         datah = StringIO(data)
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
-                row = next(f)
+                next(f)
                 self.assertTrue(False, "shouldn't have gotten here")
         except ValueError:
             self.assertTrue(True, "proper exception thrown")
@@ -1040,7 +1042,6 @@ class FsdbTest(TestCase):
             file_handle=input_data,
             return_type=pyfsdb.RETURN_AS_DICTIONARY,
         ) as f:
-            columns = f.column_names
             for row in f:
                 pass
             self.assertTrue(True, "got to end")
