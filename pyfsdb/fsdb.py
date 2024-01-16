@@ -104,8 +104,8 @@ class Fsdb(object):
     _out_header_line = None
     _out_column_names = []
     _out_column_names_set = False
-    _out_separator = "\t"
-    _out_separator_token = "t"
+    _out_separator = None
+    _out_separator_token = None
     _out_command_line = "____BROKEN____"  # ick, magic
     _save_command_history = True
     _handle_compressed = True
@@ -928,6 +928,9 @@ class Fsdb(object):
             argn += 1
 
         self._separator = self.parse_separator(self._separator_token)
+        if not self._out_separator:
+            self._out_separator_token = self._separator_token
+            self._out_separator = self._separator
 
         # join the remainder of the arguments back together to split
         # by the correct separator
@@ -1064,6 +1067,10 @@ class Fsdb(object):
         if not self._out_column_names and not self._header_line:
             raise ValueError("no output column names specified")
             return  # we're unable to at this point
+
+        if not self._out_separator:
+            self._out_separator = "\t"  # default to tab
+            self._out_separator_type = "t"  # default to tab
 
         # maybe construct it
         if not self._out_header_line and self._out_column_names:

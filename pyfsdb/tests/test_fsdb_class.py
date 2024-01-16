@@ -184,7 +184,7 @@ class FsdbTest(TestCase):
 
     def test_basic_writing(self):
         outstring = StringIO()
-        f = pyfsdb.Fsdb(out_file_handle=outstring)
+        f = pyfsdb.Fsdb(out_file_handle=outstring, converters={"a": int})
         f.out_column_names = ["a"]
         f.append([1])
         self.assertEqual(outstring.getvalue(), "#fsdb -F t a:l\n1\n")
@@ -1045,6 +1045,24 @@ class FsdbTest(TestCase):
             for row in f:
                 pass
             self.assertTrue(True, "got to end")
+
+    def test_input_output_separator_match(self):
+        input_contents = "#fsdb -F s a:l b:l c:l\n1 2 3\n"
+        input_data = StringIO(input_contents)
+        output_data = StringIO()
+        with pyfsdb.Fsdb(
+            file_handle=input_data,
+            out_file_handle=output_data,
+            return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        ) as f:
+            for row in f:
+                f.append(row)
+            self.assertEqual(
+                f.separator,
+                f.out_separator,
+                "Input and output separators are the same by default",
+            )
+            self.assertEqual(input_contents, output_data.getvalue())
 
 
 if __name__ == "__main__":
