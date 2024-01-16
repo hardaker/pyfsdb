@@ -105,15 +105,12 @@ def maybe_add_data(data_by_key, row, key_column, value_column, min_add_value, ma
 def main():
     args = parse_args()
 
-    fin = pyfsdb.Fsdb(file_handle=args.input_file)
-    fout = pyfsdb.Fsdb(out_file_handle=args.output_file)
-    fout.column_names = fin.column_names
+    fh = pyfsdb.Fsdb(file_handle=args.input_file, out_file_handle=args.output_file)
 
-    (key_column, value_column) = fin.get_column_numbers([args.key, args.value])
+    (key_column, value_column) = fh.get_column_numbers([args.key, args.value])
     min_add_value = None
     data_by_key = {}
-    data_values = []
-    for row in fin:
+    for row in fh:
         if (
             row[value_column] is not None
             and row[value_column] != "-"
@@ -141,7 +138,7 @@ def main():
                 )
 
     for key in data_by_key:
-        fout.append(data_by_key[key])
+        fh.append(data_by_key[key])
 
 
 if __name__ == "__main__":

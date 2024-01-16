@@ -78,11 +78,9 @@ def process_pdbrow(
         return_type = pyfsdb.RETURN_AS_ARRAY
 
     # open input and output fsdb handles
-    fh = pyfsdb.Fsdb(file_handle=input_file, return_type=return_type)
-    oh = pyfsdb.Fsdb(out_file_handle=output_file)
-
-    # crate output columns
-    oh.out_column_names = fh.column_names
+    fh = pyfsdb.Fsdb(
+        file_handle=input_file, return_type=return_type, out_file_handle=output_file
+    )
 
     globals = {}
 
@@ -113,9 +111,9 @@ def process_pdbrow(
             result = eval(compiled_expression, globals, row)
 
         if result:
-            oh.append(row)
+            fh.append(row)
 
-    oh.close(copy_comments_from=fh)
+    fh.close(copy_comments_from=fh)
 
 
 def main():

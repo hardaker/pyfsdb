@@ -66,15 +66,14 @@ def main():
     columns = {}
 
     # open the input file stream
-    input = pyfsdb.Fsdb(file_handle=args.input_file)
+    inh = pyfsdb.Fsdb(file_handle=args.input_file)
 
-    # from the input, get extract column numbers/names
-    time_column = input.get_column_number(args.time_column)
-    key_column = input.get_column_number(args.key_column)
-    column_names = input.column_names
+    # from the inh, get extract column numbers/names
+    time_column = inh.get_column_number(args.time_column)
+    key_column = inh.get_column_number(args.key_column)
 
     # for each row, remember each value based on time and key
-    for row in input:
+    for row in inh:
         # if the time hasn't been seen before, allocate the sub-structure
         if row[time_column] not in storage:
             storage[row[time_column]] = {}
@@ -87,13 +86,15 @@ def main():
                 columns[row[key_column]] = 1
 
     # open the output stream, and set it's properties
-    out = pyfsdb.Fsdb(out_file_handle=args.output_file)
+    outh = pyfsdb.Fsdb(out_file_handle=args.output_file)
 
     # the output columns will be a merge of the time column, and
     # previously seen key-index values.
     output_columns = [args.time_column]
     output_columns.extend(columns.keys())
-    out.out_column_names = output_columns
+    outh.out_column_names = output_columns
+    outh.out_separator = inh.separator
+    outh.converters = inh.converters
 
     # Output all data, grouped by time_key
     for time_key in storage:
@@ -107,7 +108,7 @@ def main():
                 row.append(storage[time_key][column])
 
         # write it out
-        out.append(row)
+        outh.append(row)
 
 
 if __name__ == "__main__":

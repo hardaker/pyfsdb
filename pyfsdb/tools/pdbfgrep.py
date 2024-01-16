@@ -154,11 +154,9 @@ def main():
         stash_row(cache, args.keys, row)
 
     # read in stream file, and augment each row with the new columns
-    streamh = pyfsdb.Fsdb(file_handle=args.stream_file)
-
-    # create the output stream to store the data
-    outh = pyfsdb.Fsdb(out_file_handle=args.output_file)
-    outh.out_column_names = streamh.column_names
+    streamh = pyfsdb.Fsdb(
+        file_handle=args.stream_file, out_file_handle=args.output_file
+    )
 
     key_columns = streamh.get_column_numbers(args.keys)
 
@@ -168,9 +166,9 @@ def main():
 
         # on a deep match finding
         if current and not args.invert_match:
-            outh.append(row)
+            streamh.append(row)
         elif not current and args.invert_match:
-            outh.append(row)
+            streamh.append(row)
 
 
 if __name__ == "__main__":
