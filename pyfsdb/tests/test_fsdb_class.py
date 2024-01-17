@@ -461,8 +461,8 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
 
         # this generally shouldn't be called as is, so we need to self-init
-        f.maybe_open_filehandle()
-        f.read_header()
+        # just to bootstrap the header reading
+        f.column_names
 
         all = []
         for r in f.next_as_dict():
