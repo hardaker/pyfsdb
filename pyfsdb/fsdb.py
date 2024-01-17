@@ -425,7 +425,7 @@ class Fsdb(object):
 
     @property
     def comments(self):
-        """Returns a list of comments seen in the document"""
+        """A list of comments seen in the document"""
         return self._comments
 
     @property
@@ -436,8 +436,27 @@ class Fsdb(object):
     def out_column_names(self, values):
         self.__create_column_name_mapping__(values)
 
-    # support functions
+    @property
+    def converters(self):
+        """The list of conversion routines.
 
+        It may be an array, with a converter per column,
+        or a dict with a convert per named column.
+
+        This must be set before the file is opened/read.
+
+        Useful converted may include int, float, etc.
+
+        Note: if a converter throws an exception, a value of None will
+        be placed into the returned row instead.
+        """
+        return self._converters
+
+    @converters.setter
+    def converters(self, new_converters):
+        self._converters = new_converters
+
+    # support functions
     def create_header_line(self, columns=None, separator_token=None, init_row=None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
@@ -489,26 +508,6 @@ class Fsdb(object):
 
         return header_line
 
-    @property
-    def converters(self):
-        """The list of conversion routines.
-
-        It may be an array, with a converter per column,
-        or a dict with a convert per named column.
-
-        This must be set before the file is opened/read.
-
-        Useful converted may include int, float, etc.
-
-        Note: if a converter throws an exception, a value of None will
-        be placed into the returned row instead.
-        """
-        return self._converters
-
-    @converters.setter
-    def converters(self, new_converters):
-        self._converters = new_converters
-
     def _convert_converters(self):
         if isinstance(self._converters, dict):
             converters = []
@@ -538,7 +537,6 @@ class Fsdb(object):
                     pass
         return converters
 
-    #
     def init_output_from(self, other_fsdb):
         "Copies columns from an input FSDB object to an output object's configuration"
         self.out_column_names = other_fsdb.column_names
