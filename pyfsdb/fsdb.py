@@ -594,8 +594,6 @@ class Fsdb(object):
         return self
 
     def __maybe_open_filehandle(self):
-        "Internal"
-
         # the simple case:
         if self.file_handle and (
             self._compression_checked or not self._handle_compressed
