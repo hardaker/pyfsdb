@@ -1146,10 +1146,6 @@ class Fsdb(object):
 
         self._out_file_handle.write(msgpack.packb(row, use_bin_type=True))
 
-    # backwards compatible ... don't use
-    def write_row(self, row=None):
-        self.append(row)
-
     def import_comments(self, from_fsdb):
         "Add comments from an existing FSDB to this one"
         for comment in from_fsdb._comments:

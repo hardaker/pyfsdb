@@ -293,7 +293,7 @@ class FsdbTest(TestCase):
         )
 
         for record in records:
-            f.write_row(record)
+            f.append(record)
 
         f.close()
 
@@ -311,7 +311,7 @@ class FsdbTest(TestCase):
         self.assertTrue(len(f.out_column_names) == 4, "correct initial output count")
         for row in rows:
             row.append(str(count))
-            f.write_row(row)
+            f.append(row)
             count = count + 1
         f.close()
 
@@ -330,7 +330,7 @@ class FsdbTest(TestCase):
         f.out_separator_token = "s"
         self.assertTrue(f.out_separator == " ", "new separator is space")
         for row in f:
-            f.write_row(row)
+            f.append(row)
         f.close()
 
     def check_last_line(self, outfile, lastline):
@@ -394,7 +394,7 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
         did_one = False
         for row in f:
-            f.write_row(row)
+            f.append(row)
             if not did_one:
                 f.comment("after row 1")
                 did_one = True
@@ -427,7 +427,7 @@ class FsdbTest(TestCase):
 
         did_one = False
         for row in f:
-            f.write_row(row)
+            f.append(row)
             if not did_one:
                 f.comment("after row 1")
                 did_one = True
@@ -567,7 +567,7 @@ class FsdbTest(TestCase):
         OUTPUT_FILE = "pyfsdb/tests/test_comments_at_top.test.fsdb"
         f = pyfsdb.Fsdb(filename=HEADER_FILE, out_file=OUTPUT_FILE)
         for row in f:
-            f.write_row(row)
+            f.append(row)
         f.close()
 
         # the headers should fail
