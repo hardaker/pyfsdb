@@ -199,7 +199,7 @@ class Fsdb(object):
     @property
     def headers(self):
         "Headers for the file handle being read."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._headers:
             self.read_header()
         return self._headers
@@ -211,7 +211,7 @@ class Fsdb(object):
     @property
     def header_line(self):
         "The top #fsdb header line in the file being read."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._header_line:
             self.read_header()
         return self._header_line
@@ -223,7 +223,7 @@ class Fsdb(object):
     @property
     def column_names(self):
         "An array of column names for the file being read"
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._column_names:
             self.read_header()
         return list(self._column_names.keys())
@@ -244,7 +244,7 @@ class Fsdb(object):
         be the 't' character and the separator would be '\t'.
 
         Changing this will also change the stored separator_token value."""
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._separator:
             self.read_header()
         return self._separator
@@ -266,7 +266,7 @@ class Fsdb(object):
         be the 't' character and the separator would be '\t'.
 
         Changing this will also change the stored separator value."""
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._separator_token:
             self.read_header()
         return self._separator_token
@@ -387,7 +387,7 @@ class Fsdb(object):
     @property
     def out_header_line(self):
         "The top #fsdb header line to write to the output."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self._out_header_line = self.create_header_line()
         return self._out_header_line
 
@@ -430,10 +430,12 @@ class Fsdb(object):
 
     @property
     def commands(self):
+        "A list of commands that generated this file (if possible)"
         return self.parse_commands()
 
     @out_column_names.setter
     def out_column_names(self, values):
+        "The column names to be used in output FSDB content"
         self.__create_column_name_mapping__(values)
 
     @property
@@ -523,7 +525,7 @@ class Fsdb(object):
 
     def guess_converters(self, example_row):
         """Returns a best-guess effort list of converters after determining
-        if floats/ints exist in the dataset"""
+        if floats/ints exist in the example_row"""
         converters = {}
         for column in example_row:
             try:
@@ -547,13 +549,13 @@ class Fsdb(object):
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         return self._column_names[column_name]
 
     def get_column_numbers(self, column_names):
         "Given a list of column_names, returns a list of integer index into an array of values."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         column_numbers = []
         for name in column_names:
@@ -562,7 +564,7 @@ class Fsdb(object):
 
     def get_column_name(self, column_number):
         "Given an integer column number, returns its column name."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         return self.column_nums[column_number]
 
@@ -591,7 +593,7 @@ class Fsdb(object):
         # XXX: throw error on -1 parse
         return self
 
-    def maybe_open_filehandle(self):
+    def __maybe_open_filehandle(self):
         "Internal"
 
         # the simple case:
@@ -671,7 +673,7 @@ class Fsdb(object):
 
     def bootstrap(self):
         "Performs initialization and sets up function handlers"
-        fh = self.maybe_open_filehandle()
+        fh = self.__maybe_open_filehandle()
 
         if not fh:
             raise ValueError("no filehandle specified")
@@ -792,7 +794,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         try:
             line = self._next_line()
@@ -814,7 +816,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         try:
             line = self._next_line()
@@ -1164,7 +1166,7 @@ class Fsdb(object):
         returns a list of commands found in comments in the input stream
         returns None when the input is not seekable"""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         if not self._seekable or not self.file_handle.seekable():
             return None
@@ -1235,7 +1237,7 @@ class Fsdb(object):
         we have a non-seekable stream input.
         """
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         # we already have some stored
         if self._commands:
