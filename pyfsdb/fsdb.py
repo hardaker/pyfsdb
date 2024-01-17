@@ -568,12 +568,22 @@ class Fsdb(object):
         self.read_header()
         return self.column_nums[column_number]
 
-    def set_iterator_function(self):
-        "XXX: change this to an property"
+    def set_iterator_function(self, return_type=None):
+        """Changes the internal iterator function based on the specified return type.
+
+        Note that this is unlikely safe to use on the fly"""
+
+        if return_type:
+            self.return_type = return_type
+
         if self.return_type == RETURN_AS_DICTIONARY:
-            self.__next__ = self._next_as_dict
+            self.__real_next__ = self._next_as_dict
         else:
-            self.__next__ = self._next_as_array
+            self.__real_next__ = self._next_as_array
+
+        # sigh this doesn't work as the python iterator code caches the next pointer
+        # TODO: see if we can override this
+        self.__next__ = self.__real_next__
 
     def __iter__(self):
         """Returns an iterator object for looping over an fsdb file."""
@@ -673,14 +683,7 @@ class Fsdb(object):
 
         self._convert_converters()
 
-        if self.return_type == RETURN_AS_DICTIONARY:
-            self.__real_next__ = self._next_as_dict
-        else:
-            self.__real_next__ = self._next_as_array
-
-        # sigh this doesn't work as the python iterator code caches the next pointer
-        # TODO: see if we can override this
-        self.__next__ = self.__real_next__
+        self.set_iterator_function()
 
     def __next__(self):
         """Returns the next array of data from an fsdb file.
