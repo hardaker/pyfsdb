@@ -92,8 +92,7 @@ def process_cdf(
     use_max=False,
 ):
     # open input and output fsdb handles
-    fh = pyfsdb.Fsdb(file_handle=input_file)
-    oh = pyfsdb.Fsdb(out_file_handle=output_file)
+    fh = pyfsdb.Fsdb(file_handle=input_file, out_file_handle=output_file)
 
     # crate output columns
     out_columns = fh.column_names
@@ -112,7 +111,7 @@ def process_cdf(
     if percent_column:
         out_columns.append(percent_column)
 
-    oh.out_column_names = out_columns
+    fh.out_column_names = out_columns
 
     df = fh.get_pandas(data_has_comment_chars=True)
 
@@ -125,7 +124,7 @@ def process_cdf(
     if percent_column:
         df[percent_column] = 100.0 * df[data_column] / denominator
 
-    oh.put_pandas(df)
+    fh.put_pandas(df)
 
 
 def main():

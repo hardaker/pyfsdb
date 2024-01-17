@@ -76,10 +76,12 @@ def main():
 
     first_file = True
 
-    for input_file in args.input_files:
-        with pyfsdb.Fsdb(
-            file_handle=input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
-        ) as fh:
+    with pyfsdb.Fsdb(
+        file_handle=args.input_file,
+        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        out_file_handel=args.output_file,
+    ) as fh:
+        for input_file in args.input_files:
             for row in fh:
                 # loop through the keys and find the right deep tree spot
                 ptr = data
@@ -99,18 +101,15 @@ def main():
                         ptr[value] += float(row[value])
         first_file = False
 
-    # save the output
-    oh = pyfsdb.Fsdb(out_file_handle=args.output_file)
-    oh.out_column_names = keys + values
+        # save the output
+        def write_recursive(spot, depth, indexes):
+            if depth == 0:
+                fh.append(indexes + list(spot.values()))
+            else:
+                for keyvalue in spot:
+                    write_recursive(spot[keyvalue], depth - 1, indexes + [keyvalue])
 
-    def write_recursive(spot, depth, indexes):
-        if depth == 0:
-            oh.append(indexes + list(spot.values()))
-        else:
-            for keyvalue in spot:
-                write_recursive(spot[keyvalue], depth - 1, indexes + [keyvalue])
-
-    write_recursive(data, len(keys), [])
+        write_recursive(data, len(keys), [])
 
 
 if __name__ == "__main__":

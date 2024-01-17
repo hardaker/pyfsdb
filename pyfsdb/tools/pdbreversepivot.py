@@ -84,7 +84,6 @@ def main():
     args = parse_args()
 
     # set up storage structures
-    storage = {}
     columns = {}
 
     # from the input, get extract column numbers/names
@@ -95,10 +94,11 @@ def main():
 
     # open the input file stream
     fh = pyfsdb.Fsdb(
-        file_handle=args.input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
+        file_handle=args.input_file,
+        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        out_file_handle=args.output_file,
     )
-    output = pyfsdb.Fsdb(out_file_handle=args.output_file)
-    output.out_column_names = [key_column, value_column] + other_columns
+    fh.out_column_names = [key_column, value_column] + other_columns
 
     # for each row, remember each value based on time and key
     for row in fh:
@@ -106,9 +106,9 @@ def main():
             out_row = [column, row[column]]
             for other in other_columns:
                 out_row.append(row[other])
-            output.append(out_row)
+            fh.append(out_row)
 
-    output.close(copy_comments_from=fh)
+    fh.close(copy_comments_from=fh)
 
 
 if __name__ == "__main__":

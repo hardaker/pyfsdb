@@ -126,7 +126,7 @@ class FsdbTest(TestCase):
         self.assertTrue(f.file_handle == fh, "file_handle was set properly")
 
         row = next(f)
-        self.assertTrue(f.__next__ == f._next_as_array, "read type was set")
+        self.assertTrue(f.__real_next__ == f._next_as_array, "read type was set")
         self.assertTrue(row, "row one is returned")
         self.assertTrue(row[0] == "rowone")
 
@@ -184,7 +184,7 @@ class FsdbTest(TestCase):
 
     def test_basic_writing(self):
         outstring = StringIO()
-        f = pyfsdb.Fsdb(out_file_handle=outstring)
+        f = pyfsdb.Fsdb(out_file_handle=outstring, converters={"a": int})
         f.out_column_names = ["a"]
         f.append([1])
         self.assertEqual(outstring.getvalue(), "#fsdb -F t a:l\n1\n")
@@ -349,6 +349,7 @@ class FsdbTest(TestCase):
     def test_out_command_line(self):
 
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
 
         f.out_command_line = "test command"
@@ -358,6 +359,7 @@ class FsdbTest(TestCase):
 
     def test_save_out_command_on_del(self):
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
 
         f.out_command_line = "test command on del"
@@ -377,6 +379,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(
             self.DATA_FILE, out_file=self.OUT_FILE, out_command_line="test command init"
         )
+        f.out_column_names = ["bogus"]
         self.assertTrue(f, "opened ok")
         del f
 
@@ -555,7 +558,6 @@ class FsdbTest(TestCase):
 
         # check that its' right
         results = out.getvalue()
-        import sys
 
         sys.stderr.write(results)
         self.assertEqual(results[0 : len(outstr)], outstr, "put_pandas worked")
@@ -616,7 +618,7 @@ class FsdbTest(TestCase):
         datah = StringIO(data)
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
-                row = next(f)
+                next(f)
                 self.assertTrue(False, "shouldn't have gotten here")
         except ValueError:
             self.assertTrue(True, "proper exception thrown")
@@ -1040,10 +1042,27 @@ class FsdbTest(TestCase):
             file_handle=input_data,
             return_type=pyfsdb.RETURN_AS_DICTIONARY,
         ) as f:
-            columns = f.column_names
             for row in f:
                 pass
             self.assertTrue(True, "got to end")
+
+    def test_input_output_separator_match(self):
+        input_contents = "#fsdb -F s a:l b:l c:l\n1 2 3\n"
+        input_data = StringIO(input_contents)
+        output_data = StringIO()
+        with pyfsdb.Fsdb(
+            file_handle=input_data,
+            out_file_handle=output_data,
+            return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        ) as f:
+            for row in f:
+                f.append(row)
+            self.assertEqual(
+                f.separator,
+                f.out_separator,
+                "Input and output separators are the same by default",
+            )
+            self.assertEqual(input_contents, output_data.getvalue())
 
 
 if __name__ == "__main__":

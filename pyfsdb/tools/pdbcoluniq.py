@@ -63,8 +63,7 @@ def output_results(outh, keys, data, count=False):
 def filter_unique_columns(
     in_file_handle, out_file_handle, keys, count=False, initial_count_key=None
 ):
-    fh = pyfsdb.Fsdb(file_handle=in_file_handle)
-    ofh = pyfsdb.Fsdb(out_file_handle=out_file_handle)
+    fh = pyfsdb.Fsdb(file_handle=in_file_handle, out_file_handle=out_file_handle)
 
     key_columns = fh.get_column_numbers(keys)
     initial_count_col = None
@@ -76,9 +75,9 @@ def filter_unique_columns(
 
     # set the output column names
     if count:
-        ofh.column_names = keys + ["count"]
+        fh.out_column_names = keys + ["count"]
     else:
-        ofh.column_names = keys
+        fh.out_column_names = keys
 
     num_keys = len(keys)
     if len(key_columns) == 1:
@@ -109,9 +108,9 @@ def filter_unique_columns(
 
     # output the results, with optional counts
     # (if statement at outer tier for speed)
-    output_results(ofh, [], counters, count)
+    output_results(fh, [], counters, count)
 
-    ofh.close(copy_comments_from=fh)
+    fh.close(copy_comments_from=fh)
 
 
 def main():

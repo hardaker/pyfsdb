@@ -104,8 +104,8 @@ class Fsdb(object):
     _out_header_line = None
     _out_column_names = []
     _out_column_names_set = False
-    _out_separator = "\t"
-    _out_separator_token = "t"
+    _out_separator = None
+    _out_separator_token = None
     _out_command_line = "____BROKEN____"  # ick, magic
     _save_command_history = True
     _handle_compressed = True
@@ -182,6 +182,8 @@ class Fsdb(object):
             self.out_command_line = out_command_line
 
         self._comments = []
+        self.__real_next__ = None
+        self.unpacker = None
 
     @property
     def file_handle(self):
@@ -228,7 +230,7 @@ class Fsdb(object):
 
     @column_names.setter
     def column_names(self, values):
-        mapping = self.__create_column_name_mapping__(values)
+        self.__create_column_name_mapping__(values)
         self._header_line = self.create_header_line(
             columns=values, separator_token=self._separator_token
         )
@@ -343,7 +345,7 @@ class Fsdb(object):
         elif self.out_file_handle:
             try:
                 self._out_file = self._out_file_handle.name
-            except:
+            except Exception:
                 pass
 
     @property
@@ -432,7 +434,7 @@ class Fsdb(object):
 
     @out_column_names.setter
     def out_column_names(self, values):
-        mapping = self.__create_column_name_mapping__(values)
+        self.__create_column_name_mapping__(values)
 
     # support functions
 
@@ -567,12 +569,13 @@ class Fsdb(object):
 
     def __iter__(self):
         """Returns an iterator object for looping over an fsdb file."""
+        self.bootstrap()
         if not self.filename and not self.file_handle:
             raise ValueError("No filename or handle currently available for reading")
         # XXX: throw error on -1 parse
         return self
 
-    def maybe_open_filehandle(self, mode="r"):
+    def maybe_open_filehandle(self):
         "Internal"
 
         # the simple case:
@@ -586,7 +589,7 @@ class Fsdb(object):
 
         # the simple case, open it if we don't need to detect compressed
         if not self.file_handle and self.filename and not self._handle_compressed:
-            self.file_handle = open(self.filename, mode)
+            self.file_handle = open(self.filename, "rb")
             return self.file_handle
 
         # wrap this in case anything at all fails:
@@ -620,13 +623,13 @@ class Fsdb(object):
                                     import gzip
 
                                     self._seekable = False  # unlikely
-                                    self.file_handle = gzip.open(filename, "rt")
+                                    self.file_handle = gzip.open(filename, "rb")
                                     return self.file_handle
                                 elif filetype == "bz2":
                                     import bz2
 
                                     self._seekable = False  # unlikely
-                                    self.file_handle = bz2.open(filename, "rt")
+                                    self.file_handle = bz2.open(filename, "rb")
                                     return self.file_handle
                                 elif filetype == "xz":
                                     import lzma
@@ -634,7 +637,7 @@ class Fsdb(object):
                                     self._seekable = (
                                         False  # say they are when they're not
                                     )
-                                    self.file_handle = lzma.open(filename, "rt")
+                                    self.file_handle = lzma.open(filename, "rb")
                                     return self.file_handle
                             except Exception:
                                 sys.stderr.write(
@@ -646,30 +649,42 @@ class Fsdb(object):
 
         # fall back to just opening it and hope its raw
         if self.filename:
-            self.file_handle = open(self.filename, mode)
+            self.file_handle = open(self.filename, "rb")
 
         return self.file_handle
 
-    def __next__(self):
-        """Returns the next array of data from an fsdb file.
-        Returns an array by default, or a dictionary if return_type
-        was set to pyfsdb.RETURN_AS_DICTIONARY."""
-
+    def bootstrap(self):
+        "Performs initialization and sets up function handlers"
         fh = self.maybe_open_filehandle()
+
+        if not fh:
+            raise ValueError("no filehandle specified")
+
         if not self._header_line:
             self.read_header()
 
         self._convert_converters()
 
         if self.return_type == RETURN_AS_DICTIONARY:
-            self.__next__ = self._next_as_dict
+            self.__real_next__ = self._next_as_dict
         else:
-            self.__next__ = self._next_as_array
+            self.__real_next__ = self._next_as_array
 
-        if not fh:
-            return None
+        # sigh this doesn't work as the python iterator code caches the next pointer
+        # TODO: see if we can override this
+        self.__next__ = self.__real_next__
 
-        return self.__next__()
+    def __next__(self):
+        """Returns the next array of data from an fsdb file.
+        Returns an array by default, or a dictionary if return_type
+        was set to pyfsdb.RETURN_AS_DICTIONARY."""
+
+        # if we've initialized already, use the real path:
+        if self.__real_next__:
+            return self.__real_next__()
+
+        self.bootstrap()
+        return self.__real_next__()
 
     def _handle_comment(self, line):
         """Handle a comment by printing it, possibly with header init first,
@@ -689,7 +704,7 @@ class Fsdb(object):
         elif self._pass_comments == "y":
             self._comments.append(line)
 
-        return next(self.fileh)
+        return self._next_line()
 
     def _convert_array_values(self, row):
         for (n, converter) in enumerate(self._converters):
@@ -702,21 +717,48 @@ class Fsdb(object):
                     row[n] = None
         return row
 
+    def _next_line(self):
+        # return next(self.fileh)
+        return self._next_line_binary()
+
+    def _next_line_binary(self):
+        line = next(self.fileh)
+        if isinstance(line, bytes):
+            line = line.decode()
+
+        while line and line[0] == "#":
+            line = self._handle_comment(line)
+            if isinstance(line, bytes):
+                line = line.decode()
+
+        return line
+
     def _next_as_array(self):
         """Return the next object as an array of columns."""
 
-        line = next(self.fileh)
-        while line and line[0] == "#":
-            line = self._handle_comment(line)
+        if self.separator == "m":
+            # msgpack encoded
+            import msgpack
 
-        # return an array of data
-        self.current_line = line
-        self._current_row = line.rstrip("\n\r").split(self.separator)
-        if len(self._current_row) < len(self._column_names):
-            n = (len(self._column_names)) - len(self._current_row)
-            self._current_row.extend([""] * n)
-        if self._converters:
-            self._current_row = self._convert_array_values(self._current_row)
+            if not self.unpacker:
+                self.unpacker = msgpack.Unpacker(
+                    getattr(self.fileh, "buffer", self.fileh)
+                )
+            self._current_row = next(self.unpacker)
+
+        else:
+            # normal text file
+            line = self._next_line()
+
+            # return an array of data
+            self.current_line = line
+            self._current_row = line.rstrip("\n\r").split(self.separator)
+            if len(self._current_row) < len(self._column_names):
+                n = (len(self._column_names)) - len(self._current_row)
+                self._current_row.extend([""] * n)
+            if self._converters:
+                self._current_row = self._convert_array_values(self._current_row)
+
         return self._current_row
 
     def _next_as_dict(self):
@@ -741,10 +783,10 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        fh = self.maybe_open_filehandle()
+        self.maybe_open_filehandle()
 
         try:
-            line = next(self.fileh)
+            line = self._next_line()
             while line:
                 while line and line[0] == "#":
                     line = self._handle_comment(line)
@@ -753,8 +795,8 @@ class Fsdb(object):
                 self.current_line = line
                 self._current_row = line.rstrip("\n\r").split(self.separator)
                 yield self._current_row
-                line = next(self.fileh)
-        except StopIteration as e:
+                line = self._next_line()
+        except StopIteration:
             return
 
     def next_as_dict(self):
@@ -763,10 +805,10 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        fh = self.maybe_open_filehandle()
+        self.maybe_open_filehandle()
 
         try:
-            line = next(self.fileh)
+            line = self._next_line()
             while line:
                 while line and line[0] == "#":
                     line = self._handle_comment(line)
@@ -780,8 +822,8 @@ class Fsdb(object):
                     return_dict[self.column_nums[index]] = self._current_row[index]
 
                 yield return_dict
-                line = next(self.fileh)
-        except StopIteration as e:
+                line = self._next_line()
+        except StopIteration:
             return
 
     def parse_separator(self, separator=None):
@@ -818,9 +860,11 @@ class Fsdb(object):
             return "S"
         elif separator_token == " ":
             return "s"
+        elif separator_token == "m":
+            return "m"
         elif len(separator_token) == 1:
             return "C" + separator_token
-        elif separator_token == None:
+        elif separator_token is None:
             # XXX
             separator_token = "D"
 
@@ -849,8 +893,21 @@ class Fsdb(object):
             return [0, self._mapping]
         self._have_read_header = True
 
+        # we read a byte at a time to allow binary beyond the header
+        # ie, next() doesn't work on mostly binary files
+        # self.fileh.buffer is the raw (binary mode) buffer of normal files
+        readh = getattr(self.fileh, "buffer", self.fileh)
         if not line:
-            line = next(self.file_handle)
+            line = ""
+            addition = None
+            while addition != "\n" and addition != "":
+                addition = readh.read(1)
+                if getattr(addition, "decode", False):
+                    addition = addition.decode()
+                line += addition
+
+            # place = self.fileh.tell()
+
         self._header_line = line
         self._headers = [self._header_line]
 
@@ -860,7 +917,7 @@ class Fsdb(object):
 
         # should we use argparse here?
         argn = 1
-        separator = None  # (D)efault is all white space
+        self._separator = None  # (D)efault is all white space
         while args[argn][0] == "-":
             if args[argn] == "-F":
                 argn += 1
@@ -871,6 +928,9 @@ class Fsdb(object):
             argn += 1
 
         self._separator = self.parse_separator(self._separator_token)
+        if not self._out_separator:
+            self._out_separator_token = self._separator_token
+            self._out_separator = self._separator
 
         # join the remainder of the arguments back together to split
         # by the correct separator
@@ -930,7 +990,7 @@ class Fsdb(object):
             for column in column_names:
                 try:
                     df[column] = pandas.to_numeric(df[column])
-                except:
+                except Exception:
                     pass
 
             return df
@@ -946,8 +1006,6 @@ class Fsdb(object):
 
     def put_pandas(self, df):
         "saves a pandas dataframe to the output file"
-        import pandas
-
         if not self._out_column_names:
             self.out_column_names = df.columns.values.tolist()
         self._write_header_line()
@@ -1007,18 +1065,41 @@ class Fsdb(object):
 
     def _write_header_line(self, init_row=None):
         if not self._out_column_names and not self._header_line:
+            raise ValueError("no output column names specified")
             return  # we're unable to at this point
+
+        if not self._out_separator:
+            self._out_separator = "\t"  # default to tab
+            self._out_separator_type = "t"  # default to tab
 
         # maybe construct it
         if not self._out_header_line and self._out_column_names:
             self._out_header_line = self.create_header_line(init_row=init_row)
 
-        # write out the correct header
+        # start by assuming copy the original
+        output_header = self._header_line
         if self._out_header_line:
-            self._out_file_handle.write(self._out_header_line)
-        elif self._header_line:
-            # assuming copy the original
-            self._out_file_handle.write(self._header_line)
+            # otherwise use a specified one
+            output_header = self._out_header_line
+
+        if self.out_separator == "m":
+            # switch to the internal binary buffer if possible
+            self.out_file_handle = getattr(
+                self.out_file_handle, "buffer", self.out_file_handle
+            )
+            self._out_file_handle.write(bytes(output_header, encoding="utf-8"))
+        else:
+            self._out_file_handle.write(output_header)
+
+        # if we're in msgpack/binary mode, stop here
+        if self.out_separator == "m":
+            self.append = self._append_msgpack
+            self._header_written = True
+            # TODO: ie, we need to deal with storing comments at some point
+            self._pass_comments = False
+            # TODO: and command history
+            self._save_command_history = False
+            return
 
         # see if we have any early stored comments
         if self._pass_comments == "y" and self._comments:
@@ -1045,9 +1126,14 @@ class Fsdb(object):
             row = [row[x] for x in self.out_column_names]
         if self._write_nones_as_blanks:
             for i in range(0, len(row)):
-                if row[i] == None:
+                if row[i] is None:
                     row[i] = ""
         self._out_file_handle.write(self._out_separator.join(map(str, row)) + "\n")
+
+    def _append_msgpack(self, row=None):
+        import msgpack
+
+        self._out_file_handle.write(msgpack.packb(row, use_bin_type=True))
 
     # backwards compatible ... don't use
     def write_row(self, row=None):
@@ -1095,6 +1181,8 @@ class Fsdb(object):
         # poor man's search from the back
         while True:
             data = self.file_handle.read(guess_length * multiplier)
+            if isinstance(data, bytes):
+                data = data.decode()
             first_newline = data.find("\n")
 
             if first_newline != -1 and (
@@ -1106,7 +1194,7 @@ class Fsdb(object):
                 if file_size - guess_length * multiplier <= 0:
                     return None
 
-                actual = self.file_handle.seek(file_size - guess_length * multiplier)
+                self.file_handle.seek(file_size - guess_length * multiplier)
                 continue
 
             break
@@ -1183,7 +1271,7 @@ class Fsdb(object):
                         self._out_file_handle.write(comment_line)
                     self._out_file_handle.write("#  | " + self.out_command_line + "\n")
                 self._out_file_handle.close()
-            except:
+            except Exception:
                 pass
             self._out_file_handle = None
 

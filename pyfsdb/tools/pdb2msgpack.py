@@ -68,26 +68,16 @@ def main():
         return_type=pyfsdb.RETURN_AS_ARRAY,
     )
 
-    # eventually:
-    import io
-
-    outfile = io.StringIO()
-    out_fsdb = pyfsdb.Fsdb(
+    oh = pyfsdb.Fsdb(
         # out_file_handle=args.output_file,
-        out_file_handle=outfile,
+        out_file_handle=args.output_file,
         out_column_names=in_fsdb.column_names,
     )
-    out_fsdb.out_separator_token = "m"  # save as msgpack
-
-    oh = args.output_file
-    oh.write(bytes(out_fsdb.out_header_line, encoding="utf-8"))
-
-    # for now
-    import msgpack
+    oh.out_separator_token = "m"  # save as msgpack
 
     # for record in in_fsdb:
     for row in in_fsdb:
-        oh.write(msgpack.packb(row, use_bin_type=True))
+        oh.append(row)
 
 
 if __name__ == "__main__":
