@@ -538,6 +538,14 @@ class Fsdb(object):
                     pass
         return converters
 
+    #
+    def init_output_from(self, other_fsdb):
+        "Copies columns from an input FSDB object to an output object's configuration"
+        self.out_column_names = other_fsdb.column_names
+        self.out_separator = other_fsdb.separator
+        self.converters = other_fsdb.converters
+        return self
+
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
