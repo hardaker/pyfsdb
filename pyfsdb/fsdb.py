@@ -1150,14 +1150,13 @@ class Fsdb(object):
     def write_row(self, row=None):
         self.append(row)
 
-    def write_finish(self):
-        self.close()
-
     def import_comments(self, from_fsdb):
+        "Add comments from an existing FSDB to this one"
         for comment in from_fsdb._comments:
             self._comments.append(comment)
 
     def get_file_size(self):
+        "Returns the size of the input file, if possible"
         return os.stat(self.fileh.name).st_size
 
     def read_commands_ahead(self):
