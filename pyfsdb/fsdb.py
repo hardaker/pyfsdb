@@ -1009,7 +1009,13 @@ class Fsdb(object):
         if not self._out_column_names:
             self.out_column_names = df.columns.values.tolist()
         self._write_header_line()
-        df.to_csv(self._out_file_handle, sep="\t", header=False, index=False)
+        df.to_csv(
+            self._out_file_handle,
+            sep="\t",
+            header=False,
+            index=False,
+            columns=self.out_column_names,
+        )
 
     def comment(self, line):
         """Add a comment to an ouput FSDB file
