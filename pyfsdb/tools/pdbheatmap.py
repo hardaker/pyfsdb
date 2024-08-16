@@ -191,22 +191,22 @@ def normalize(
 
         ycols[y_value] = 1
 
-    # merge the data into a two dimensional array
     def make_numeric(x):
         return float(x)
 
-    # sort the row names
+    # sort the row names (potentially numerically)
     keyf = None
     if y_numeric:  # xcols is actually Y in the map
         keyf = make_numeric
     xcols = sorted(dataset.keys(), key=keyf)
 
-    # sort the column names
+    # sort the column names (potentially numerically)
     keyf = None
     if x_numeric:  # ycols is actually X in the map
         keyf = make_numeric
     ycols = sorted(ycols.keys(), key=keyf)
 
+    # merge the data into a two dimensional array
     data = []
     for first_column in xcols:
         newrow = []
