@@ -166,23 +166,11 @@ def normalize(
     ycols: the list of y column labels
     labelset: the labels in a deep dictonary format if label_column was specified"""
     # loop over all the rows calculating the min/max values and save results
-    min_value = None
-    max_value = None
     ycols = {}  # stores each unique second value
     dataset = {}  # nested tree structure
     labelset = {}
 
     for row in input_data:
-        if not max_value:
-            max_value = row[value_column]
-        else:
-            max_value = max(max_value, row[value_column])
-
-        if not min_value:
-            min_value = row[value_column]
-        else:
-            min_value = min(min_value, row[value_column])
-
         label = None
         x_value = row[columns[0]]
         y_value = row[columns[1]]
@@ -207,11 +195,13 @@ def normalize(
     def make_numeric(x):
         return float(x)
 
+    # sort the row names
     keyf = None
     if y_numeric:  # xcols is actually Y in the map
         keyf = make_numeric
     xcols = sorted(dataset.keys(), key=keyf)
 
+    # sort the column names
     keyf = None
     if x_numeric:  # ycols is actually X in the map
         keyf = make_numeric
@@ -221,18 +211,19 @@ def normalize(
     for first_column in xcols:
         newrow = []
         for second_column in ycols:
-            if second_column in dataset[first_column] and max_value > 0:
-                val = dataset[first_column][second_column] / max_value
-                newrow.append(val)
-            else:
-                newrow.append(0.0)
+            # account for missing data where a column wasn't specified
+            newrow.append(dataset[first_column].get(second_column, 0.0))
         data.append(newrow)
+
+    # convert to a numpy array
+    data = np.array(data)
+
+    # normalize it
+    data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
     return {
         "data": data,
         "dataset": dataset,
-        "min_value": min_value,
-        "max_value": max_value,
         "xcols": xcols,
         "ycols": ycols,
         "labelset": labelset,
@@ -267,9 +258,8 @@ def create_heat_map(
         results["labelset"],
     )
 
-    grapharray = np.array(data)
     if not invert:
-        grapharray = 1 - grapharray
+        data = 1 - data
 
     # generate the graph
     fig, ax = plt.subplots()
@@ -278,7 +268,7 @@ def create_heat_map(
     fig.set_dpi(150)
     fig.set_size_inches(16, 9)
 
-    ax.imshow(grapharray, vmin=0.0, vmax=1.0, cmap=cmap)
+    ax.imshow(data, vmin=0.0, vmax=1.0, cmap=cmap)
     # ax.grid(ls=':')
 
     ax.set_xlabel(maybe_shrink_label(columns[1], max_label_size), fontsize=font_size)
@@ -298,12 +288,12 @@ def create_heat_map(
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
     if add_fractions:
-        for i in range(len(grapharray)):
-            for j in range(len(grapharray[i])):
+        for i in range(len(data)):
+            for j in range(len(data[i])):
                 ax.text(
                     j,
                     i,
-                    "{:1.1f}".format(grapharray[i][j]),
+                    "{:1.1f}".format(data[i][j]),
                     ha="center",
                     va="center",
                     color="r",
