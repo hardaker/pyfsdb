@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# Ruff complains about the matplotlib use line which is needed
+# ruff: noqa: E402
+
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 
@@ -171,14 +174,14 @@ def normalize(
 
     for row in input_data:
         if not max_value:
-            max_value = float(row[value_column])
+            max_value = row[value_column]
         else:
-            max_value = max(max_value, float(row[value_column]))
+            max_value = max(max_value, row[value_column])
 
         if not min_value:
-            min_value = float(row[value_column])
+            min_value = row[value_column]
         else:
-            min_value = min(min_value, float(row[value_column]))
+            min_value = min(min_value, row[value_column])
 
         label = None
         x_value = row[columns[0]]
@@ -187,9 +190,9 @@ def normalize(
         if label_column and label_column in row:
             label = row[label_column]
         if x_value not in dataset:
-            dataset[x_value] = {y_value: float(value)}
+            dataset[x_value] = {y_value: value}
         else:
-            dataset[x_value][y_value] = float(value)
+            dataset[x_value][y_value] = value
 
         # set the optional labels
         if label:
@@ -351,7 +354,9 @@ def main():
 
     # read in the input data
     f = pyfsdb.Fsdb(
-        file_handle=args.input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
+        file_handle=args.input_file,
+        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        converters={args.value_column: float},
     )
 
     (fig, data, dataset) = create_heat_map(
