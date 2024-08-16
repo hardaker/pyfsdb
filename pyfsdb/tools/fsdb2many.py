@@ -58,9 +58,7 @@ def main():
             # new value, so open a new file handle to save data for it
             file_name = re.sub("[^-.0-9a-zA-Z_]", "_", str(value))
             outh = pyfsdb.Fsdb(out_file=(args.output_pattern % file_name))
-            outh.column_names = inh.column_names
-            outh.separator = inh.separator
-            outh.converters = inh.converters
+            outh.init_output_from(inh)
             out_handles[value] = outh
 
         # save the row to the file based on its value

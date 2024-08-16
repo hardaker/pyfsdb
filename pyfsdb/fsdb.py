@@ -199,7 +199,7 @@ class Fsdb(object):
     @property
     def headers(self):
         "Headers for the file handle being read."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._headers:
             self.read_header()
         return self._headers
@@ -211,7 +211,7 @@ class Fsdb(object):
     @property
     def header_line(self):
         "The top #fsdb header line in the file being read."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._header_line:
             self.read_header()
         return self._header_line
@@ -223,7 +223,7 @@ class Fsdb(object):
     @property
     def column_names(self):
         "An array of column names for the file being read"
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._column_names:
             self.read_header()
         return list(self._column_names.keys())
@@ -244,7 +244,7 @@ class Fsdb(object):
         be the 't' character and the separator would be '\t'.
 
         Changing this will also change the stored separator_token value."""
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._separator:
             self.read_header()
         return self._separator
@@ -266,7 +266,7 @@ class Fsdb(object):
         be the 't' character and the separator would be '\t'.
 
         Changing this will also change the stored separator value."""
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         if not self._separator_token:
             self.read_header()
         return self._separator_token
@@ -387,7 +387,7 @@ class Fsdb(object):
     @property
     def out_header_line(self):
         "The top #fsdb header line to write to the output."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self._out_header_line = self.create_header_line()
         return self._out_header_line
 
@@ -425,19 +425,40 @@ class Fsdb(object):
 
     @property
     def comments(self):
-        """Returns a list of comments seen in the document"""
+        """A list of comments seen in the document"""
         return self._comments
 
     @property
     def commands(self):
+        "A list of commands that generated this file (if possible)"
         return self.parse_commands()
 
     @out_column_names.setter
     def out_column_names(self, values):
+        "The column names to be used in output FSDB content"
         self.__create_column_name_mapping__(values)
 
-    # support functions
+    @property
+    def converters(self):
+        """The list of conversion routines.
 
+        It may be an array, with a converter per column,
+        or a dict with a convert per named column.
+
+        This must be set before the file is opened/read.
+
+        Useful converted may include int, float, etc.
+
+        Note: if a converter throws an exception, a value of None will
+        be placed into the returned row instead.
+        """
+        return self._converters
+
+    @converters.setter
+    def converters(self, new_converters):
+        self._converters = new_converters
+
+    # support functions
     def create_header_line(self, columns=None, separator_token=None, init_row=None):
         "Returns a header string for the stored column_names and separator/separator_token."
         if not columns:
@@ -489,26 +510,6 @@ class Fsdb(object):
 
         return header_line
 
-    @property
-    def converters(self):
-        """The list of conversion routines.
-
-        It may be an array, with a converter per column,
-        or a dict with a convert per named column.
-
-        This must be set before the file is opened/read.
-
-        Useful converted may include int, float, etc.
-
-        Note: if a converter throws an exception, a value of None will
-        be placed into the returned row instead.
-        """
-        return self._converters
-
-    @converters.setter
-    def converters(self, new_converters):
-        self._converters = new_converters
-
     def _convert_converters(self):
         if isinstance(self._converters, dict):
             converters = []
@@ -524,7 +525,7 @@ class Fsdb(object):
 
     def guess_converters(self, example_row):
         """Returns a best-guess effort list of converters after determining
-        if floats/ints exist in the dataset"""
+        if floats/ints exist in the example_row"""
         converters = {}
         for column in example_row:
             try:
@@ -538,16 +539,23 @@ class Fsdb(object):
                     pass
         return converters
 
+    def init_output_from(self, other_fsdb):
+        "Copies columns from an input FSDB object to an output object's configuration"
+        self.out_column_names = other_fsdb.column_names
+        self.out_separator = other_fsdb.separator
+        self.converters = other_fsdb.converters
+        return self
+
     # column accessor helpers
     def get_column_number(self, column_name):
         "Given a column_name, returns its integer index into an array of values."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         return self._column_names[column_name]
 
     def get_column_numbers(self, column_names):
         "Given a list of column_names, returns a list of integer index into an array of values."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         column_numbers = []
         for name in column_names:
@@ -556,16 +564,26 @@ class Fsdb(object):
 
     def get_column_name(self, column_number):
         "Given an integer column number, returns its column name."
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
         self.read_header()
         return self.column_nums[column_number]
 
-    def set_iterator_function(self):
-        "XXX: change this to an property"
+    def set_iterator_function(self, return_type=None):
+        """Changes the internal iterator function based on the specified return type.
+
+        Note that this is unlikely safe to use on the fly"""
+
+        if return_type:
+            self.return_type = return_type
+
         if self.return_type == RETURN_AS_DICTIONARY:
-            self.__next__ = self._next_as_dict
+            self.__real_next__ = self._next_as_dict
         else:
-            self.__next__ = self._next_as_array
+            self.__real_next__ = self._next_as_array
+
+        # sigh this doesn't work as the python iterator code caches the next pointer
+        # TODO: see if we can override this
+        self.__next__ = self.__real_next__
 
     def __iter__(self):
         """Returns an iterator object for looping over an fsdb file."""
@@ -575,9 +593,7 @@ class Fsdb(object):
         # XXX: throw error on -1 parse
         return self
 
-    def maybe_open_filehandle(self):
-        "Internal"
-
+    def __maybe_open_filehandle(self):
         # the simple case:
         if self.file_handle and (
             self._compression_checked or not self._handle_compressed
@@ -655,7 +671,7 @@ class Fsdb(object):
 
     def bootstrap(self):
         "Performs initialization and sets up function handlers"
-        fh = self.maybe_open_filehandle()
+        fh = self.__maybe_open_filehandle()
 
         if not fh:
             raise ValueError("no filehandle specified")
@@ -665,14 +681,7 @@ class Fsdb(object):
 
         self._convert_converters()
 
-        if self.return_type == RETURN_AS_DICTIONARY:
-            self.__real_next__ = self._next_as_dict
-        else:
-            self.__real_next__ = self._next_as_array
-
-        # sigh this doesn't work as the python iterator code caches the next pointer
-        # TODO: see if we can override this
-        self.__next__ = self.__real_next__
+        self.set_iterator_function()
 
     def __next__(self):
         """Returns the next array of data from an fsdb file.
@@ -783,7 +792,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         try:
             line = self._next_line()
@@ -805,7 +814,7 @@ class Fsdb(object):
         Using a generator is faster than using the Fsdb object
         as a iterator."""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         try:
             line = self._next_line()
@@ -1141,18 +1150,13 @@ class Fsdb(object):
 
         self._out_file_handle.write(msgpack.packb(row, use_bin_type=True))
 
-    # backwards compatible ... don't use
-    def write_row(self, row=None):
-        self.append(row)
-
-    def write_finish(self):
-        self.close()
-
     def import_comments(self, from_fsdb):
+        "Add comments from an existing FSDB to this one"
         for comment in from_fsdb._comments:
             self._comments.append(comment)
 
     def get_file_size(self):
+        "Returns the size of the input file, if possible"
         return os.stat(self.fileh.name).st_size
 
     def read_commands_ahead(self):
@@ -1161,7 +1165,7 @@ class Fsdb(object):
         returns a list of commands found in comments in the input stream
         returns None when the input is not seekable"""
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         if not self._seekable or not self.file_handle.seekable():
             return None
@@ -1232,7 +1236,7 @@ class Fsdb(object):
         we have a non-seekable stream input.
         """
 
-        self.maybe_open_filehandle()
+        self.__maybe_open_filehandle()
 
         # we already have some stored
         if self._commands:

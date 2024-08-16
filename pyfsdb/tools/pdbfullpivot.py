@@ -92,9 +92,9 @@ def main():
     # previously seen key-index values.
     output_columns = [args.time_column]
     output_columns.extend(columns.keys())
+
+    outh.init_output_from(inh)
     outh.out_column_names = output_columns
-    outh.out_separator = inh.separator
-    outh.converters = inh.converters
 
     # Output all data, grouped by time_key
     for time_key in storage:

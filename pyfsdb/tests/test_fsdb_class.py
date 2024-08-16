@@ -293,9 +293,9 @@ class FsdbTest(TestCase):
         )
 
         for record in records:
-            f.write_row(record)
+            f.append(record)
 
-        f.write_finish()
+        f.close()
 
         g = pyfsdb.Fsdb(OUT_FILE)
         rows = []
@@ -311,9 +311,9 @@ class FsdbTest(TestCase):
         self.assertTrue(len(f.out_column_names) == 4, "correct initial output count")
         for row in rows:
             row.append(str(count))
-            f.write_row(row)
+            f.append(row)
             count = count + 1
-        f.write_finish()
+        f.close()
 
         # check new columns
         g = pyfsdb.Fsdb(filename=OUT_FILE)
@@ -330,8 +330,8 @@ class FsdbTest(TestCase):
         f.out_separator_token = "s"
         self.assertTrue(f.out_separator == " ", "new separator is space")
         for row in f:
-            f.write_row(row)
-        f.write_finish()
+            f.append(row)
+        f.close()
 
     def check_last_line(self, outfile, lastline):
         saved = open(outfile, "r")
@@ -353,7 +353,7 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
 
         f.out_command_line = "test command"
-        f.write_finish()
+        f.close()
 
         self.check_last_line(self.OUT_FILE, "#  | test command\n")
 
@@ -394,11 +394,11 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
         did_one = False
         for row in f:
-            f.write_row(row)
+            f.append(row)
             if not did_one:
                 f.comment("after row 1")
                 did_one = True
-        f.write_finish()
+        f.close()
 
         lines = []
         f = open(out_file, "r")
@@ -427,11 +427,11 @@ class FsdbTest(TestCase):
 
         did_one = False
         for row in f:
-            f.write_row(row)
+            f.append(row)
             if not did_one:
                 f.comment("after row 1")
                 did_one = True
-        f.write_finish()
+        f.close()
 
         lines = []
         f = open(out_file, "r")
@@ -461,8 +461,8 @@ class FsdbTest(TestCase):
         self.assertTrue(f, "opened ok")
 
         # this generally shouldn't be called as is, so we need to self-init
-        f.maybe_open_filehandle()
-        f.read_header()
+        # just to bootstrap the header reading
+        f.column_names
 
         all = []
         for r in f.next_as_dict():
@@ -567,8 +567,8 @@ class FsdbTest(TestCase):
         OUTPUT_FILE = "pyfsdb/tests/test_comments_at_top.test.fsdb"
         f = pyfsdb.Fsdb(filename=HEADER_FILE, out_file=OUTPUT_FILE)
         for row in f:
-            f.write_row(row)
-        f.write_finish()
+            f.append(row)
+        f.close()
 
         # the headers should fail
         self.assertTrue(True, "got here")
