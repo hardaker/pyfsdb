@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyfsdb"
+dynamic = ["version"]
+description = "A python implementation of the flat-file streaming database"
+readme = "README.md"
+license = ""
+requires-python = ">=3.6"
+authors = [
+    { name = "Wes Hardaker", email = "opensource@hardakers.net" },
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+bro2fsdb = "pyfsdb.tools.bro2fsdb:main"
+db2tex = "pyfsdb.obsolete.db2tex:main"
+dbaugment = "pyfsdb.obsolete.dbaugment:main"
+dbcoluniq = "pyfsdb.obsolete.dbcoluniq:main"
+dbdatetoepoch = "pyfsdb.obsolete.dbdatetoepoch:main"
+dbensure = "pyfsdb.obsolete.dbensure:main"
+dbformat = "pyfsdb.obsolete.dbformat:main"
+dbfullpivot = "pyfsdb.obsolete.dbfullpivot:main"
+dbheatmap = "pyfsdb.obsolete.dbheatmap:main"
+dbkeyedsort = "pyfsdb.obsolete.dbkeyedsort:main"
+dbreescape = "pyfsdb.obsolete.dbreescape:main"
+dbreversepivot = "pyfsdb.obsolete.dbreversepivot:main"
+dbsplitter = "pyfsdb.obsolete.dbsplitter:main"
+dbsum = "pyfsdb.obsolete.dbsum:main"
+dbtopn = "pyfsdb.obsolete.dbtopn:main"
+dbzerofill = "pyfsdb.obsolete.dbzerofill:main"
+fsdb2json = "pyfsdb.tools.fsdb2json:main"
+fsdb2many = "pyfsdb.tools.fsdb2many:main"
+json2fsdb = "pyfsdb.tools.json2fsdb:main"
+pdb2sql = "pyfsdb.tools.pdb2sql:main"
+pdb2tex = "pyfsdb.tools.pdb2tex:main"
+pdb2to1 = "pyfsdb.tools.pdb2to1:main"
+pdbaddtypes = "pyfsdb.tools.pdbaddtypes:main"
+pdbaugment = "pyfsdb.tools.pdbaugment:main"
+pdbcdf = "pyfsdb.tools.pdbcdf:main"
+pdbcoluniq = "pyfsdb.tools.pdbcoluniq:main"
+pdbdatetoepoch = "pyfsdb.tools.pdbdatetoepoch:main"
+pdbensure = "pyfsdb.tools.pdbensure:main"
+pdbepochtodate = "pyfsdb.tools.pdbepochtodate:main"
+pdbfgrep = "pyfsdb.tools.pdbfgrep:main"
+pdbformat = "pyfsdb.tools.pdbformat:main"
+pdbfullpivot = "pyfsdb.tools.pdbfullpivot:main"
+pdbheatmap = "pyfsdb.tools.pdbheatmap:main"
+pdbjinja = "pyfsdb.tools.pdbjinja:main"
+pdbkeyedsort = "pyfsdb.tools.pdbkeyedsort:main"
+pdbnormalize = "pyfsdb.tools.pdbnormalize:main"
+pdbreescape = "pyfsdb.tools.pdbreescape:main"
+pdbreversepivot = "pyfsdb.tools.pdbreversepivot:main"
+pdbroc = "pyfsdb.tools.pdbroc:main"
+pdbrow = "pyfsdb.tools.pdbrow:main"
+pdbroweval = "pyfsdb.tools.pdbroweval:main"
+pdbsplitter = "pyfsdb.tools.pdbsplitter:main"
+pdbsum = "pyfsdb.tools.pdbsum:main"
+pdbtopn = "pyfsdb.tools.pdbtopn:main"
+pdbzerofill = "pyfsdb.tools.pdbzerofill:main"
+
+[project.urls]
+Homepage = "https://github.com/gawseed/pyfsdb"
+
+[tool.hatch.version]
+path = "pyfsdb/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pyfsdb",
+]
+
+[tool.ruff]
+ignore = ["E501", "F401"] # long lines, unused imports
+fixable = ["ALL"]  # gulp
+# select = ["ALL"]
