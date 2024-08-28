@@ -93,13 +93,17 @@ def parse_args():
 def main():
     args = parse_args()
 
-    inh = pyfsdb.Fsdb(
-        file_handle=args.input_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
-    )
-
     confidence_column = args.confidence_column
     true_column = args.truth_column
     true_value = args.truth_value
+
+    # Note: since our true_value argument is a string, the column must also
+    # be converted to a string regardless of what the file said it was
+    inh = pyfsdb.Fsdb(
+        file_handle=args.input_file,
+        return_type=pyfsdb.RETURN_AS_DICTIONARY,
+        converters={true_column: str},
+    )
 
     trues = []
     confidence = []
