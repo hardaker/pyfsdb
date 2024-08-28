@@ -1,7 +1,7 @@
 __all__ = ["fsdb"]
 from . import fsdb
 
-__VERSION__ = "2.3.6"
+__VERSION__ = "2.3.7"
 
 __doc__ = fsdb.__doc__
 RETURN_AS_DICTIONARY = fsdb.RETURN_AS_DICTIONARY
