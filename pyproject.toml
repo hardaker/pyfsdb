@@ -7,7 +7,7 @@ name = "pyfsdb"
 dynamic = ["version"]
 description = "A python implementation of the flat-file streaming database"
 readme = "README.md"
-license = "MIT License"
+license = {file = "LICENSE"}
 requires-python = ">=3.6"
 authors = [
     { name = "Wes Hardaker", email = "opensource@hardakers.net" },
