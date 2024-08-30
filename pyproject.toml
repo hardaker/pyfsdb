@@ -63,7 +63,7 @@ pdbsplitter = "pyfsdb.tools.pdbsplitter:main"
 pdbsum = "pyfsdb.tools.pdbsum:main"
 pdbtopn = "pyfsdb.tools.pdbtopn:main"
 pdbzerofill = "pyfsdb.tools.pdbzerofill:main"
-pdbplot = "pyfsdb.tools.pdbplot:main"
+pdbrelplot = "pyfsdb.tools.pdbrelplot:main"
 
 [project.urls]
 Homepage = "https://github.com/gawseed/pyfsdb"
