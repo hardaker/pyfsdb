@@ -38,16 +38,15 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "-c",
-        "--columns",
-        default=["value"],
-        nargs="*",
-        type=str,
-        help="Columns to plot (only one column currently supported)",
+        "-x", "--x-column", default=["x"], type=str, help="X-axis column name to use"
     )
 
     parser.add_argument(
-        "-x", "--x-column", default=["x"], type=str, help="X-axis to use"
+        "-y",
+        "--y-column",
+        default="value",
+        type=str,
+        help="Y-axis column name to use",
     )
 
     parser.add_argument(
@@ -152,10 +151,11 @@ def main():
     style: str | None = None
     size: str | None = None
     col: str | None = None
+    row: str | None = None
 
     sns.set_theme()
 
-    columns = args.columns + [args.x_column]
+    columns = [args.x_column, args.y_column]
 
     if args.hue_column:
         hue = args.hue_column
@@ -186,7 +186,7 @@ def main():
         data=df,
         kind=kind,
         x=args.x_column,
-        y=args.columns[0],
+        y=args.y_column,
         hue=hue,
         style=style,
         size=size,
