@@ -75,6 +75,22 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-C",
+        "--col-column",
+        default=None,
+        type=str,
+        help="Variable to use for adding multiple columns of plots.",
+    )
+
+    parser.add_argument(
+        "-R",
+        "--row-column",
+        default=None,
+        type=str,
+        help="Variable to use for adding multiple rows of plots.",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -135,6 +151,7 @@ def main():
     hue: str | None = None
     style: str | None = None
     size: str | None = None
+    col: str | None = None
 
     sns.set_theme()
 
@@ -152,6 +169,14 @@ def main():
         style = args.style_column
         columns.append(args.style_column)
 
+    if args.col_column:
+        col = args.col_column
+        columns.append(args.col_column)
+
+    if args.row_column:
+        row = args.row_column
+        columns.append(args.row_column)
+
     df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas(usecols=columns)
 
     if args.scatter_plot:
@@ -165,9 +190,8 @@ def main():
         hue=hue,
         style=style,
         size=size,
-        # col="align",
-        #        hue="choice", size="coherence", style="choice",
-        #        facet_kws=dict(sharex=False), aspect=1.77
+        col=col,
+        row=row,
         aspect=1.77,
     )
 
