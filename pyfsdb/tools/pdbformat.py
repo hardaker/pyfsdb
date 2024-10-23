@@ -55,6 +55,10 @@ def main():
     format_string = args.format
 
     for row in inh:
+        # convert Nones
+        for column in row:
+            if row[column] is None:
+                row[column] = ""
         outh.write(format_string.format(**row) + "\n")
 
 
