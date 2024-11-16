@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """dbnormalize takes an input file and takes each column value from a
 number of columns and divides it by the maximum value seen in all the
 columns.

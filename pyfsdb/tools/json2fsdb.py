@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Converts a JSON file containing either an array of dictionaries or
 individual  dictionary lines into an FSDB file"""
 
@@ -74,7 +72,7 @@ def json_to_fsdb(input_file, output_file):
             if not isinstance(rows, list):
                 rows = [rows]
             handle_rows(out_fsdb, rows, columns)
-        except Exception as exp:
+        except Exception:
             sys.stderr.write("failed to parse: " + line)
 
 

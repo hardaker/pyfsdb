@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Converts a bro (zeek) log to a file readable by FSDB.
    Bro logs are already tab separated, so we really just replace
    the headers and re-print the rest.  brotofsdb assumes

@@ -1,7 +1,3 @@
-#!/usr/bin/python
-
-#!/usr/bin/python
-
 """Converts a msgpack FSDB representation to a normal FSDB text file"""
 
 import pyfsdb

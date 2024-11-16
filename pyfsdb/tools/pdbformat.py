@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Outputs a python-string formatted line for every input FSDB row,
 with column names acting as variables into the format string."""
 

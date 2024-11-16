@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Sort "mostly sorted" large FSDB files using a double pass
 
 dbkeyedsort reads a file twice, sorting the data by the column specified via the -c/--column option.  During the first pass, it counts all the rows per key to manage which lines it needs to memorize as it's making its second pass.  During the second pass, it only stores in memory the lines that are out of order.  This can greatly optimize the amount of memory stored when the data is already in a fairly sorted state (which is common for the output of map/reduce operations such as hadoop).  This comes at the expense of needing to read the entire dataset twice, which means its impossible to use `stdin` to pass in data; instead a filename must be specified instead.  The output, though, may be `stdout`.

@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Find the top (bottom) N rows identified by a key and sorted by a
 value column.  The result will be N rows with unique keys, sorted
 by the top N value columns.

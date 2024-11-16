@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Passes the requested columns (-k) through the python regex escaping function.
 
 Note: because -k can take multiple columns, input files likely need to appear

@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """This script expects to grep from a FSDB stream (or file) using
    additional information found in another FSDB file.  The second file
    is loaded entirely into memory in order to accomplish this.  Any

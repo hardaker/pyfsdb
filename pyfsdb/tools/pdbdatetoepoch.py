@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """dbdatetoepoch converts a timestamp column with a human date to a
 unix epoch timestamp column"""
 

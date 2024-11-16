@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Converts an FSDB file to a stream of json dictionaries."""
 
 import sys

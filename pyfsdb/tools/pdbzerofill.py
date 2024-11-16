@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Fills a row that is missing in a series of rows with a numerical
 increasing (frequently a timestamp) index"""
 
@@ -51,7 +49,7 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.columns == None:
+    if args.columns is None:
         sys.stderr.write("The --columns argument is required\n")
         exit(1)
 
@@ -71,7 +69,7 @@ def main():
     last_index = None
 
     for row in fh:
-        if last_index == None:
+        if last_index is None:
             # first row, just store it
             last_index = int(row[time_column])
         elif last_index != int(row[time_column]):

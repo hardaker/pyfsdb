@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Adds type hints for converting a FSDB1 format to add type hints to columns.
    This allows compliant tools to get automatic type conversion within their scripts."""
 

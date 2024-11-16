@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Ruff complains about the matplotlib use line which is needed
 # ruff: noqa: E402
 

@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """This script takes all the data in a file, and passes it to a
    jinja2 template with each row being stored in a `rows` variable.
 

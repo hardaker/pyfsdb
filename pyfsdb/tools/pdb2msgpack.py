@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """Converts a textual FSDB representation to a efficient msgpack binary encoding"""
 
 import pyfsdb

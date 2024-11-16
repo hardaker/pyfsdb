@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """dbensure can be used that some or all fields in a table contain data.
 
 If rows with the specified columns (default: all) don't contain data,

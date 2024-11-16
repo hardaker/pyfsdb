@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """fsdb2many converts a single FSDB file into many, by creating
 other file names based on a column of the original."""
 

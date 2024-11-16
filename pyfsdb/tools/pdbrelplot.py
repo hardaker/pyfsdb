@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """Plot parts of an FSDB file."""
 
 from __future__ import annotations

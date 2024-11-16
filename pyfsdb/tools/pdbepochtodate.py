@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """dbdatetoepoch converts a unix epoch timestamp column into a human
 readable date string usting strftime with an adjustable format."""
 

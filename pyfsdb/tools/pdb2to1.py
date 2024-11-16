@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 "Converts a FSDB2 (with type specifications) to an FSDB1 for use with older tools"
 
 import sys

@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """dbsum will take two matricies in FSDB and add the data together
 based on particular keys.  This is similar to joining and then merging
 the columns, but in one application without the need to specify column

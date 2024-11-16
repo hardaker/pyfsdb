@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """db2tex converts any FSDB file into a latex table.
 WARNING: very little escaping is done -- watch out for mallicious input files."""
 

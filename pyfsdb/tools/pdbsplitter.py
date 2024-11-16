@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Splits a single FSDB file into multiple files."""
 
 import argparse

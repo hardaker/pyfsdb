@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """Convert an FSDB file into a sqlite3 database"""
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
