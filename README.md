@@ -30,8 +30,9 @@ Or manually:
 ```
 git clone git@github.com:gawseed/pyfsdb.git
 cd pyfsdb
-python3 setup.py build
-python3 setup.py install
+pip install hatch
+hatch build
+pip install dist/pyfsdb-*.whl
 ```
 
 # Example Usage
