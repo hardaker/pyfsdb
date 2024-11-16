@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """
 pyfsdb.Fsdb - class for reading and writing Fsdb files
 

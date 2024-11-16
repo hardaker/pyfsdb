@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from unittest import TestCase
 import pyfsdb
 from io import StringIO
