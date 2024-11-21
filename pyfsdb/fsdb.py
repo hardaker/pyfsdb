@@ -1,6 +1,10 @@
 """
 pyfsdb.Fsdb - class for reading and writing Fsdb files
 
+See pyfsdb.Fsdb for API documentation.
+
+Getting started hints:
+
 # creating a Fsdb object attached to a file to read:
 f = pyfsdb.Fsdb("data.fsdb")
 
