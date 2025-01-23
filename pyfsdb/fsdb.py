@@ -909,18 +909,21 @@ class Fsdb(object):
         # self.fileh.buffer is the raw (binary mode) buffer of normal files
         readh = getattr(self.fileh, "buffer", self.fileh)
 
-
         # how to read multiple utf-8 bytes as needed taken from
         # https://stackoverflow.com/questions/15199675/reading-utf-8-strings-from-a-binary-file
         _lead_byte_to_count = []
         for i in range(256):
-            _lead_byte_to_count.append(1 + (i >= 0xe0) + (i >= 0xf0) if 0xbf < i < 0xf5 else 0)
+            _lead_byte_to_count.append(
+                1 + (i >= 0xE0) + (i >= 0xF0) if 0xBF < i < 0xF5 else 0
+            )
 
         if not line:
             line = ""
             addition = None
             while addition != "\n" and addition != "":
                 addition = readh.read(1)
+                if len(addition) != 1:
+                    break
                 read_count = _lead_byte_to_count[ord(addition)]
                 if read_count:
                     addition += readh.read(read_count)
