@@ -33,3 +33,11 @@ def test_utf8_support_stringio():
 def test_utf8_support_file(create_file):
     fh = pyfsdb.Fsdb(create_file)
     do_test_utf8_file_handle(fh)
+
+
+def test_utf8_creation(tmp_path):
+    tmp_file = tmp_path / "test-write.fsdb"
+    fh = pyfsdb.Fsdb(out_file=tmp_file)
+    fh.out_column_names = ["test", "copy©", "foo"]
+    fh.append([4, 5, "©"])
+    fh.close()
