@@ -18,7 +18,7 @@ pip3 install pyfsdb
 Or manually:
 
 ```
-git clone git@github.com:gawseed/pyfsdb.git
+git clone git@github.com:hardaker/pyfsdb.git
 cd pyfsdb
 python3 setup.py build
 python3 setup.py install
