@@ -48,6 +48,14 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-H",
+        "--hue-column",
+        default=None,
+        type=str,
+        help="Variable to use for changing hue values, creating multiple bars",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -97,9 +105,15 @@ def parse_args() -> Namespace:
 def main():
     args = parse_args()
 
+    hue: str | None = None
+
     sns.set_theme()
 
     columns = [args.x_column, args.y_column]
+
+    if args.hue_column:
+        hue = args.hue_column
+        columns.append(args.hue_column)
 
     df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas(usecols=columns)
 
@@ -107,6 +121,7 @@ def main():
         df,
         x=args.x_column,
         y=args.y_column,
+        hue=hue,
     )
 
     # plt.xticks(rotation=45)
