@@ -28,7 +28,7 @@ pip3 install pyfsdb
 Or manually:
 
 ```
-git clone git@github.com:gawseed/pyfsdb.git
+git clone git@github.com:hardaker/pyfsdb.git
 cd pyfsdb
 pip install hatch
 hatch build

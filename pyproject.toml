@@ -67,7 +67,7 @@ pdbzerofill = "pyfsdb.tools.pdbzerofill:main"
 pdbrelplot = "pyfsdb.tools.pdbrelplot:main"
 
 [project.urls]
-Homepage = "https://github.com/gawseed/pyfsdb"
+Homepage = "https://github.com/hardaker/pyfsdb"
 
 [tool.hatch.version]
 path = "pyfsdb/__init__.py"
