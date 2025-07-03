@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = "PyFSDB"
-copyright = "2020-2023, Wes Hardaker"
+copyright = "2020-2025, Wes Hardaker"
 author = "Wes Hardaker"
 
 # The full version, including alpha/beta/rc tags
-release = "2.4.3"
+release = "2.4.4"
 
 # -- General configuration ---------------------------------------------------
 
