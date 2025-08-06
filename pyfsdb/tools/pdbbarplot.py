@@ -124,7 +124,8 @@ def main():
         hue=hue,
     )
 
-    # plt.xticks(rotation=45)
+    plt.xticks(rotation=90)
+    plt.tight_layout()
     plt.savefig(args.output_file)
 
 

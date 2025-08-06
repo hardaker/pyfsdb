@@ -175,7 +175,7 @@ def main():
         row = args.row_column
         columns.append(args.row_column)
 
-    df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas(usecols=columns)
+    df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas()  # usecols=columns)
 
     if args.scatter_plot:
         kind = "scatter"
@@ -194,6 +194,7 @@ def main():
     )
 
     plt.xticks(rotation=45)
+    plt.tight_layout()
     plt.savefig(args.output_file)
 
 

@@ -298,15 +298,18 @@ def create_heat_map(
                     fontsize=font_size,
                 )
     elif add_raw:
+        formatter = "{:1.1f}"
         for i, first_column in enumerate(xcols):
             for j, second_column in enumerate(ycols):
                 try:
                     value = dataset[first_column][second_column]
+                    if isinstance(value, int):
+                        formatter = "{:1}"
                     if value != "0" and value != 0:
                         ax.text(
                             j,
                             i,
-                            "{:1.1f}".format(float(value)),
+                            formatter.format(value),
                             ha="center",
                             va="center",
                             color="r",
@@ -344,7 +347,6 @@ def main():
     f = pyfsdb.Fsdb(
         file_handle=args.input_file,
         return_type=pyfsdb.RETURN_AS_DICTIONARY,
-        converters={args.value_column: float},
     )
 
     (fig, data, dataset) = create_heat_map(
