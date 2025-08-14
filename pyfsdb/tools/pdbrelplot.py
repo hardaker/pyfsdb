@@ -109,17 +109,21 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "--log-level",
-        "--ll",
-        default="info",
-        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
-    )
-
-    parser.add_argument(
         "-s",
         "--scatter-plot",
         action="store_true",
         help="Use a scatter plot instead of a line plot",
+    )
+
+    parser.add_argument(
+        "-t", "--title", default=None, type=str, help="Title to place to the top"
+    )
+
+    parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
     parser.add_argument(
@@ -206,7 +210,7 @@ def main():
     if args.scatter_plot:
         kind = "scatter"
 
-    sns.relplot(
+    fig = sns.relplot(
         data=df,
         kind=kind,
         x=args.x_column,
@@ -218,6 +222,8 @@ def main():
         row=row,
         aspect=1.77,
     )
+    if args.title:
+        fig.set(title=args.title)
 
     plt.xticks(rotation=45)
     plt.tight_layout()
