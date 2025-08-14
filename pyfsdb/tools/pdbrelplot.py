@@ -54,6 +54,13 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--xd",
+        "--x-is-datestamp",
+        action="store_true",
+        help="The X axis is a date stamp (eg: 2025-01-01)",
+    )
+
+    parser.add_argument(
         "-y",
         "--y-column",
         default="value",
@@ -193,6 +200,8 @@ def main():
 
     if args.xs:
         df[args.x_column] = to_datetime(df[args.x_column], unit="s")
+    elif args.xd:
+        df[args.x_column] = to_datetime(df[args.x_column])
 
     if args.scatter_plot:
         kind = "scatter"
