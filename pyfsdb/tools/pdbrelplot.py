@@ -5,10 +5,17 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Na
 from logging import debug, info, warning, error, critical
 import logging
 import sys
-import seaborn as sns
-import matplotlib.pyplot as plt
-from pandas import DataFrame
+from pandas import DataFrame, to_datetime
 import pyfsdb
+
+try:
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+except Exception:
+    error(
+        "The seaborn and matplotlib python modules are required for pdbrelplot to work."
+    )
+    sys.exit(1)
 
 # optionally use rich
 try:
@@ -37,6 +44,13 @@ def parse_args() -> Namespace:
 
     parser.add_argument(
         "-x", "--x-column", default=["x"], type=str, help="X-axis column name to use"
+    )
+
+    parser.add_argument(
+        "--xs",
+        "--x-is-seconds",
+        action="store_true",
+        help="The X axis is epoch seconds since Jan 1, 1970",
     )
 
     parser.add_argument(
@@ -176,6 +190,9 @@ def main():
         columns.append(args.row_column)
 
     df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas()  # usecols=columns)
+
+    if args.xs:
+        df[args.x_column] = to_datetime(df[args.x_column], unit="s")
 
     if args.scatter_plot:
         kind = "scatter"
