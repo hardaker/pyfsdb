@@ -1,4 +1,5 @@
 """Tracks results from IDs as they traverse logical paths.  Useful for sankeys."""
+
 import sys
 import os
 import argparse
@@ -81,14 +82,16 @@ def main():
                 # get a category prefix
                 if cat_col_num > -1:
                     category_prefix = row[cat_col_num] + ":"
+                    if not category_prefix:
+                        category_prefix = "no_category:"
 
                 # if this id was seen before, increase the count between the
                 # last value and the current one with a prefix being prepended to both
                 if row[id_col_num] in last_values:
-                    source = (
-                        last_categories[row[id_col_num]] + last_values[row[id_col_num]]
+                    source = last_categories[row[id_col_num]] + str(
+                        last_values[row[id_col_num]]
                     )
-                    destination = category_prefix + row[val_col_num]
+                    destination = category_prefix + str(row[val_col_num])
                     tracking_info[source][destination] += 1
 
                 # save this id's value
