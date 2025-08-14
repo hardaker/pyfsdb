@@ -32,7 +32,10 @@ bar     bar     1
 
 For multiple categories with similar values, you might want to prepend
 the category label from a column too to make sure the path results are
-distinguishable.
+distinguishable.  For example, in the above results a graph might be
+drawn with a circular loop from foo back to foo with a value of 1.  To
+fix this and make the labels unique, the category column can be to the
+source/destination columns:
 
 ```
 $ pdbpathtrack -c category myfile.fsdb
