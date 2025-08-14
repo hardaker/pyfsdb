@@ -65,6 +65,7 @@ pdbsum = "pyfsdb.tools.pdbsum:main"
 pdbtopn = "pyfsdb.tools.pdbtopn:main"
 pdbzerofill = "pyfsdb.tools.pdbzerofill:main"
 pdbrelplot = "pyfsdb.tools.pdbrelplot:main"
+pdbsankey = "pyfsdb.tools.pdbsankey:main"
 
 [project.urls]
 Homepage = "https://github.com/hardaker/pyfsdb"
