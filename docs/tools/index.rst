@@ -58,3 +58,4 @@ Data analysis tools
    pdbcoluniq
    pdbtopn
    pdbheatmap
+   pdbsankey
