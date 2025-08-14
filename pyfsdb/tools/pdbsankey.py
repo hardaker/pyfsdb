@@ -67,6 +67,34 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-t",
+        "--title",
+        default="",
+        type=str,
+        help="Title to put at the top of the output file.",
+    )
+
+    parser.add_argument(
+        "-l", "--node-border-color", default="black", type=str, help="Line color to use"
+    )
+
+    parser.add_argument(
+        "-n",
+        "--node-fill-color",
+        default="lightblue",
+        type=str,
+        help="Node color color to use",
+    )
+
+    parser.add_argument(
+        "-L",
+        "--link-color",
+        default="rgba(128,255,128,.5)",
+        type=str,
+        help="Link color to use",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -148,19 +176,21 @@ def main():
         node={
             "pad": 15,
             "thickness": 20,
-            "line": {"color": "black", "width": 0.5},
+            "line": {"color": args.node_border_color, "width": 0.5},
             "label": list(column_name_map.keys()),
-            "color": "blue",
+            "color": args.node_fill_color,
         },
         link={
             "source": sources,
             "target": destinations,
             "value": counts,
+            "color": args.link_color,
         },
     )
 
     fig = plotly.graph_objects.Figure(data=[sankey])
-    fig.update_layout(title_text="", font_size=10)
+    if args.title:
+        fig.update_layout(title_text=args.title, font_size=10)
 
     args.output_file.write(fig.to_image("png"))
 
