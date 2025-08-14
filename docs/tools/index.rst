@@ -47,6 +47,7 @@ Data conversion tools
    pdbsplitter
    pdbfullpivot
    pdbreescape
+   pdbpathtrack
 
 Data analysis tools
 -------------------

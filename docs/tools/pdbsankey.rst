@@ -6,8 +6,8 @@ pdbsankey - Produce a sankey diagram from FSDB column data
 values in an FSDB file. A source, destination and count column are
 expected in the data in order to plot the results.
 
-Example input (*mysandkey.fsdb*):
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example input (*mysankey.fsdb*):
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following example input file, where A1 and A2 lead to B1,
 and B2 and then further to C1 and C2:
@@ -30,15 +30,15 @@ values.
 
 ::
 
-   $ pdbheatmap --title "Example Sandkey" mysandkey.fsdb mysandkey.png
+   $ pdbheatmap --title "Example Sankey" mysankey.fsdb mysankey.png
 
 Example output
 ^^^^^^^^^^^^^^
 
-.. figure:: images/mysandkey.png
-   :alt: mysandkey.png
+.. figure:: images/mysankey.png
+   :alt: mysankey.png
 
-   mysandkey.png
+   mysankey.png
 
 
 Command Line Arguments
