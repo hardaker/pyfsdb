@@ -85,18 +85,23 @@ def main():
                     if not category_prefix:
                         category_prefix = "no_category:"
 
+                this_id = row[id_col_num]
+
                 # if this id was seen before, increase the count between the
                 # last value and the current one with a prefix being prepended to both
-                if row[id_col_num] in last_values:
-                    source = last_categories[row[id_col_num]] + str(
-                        last_values[row[id_col_num]]
-                    )
+
+                # TODO(hardaker): allow for auto-adding/merging of
+                # values when id/category pairs are are repeated?
+                if this_id in last_values and (
+                    category_prefix == "" or last_categories[this_id] != category_prefix
+                ):
+                    source = last_categories[this_id] + str(last_values[this_id])
                     destination = category_prefix + str(row[val_col_num])
                     tracking_info[source][destination] += 1
 
                 # save this id's value
-                last_values[row[id_col_num]] = row[val_col_num]
-                last_categories[row[id_col_num]] = category_prefix
+                last_values[this_id] = row[val_col_num]
+                last_categories[this_id] = category_prefix
 
     with pyfsdb.Fsdb(out_file_handle=args.output_file) as outh:
         outh.out_column_names = ["source", "destination", "count"]
