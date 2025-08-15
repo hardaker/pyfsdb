@@ -59,7 +59,7 @@ def main():
             timestamp_value = parse(row[date_column]).timestamp()
         except Exception:
             pass
-        row[-1] = timestamp_value  # XXX: this should be append
+        row.append(timestamp_value)
         fh.append(row)
 
 
