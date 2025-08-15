@@ -81,7 +81,7 @@ def main():
             for row in inh:
                 # get a category prefix
                 if cat_col_num > -1:
-                    category_prefix = row[cat_col_num] + ":"
+                    category_prefix = str(row[cat_col_num]) + ":"
                     if not category_prefix:
                         category_prefix = "no_category:"
 
