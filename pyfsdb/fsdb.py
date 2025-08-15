@@ -281,7 +281,7 @@ class Fsdb(object):
             columns=self.column_names, separator_token=self._separator_token
         )
 
-    def __create_column_name_mapping__(self, columns):
+    def __create_column_name_mapping__(self, columns, out_only: bool = False):
         """Internal
 
         Creates a list of columns and numbers for rapid mapping
@@ -307,8 +307,9 @@ class Fsdb(object):
             mapping["names"][token] = argn
             mapping["numbers"][argn] = token
 
-        self._column_names = mapping["names"]
-        self.column_nums = mapping["numbers"]
+        if not out_only or not self._column_names:
+            self._column_names = mapping["names"]
+            self.column_nums = mapping["numbers"]
 
         if not self._out_column_names_set:
             self._out_column_names = list(self._column_names.keys())
@@ -438,8 +439,9 @@ class Fsdb(object):
     @out_column_names.setter
     def out_column_names(self, values):
         "The column names to be used in output FSDB content"
-        self.__create_column_name_mapping__(values)
+        self.__create_column_name_mapping__(values, out_only=True)
         self._out_column_names_set = True
+        self._out_column_names = values
 
     @property
     def converters(self):
@@ -494,8 +496,10 @@ class Fsdb(object):
                     and converters[column] in outgoing_type_converters
                 ):
                     header_line += ":" + outgoing_type_converters[converters[column]]
+                # if it's a list
                 elif (
                     isinstance(converters, list)
+                    and n < len(converters)
                     and converters[n] in outgoing_type_converters
                 ):
                     header_line += ":" + outgoing_type_converters[converters[n]]
