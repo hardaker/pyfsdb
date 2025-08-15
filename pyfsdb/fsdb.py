@@ -311,7 +311,7 @@ class Fsdb(object):
         self.column_nums = mapping["numbers"]
 
         if not self._out_column_names_set:
-            self._out_column_names = self._column_names.keys()
+            self._out_column_names = list(self._column_names.keys())
 
         self._mapping = mapping
         return mapping
@@ -439,6 +439,7 @@ class Fsdb(object):
     def out_column_names(self, values):
         "The column names to be used in output FSDB content"
         self.__create_column_name_mapping__(values)
+        self._out_column_names_set = True
 
     @property
     def converters(self):
@@ -612,7 +613,6 @@ class Fsdb(object):
 
         # wrap this in case anything at all fails:
         try:
-
             # otherwise we need to check if we're getting compressed data
             filename = self.filename
             if not filename and self.file_handle and self.file_handle.name != "<stdin>":
@@ -701,7 +701,6 @@ class Fsdb(object):
         """Handle a comment by printing it, possibly with header init first,
         and then returning the next line in the file"""
         if self._pass_comments != "n" and self._out_file_handle:
-
             if self.append != self._append_really:
                 # we haven't printed anything yet, so we haven't written
                 # the fsdb_header yet
@@ -718,7 +717,7 @@ class Fsdb(object):
         return self._next_line()
 
     def _convert_array_values(self, row):
-        for (n, converter) in enumerate(self._converters):
+        for n, converter in enumerate(self._converters):
             if row[n] == "-" or row[n] == "":
                 row[n] = None
             elif converter is not None and row[n] is not None:
