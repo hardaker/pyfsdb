@@ -120,6 +120,14 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--xlabel", default=None, type=str, help="Text to use for the X axis label"
+    )
+
+    parser.add_argument(
+        "--ylabel", default=None, type=str, help="Text to use for the Y axis label"
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -224,6 +232,10 @@ def main():
     )
     if args.title:
         fig.set(title=args.title)
+    if args.xlabel:
+        fig.set_xlabels(args.xlabel)
+    if args.ylabel:
+        fig.set_ylabels(args.ylabel)
 
     plt.xticks(rotation=45)
     plt.tight_layout()
