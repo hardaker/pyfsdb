@@ -95,6 +95,13 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-P",
+        "--clean-prefixes",
+        action="store_true",
+        help="Remove '.*:' from the front of source/destination strings",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -152,6 +159,7 @@ def main():
     counts = []
 
     column_name_map = {}
+    column_name_cleaned = {}
     column_count = 0
 
     with pyfsdb.Fsdb(file_handle=args.input_file) as inh:
@@ -162,22 +170,28 @@ def main():
 
             if source not in column_name_map:
                 column_name_map[source] = column_count
+                column_name_cleaned[source] = source
                 column_count += 1
 
             if destination not in column_name_map:
                 column_name_map[destination] = column_count
+                column_name_cleaned[destination] = destination
                 column_count += 1
 
             sources.append(column_name_map[source])
             destinations.append(column_name_map[destination])
             counts.append(row[column_nums[2]])
 
+    column_names = list(column_name_map.keys())
+    if args.clean_prefixes:
+        column_names = [x[x.find(":") + 1 :] for x in column_names]
+
     sankey = plotly.graph_objects.Sankey(
         node={
             "pad": 15,
             "thickness": 20,
             "line": {"color": args.node_border_color, "width": 0.5},
-            "label": list(column_name_map.keys()),
+            "label": column_names,
             "color": args.node_fill_color,
         },
         link={
