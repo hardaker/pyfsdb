@@ -84,7 +84,10 @@ def filter_unique_columns(
             if initial_count_col:
                 counters[row[key_columns[0]]] += int(row[initial_count_col])
             else:
-                counters[row[key_columns[0]]] += 1
+                try:
+                    counters[row[key_columns[0]]] += 1
+                except Exception:
+                    counters[None] += 1
     else:
         counters = {}
         for row in fh:
