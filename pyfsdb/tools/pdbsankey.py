@@ -102,6 +102,14 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--width", default=1600, type=int, help="The width of the output image."
+    )
+
+    parser.add_argument(
+        "--height", default=1200, type=int, help="The height of the output image."
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -206,7 +214,7 @@ def main():
     if args.title:
         fig.update_layout(title_text=args.title, font_size=10)
 
-    args.output_file.write(fig.to_image("png"))
+    args.output_file.write(fig.to_image("png", width=args.width, height=args.height))
 
 
 if __name__ == "__main__":
