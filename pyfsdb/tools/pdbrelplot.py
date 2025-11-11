@@ -237,9 +237,10 @@ def main():
     if args.ylabel:
         fig.set_ylabels(args.ylabel)
 
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig(args.output_file)
+    plt.savefig(args.output_file, dpi=200)
 
 
 if __name__ == "__main__":
