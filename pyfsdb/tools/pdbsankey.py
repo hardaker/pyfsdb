@@ -212,7 +212,7 @@ def main():
 
     fig = plotly.graph_objects.Figure(data=[sankey])
     if args.title:
-        fig.update_layout(title_text=args.title, font_size=10)
+        fig.update_layout(title_text=args.title, font_size=20)
 
     args.output_file.write(fig.to_image("png", width=args.width, height=args.height))
 
