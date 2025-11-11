@@ -1,12 +1,12 @@
 """This script expects to grep from a FSDB stream (or file) using
-   additional information found in another FSDB file.  The second file
-   is loaded entirely into memory in order to accomplish this.  Any
-   row in the stream file that has exactly matching keys in the second
-   file will be output, otherwise dropped.
+additional information found in another FSDB file.  The second file
+is loaded entirely into memory in order to accomplish this.  Any
+row in the stream file that has exactly matching keys in the second
+file will be output, otherwise dropped.
 
-   This duplicates dbjoin/pdbrow or pdbaugment/pdbrow to a large
-   extent, but pdbgrep should faster when one side is small because it
-   avoids sorting.
+This duplicates dbjoin/pdbrow or pdbaugment/pdbrow to a large
+extent, but pdbgrep should faster when one side is small because it
+avoids sorting.
 """
 
 import argparse
@@ -46,7 +46,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "augment_file",
+        "search_keys_file",
         type=argparse.FileType("r"),
         nargs="?",
         default=sys.stdin,
@@ -141,7 +141,7 @@ def main():
 
     # read in the augument file entirely first
     augh = pyfsdb.Fsdb(
-        file_handle=args.augment_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
+        file_handle=args.search_keys_file, return_type=pyfsdb.RETURN_AS_DICTIONARY
     )
 
     # store each row based on its list of keys, but storing
