@@ -481,6 +481,15 @@ class Fsdb(object):
         if isinstance(init_row, dict):
             init_row = [init_row[x] for x in self.out_column_names]
 
+        # catch cases where are stored converters won't work
+        use_list_converters: bool = True
+        if (
+            isinstance(self._converters, list)
+            and self.column_names
+            and columns != self.column_names
+        ):
+            use_list_converters = False
+
         # add each column, with an optional map
         for n, column in enumerate(columns):
             header_line += column
@@ -498,7 +507,8 @@ class Fsdb(object):
                     header_line += ":" + outgoing_type_converters[converters[column]]
                 # if it's a list
                 elif (
-                    isinstance(converters, list)
+                    use_list_converters
+                    and isinstance(converters, list)
                     and n < len(converters)
                     and converters[n] in outgoing_type_converters
                 ):
