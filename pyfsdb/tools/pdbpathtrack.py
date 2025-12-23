@@ -49,6 +49,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-C",
+        "--append-counts",
+        action="store_true",
+        help="Add count strings to the end of the names in the image.",
+    )
+
+    parser.add_argument(
         "input_files",
         type=argparse.FileType("r"),
         nargs="*",
@@ -64,6 +71,7 @@ def main():
     args = parse_args()
 
     tracking_info = collections.defaultdict(collections.Counter)
+    tracking_counts = collections.Counter()
     last_values = collections.defaultdict(str)
     last_categories = collections.defaultdict(str)
 
@@ -98,6 +106,8 @@ def main():
                     source = last_categories[this_id] + str(last_values[this_id])
                     destination = category_prefix + str(row[val_col_num])
                     tracking_info[source][destination] += 1
+                    tracking_counts[source] += 1
+                    tracking_counts[destination] += 1
 
                 # save this id's value
                 last_values[this_id] = row[val_col_num]
@@ -107,7 +117,16 @@ def main():
         outh.out_column_names = ["source", "destination", "count"]
         for left in tracking_info:
             for right in tracking_info[left]:
-                outh.append([left, right, tracking_info[left][right]])
+                left_name = left
+                right_name = right
+                if args.append_counts:
+                    left_name = (
+                        " " + left_name + ": " + str(tracking_counts[left_name]) + " "
+                    )
+                    right_name = (
+                        " " + right_name + ": " + str(tracking_counts[right_name]) + " "
+                    )
+                outh.append([left_name, right_name, tracking_info[left][right]])
 
 
 if __name__ == "__main__":
