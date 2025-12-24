@@ -84,7 +84,7 @@ def main():
             last_index = int(row[time_column])
         fh.append(row)
 
-    fh.write_finish()
+    fh.close()
 
 
 if __name__ == "__main__":

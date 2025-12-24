@@ -109,7 +109,7 @@ def main():
                         key_counts[current_key] -= 1
                     del stored_lines[current_key]
 
-    f.write_finish()
+    f.close()
 
     if args.verbose:
         sys.stderr.write("cached %d/%d lines\n" % (cached_count, line_count))
