@@ -43,10 +43,31 @@ def parse_args() -> Namespace:
         formatter_class=help_handler, description=__doc__, epilog="Example Usage: "
     )
 
-    # add in support arguments
-    graph_parser = pyfsdb.graph_utils.parse_args(parser)
+    data_parser = parser.add_argument_group("Data options")
 
-    graph_parser.add_argument(
+    data_parser.add_argument(
+        "--xs",
+        "--x-is-seconds",
+        action="store_true",
+        help="The X axis is epoch seconds since Jan 1, 1970",
+    )
+
+    data_parser.add_argument(
+        "--xd",
+        "--x-is-datestamp",
+        action="store_true",
+        help="The X axis is a date stamp (eg: 2025-01-01)",
+    )
+
+    data_parser.add_argument(
+        "-Y",
+        "--style-column",
+        default=None,
+        type=str,
+        help="Variable to use for changing marker styles",
+    )
+
+    data_parser.add_argument(
         "-H",
         "--hue-column",
         default=None,
@@ -54,7 +75,7 @@ def parse_args() -> Namespace:
         help="Variable to use for changing hue values",
     )
 
-    graph_parser.add_argument(
+    data_parser.add_argument(
         "-S",
         "--size-column",
         default=None,
@@ -62,7 +83,7 @@ def parse_args() -> Namespace:
         help="Variable to use for changing marker sizes",
     )
 
-    graph_parser.add_argument(
+    data_parser.add_argument(
         "-C",
         "--col-column",
         default=None,
@@ -70,13 +91,16 @@ def parse_args() -> Namespace:
         help="Variable to use for adding multiple columns of plots.",
     )
 
-    graph_parser.add_argument(
+    data_parser.add_argument(
         "-R",
         "--row-column",
         default=None,
         type=str,
         help="Variable to use for adding multiple rows of plots.",
     )
+
+    # add in support arguments
+    graph_parser = pyfsdb.graph_utils.parse_args(parser)
 
     graph_parser.add_argument(
         "-s",

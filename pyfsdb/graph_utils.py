@@ -18,33 +18,11 @@ def parse_args(
     )
 
     parser.add_argument(
-        "--xs",
-        "--x-is-seconds",
-        action="store_true",
-        help="The X axis is epoch seconds since Jan 1, 1970",
-    )
-
-    parser.add_argument(
-        "--xd",
-        "--x-is-datestamp",
-        action="store_true",
-        help="The X axis is a date stamp (eg: 2025-01-01)",
-    )
-
-    parser.add_argument(
         "-y",
         "--y-column",
         default="value",
         type=str,
         help="Y-axis column name to use",
-    )
-
-    parser.add_argument(
-        "-Y",
-        "--style-column",
-        default=None,
-        type=str,
-        help="Variable to use for changing marker styles",
     )
 
     parser.add_argument(
