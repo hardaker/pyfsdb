@@ -7,6 +7,7 @@ import logging
 import sys
 from pandas import DataFrame, to_datetime
 import pyfsdb
+import pyfsdb.graph_utils
 
 try:
     import seaborn as sns
@@ -43,32 +44,6 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "-x", "--x-column", default=["x"], type=str, help="X-axis column name to use"
-    )
-
-    parser.add_argument(
-        "--xs",
-        "--x-is-seconds",
-        action="store_true",
-        help="The X axis is epoch seconds since Jan 1, 1970",
-    )
-
-    parser.add_argument(
-        "--xd",
-        "--x-is-datestamp",
-        action="store_true",
-        help="The X axis is a date stamp (eg: 2025-01-01)",
-    )
-
-    parser.add_argument(
-        "-y",
-        "--y-column",
-        default="value",
-        type=str,
-        help="Y-axis column name to use",
-    )
-
-    parser.add_argument(
         "-H",
         "--hue-column",
         default=None,
@@ -82,14 +57,6 @@ def parse_args() -> Namespace:
         default=None,
         type=str,
         help="Variable to use for changing marker sizes",
-    )
-
-    parser.add_argument(
-        "-Y",
-        "--style-column",
-        default=None,
-        type=str,
-        help="Variable to use for changing marker styles",
     )
 
     parser.add_argument(
@@ -116,18 +83,6 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "-t", "--title", default=None, type=str, help="Title to place to the top"
-    )
-
-    parser.add_argument(
-        "--xlabel", default=None, type=str, help="Text to use for the X axis label"
-    )
-
-    parser.add_argument(
-        "--ylabel", default=None, type=str, help="Text to use for the Y axis label"
-    )
-
-    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -145,6 +100,9 @@ def parse_args() -> Namespace:
         default="plot.png",
         help="Where to save the output PNG file.",
     )
+
+    # add in support arguments
+    pyfsdb.graph_utils.parse_args(parser)
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -230,17 +188,9 @@ def main():
         row=row,
         aspect=1.77,
     )
-    if args.title:
-        fig.set(title=args.title)
-    if args.xlabel:
-        fig.set_xlabels(args.xlabel)
-    if args.ylabel:
-        fig.set_ylabels(args.ylabel)
 
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(args.output_file, dpi=200)
+    pyfsdb.graph_utils.set_graph_paremeters(plt, fig, args)
+    pyfsdb.graph_utils.output_plot(plt, args.output_file, args)
 
 
 if __name__ == "__main__":
