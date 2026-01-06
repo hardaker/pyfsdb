@@ -9,6 +9,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 import pyfsdb
+import pyfsdb.graph_utils
 
 # optionally use rich
 try:
@@ -33,18 +34,6 @@ def parse_args() -> Namespace:
     """Parse the command line arguments."""
     parser = ArgumentParser(
         formatter_class=help_handler, description=__doc__, epilog="Example Usage: "
-    )
-
-    parser.add_argument(
-        "-x", "--x-column", default=["x"], type=str, help="X-axis column name to use"
-    )
-
-    parser.add_argument(
-        "-y",
-        "--y-column",
-        default="value",
-        type=str,
-        help="Y-axis column name to use",
     )
 
     parser.add_argument(
@@ -73,6 +62,8 @@ def parse_args() -> Namespace:
         default="plot.png",
         help="Where to save the output PNG file.",
     )
+
+    pyfsdb.graph_utils.parse_args(parser)
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -117,16 +108,15 @@ def main():
 
     df = pyfsdb.Fsdb(file_handle=args.input_file).get_pandas(usecols=columns)
 
-    sns.barplot(
+    axes = sns.barplot(
         df,
         x=args.x_column,
         y=args.y_column,
         hue=hue,
     )
 
-    plt.xticks(rotation=90)
-    plt.tight_layout()
-    plt.savefig(args.output_file)
+    pyfsdb.graph_utils.set_graph_paremeters(plt, axes, args)
+    pyfsdb.graph_utils.output_plot(plt, args.output_file, args)
 
 
 if __name__ == "__main__":

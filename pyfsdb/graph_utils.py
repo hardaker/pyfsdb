@@ -1,4 +1,6 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
+from matplotlib.axes import Axes
+from seaborn.axisgrid import FacetGrid
 
 
 def parse_args(
@@ -55,16 +57,16 @@ def parse_args(
     )
 
 
-def set_graph_paremeters(plt, fig, args: Namespace):
+def set_graph_paremeters(plt, control: Axes | FacetGrid, args: Namespace):
+    # def set_graph_paremeters(plt, control, args: Namespace):
     """Set titles, labels, etc according to arguments passed."""
 
     if args.title:
-        fig.set(title=args.title)
+        control.set(title=args.title)
     if args.xlabel:
-        fig.set_xlabels(args.xlabel)
+        control.set(xlabel=args.xlabel)
     if args.ylabel:
-        fig.set_ylabels(args.ylabel)
-    print("here")
+        control.set(ylabel=args.ylabel)
 
 
 def output_plot(plt, output_file, args):
