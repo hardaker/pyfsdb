@@ -43,7 +43,10 @@ def parse_args() -> Namespace:
         formatter_class=help_handler, description=__doc__, epilog="Example Usage: "
     )
 
-    parser.add_argument(
+    # add in support arguments
+    graph_parser = pyfsdb.graph_utils.parse_args(parser)
+
+    graph_parser.add_argument(
         "-H",
         "--hue-column",
         default=None,
@@ -51,7 +54,7 @@ def parse_args() -> Namespace:
         help="Variable to use for changing hue values",
     )
 
-    parser.add_argument(
+    graph_parser.add_argument(
         "-S",
         "--size-column",
         default=None,
@@ -59,7 +62,7 @@ def parse_args() -> Namespace:
         help="Variable to use for changing marker sizes",
     )
 
-    parser.add_argument(
+    graph_parser.add_argument(
         "-C",
         "--col-column",
         default=None,
@@ -67,7 +70,7 @@ def parse_args() -> Namespace:
         help="Variable to use for adding multiple columns of plots.",
     )
 
-    parser.add_argument(
+    graph_parser.add_argument(
         "-R",
         "--row-column",
         default=None,
@@ -75,7 +78,7 @@ def parse_args() -> Namespace:
         help="Variable to use for adding multiple rows of plots.",
     )
 
-    parser.add_argument(
+    graph_parser.add_argument(
         "-s",
         "--scatter-plot",
         action="store_true",
@@ -100,9 +103,6 @@ def parse_args() -> Namespace:
         default="plot.png",
         help="Where to save the output PNG file.",
     )
-
-    # add in support arguments
-    pyfsdb.graph_utils.parse_args(parser)
 
     args = parser.parse_args()
     log_level = args.log_level.upper()

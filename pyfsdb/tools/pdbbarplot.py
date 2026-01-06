@@ -37,18 +37,20 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
+    )
+
+    sub_parser = pyfsdb.graph_utils.parse_args(parser)
+
+    sub_parser.add_argument(
         "-H",
         "--hue-column",
         default=None,
         type=str,
         help="Variable to use for changing hue values, creating multiple bars",
-    )
-
-    parser.add_argument(
-        "--log-level",
-        "--ll",
-        default="info",
-        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
     parser.add_argument(
@@ -62,8 +64,6 @@ def parse_args() -> Namespace:
         default="plot.png",
         help="Where to save the output PNG file.",
     )
-
-    pyfsdb.graph_utils.parse_args(parser)
 
     args = parser.parse_args()
     log_level = args.log_level.upper()

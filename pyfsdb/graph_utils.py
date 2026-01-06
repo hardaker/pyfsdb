@@ -5,10 +5,13 @@ from seaborn.axisgrid import FacetGrid
 
 def parse_args(
     parser: ArgumentParser, sub_group_name: str = "Graph options"
-) -> Namespace:
+) -> ArgumentParser:
     """Adds graphing specific arguments to the current parser.
 
     Puts contents in a sub-group unless sub_group_name is None."""
+
+    if sub_group_name:
+        parser = parser.add_argument_group(sub_group_name)
 
     parser.add_argument(
         "-x", "--x-column", default=["x"], type=str, help="X-axis column name to use"
@@ -55,6 +58,8 @@ def parse_args(
     parser.add_argument(
         "--ylabel", default=None, type=str, help="Text to use for the Y axis label"
     )
+
+    return parser
 
 
 def set_graph_paremeters(plt, control: Axes | FacetGrid, args: Namespace):
