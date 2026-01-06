@@ -40,8 +40,7 @@ def parse_args(
     return parser
 
 
-def set_graph_paremeters(plt, control: Axes | FacetGrid, args: Namespace):
-    # def set_graph_paremeters(plt, control, args: Namespace):
+def set_graph_parameters(control: Axes | FacetGrid, args: Namespace):
     """Set titles, labels, etc according to arguments passed."""
 
     if args.title:

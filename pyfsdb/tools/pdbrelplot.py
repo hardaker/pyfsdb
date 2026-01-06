@@ -213,7 +213,7 @@ def main():
         aspect=1.77,
     )
 
-    pyfsdb.graph_utils.set_graph_paremeters(plt, fig, args)
+    pyfsdb.graph_utils.set_graph_parameters(fig, args)
     pyfsdb.graph_utils.output_plot(plt, args.output_file, args)
 
 

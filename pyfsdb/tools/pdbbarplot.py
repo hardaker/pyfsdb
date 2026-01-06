@@ -115,7 +115,7 @@ def main():
         hue=hue,
     )
 
-    pyfsdb.graph_utils.set_graph_paremeters(plt, axes, args)
+    pyfsdb.graph_utils.set_graph_parameters(axes, args)
     pyfsdb.graph_utils.output_plot(plt, args.output_file, args)
 
 
