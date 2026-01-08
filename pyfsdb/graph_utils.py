@@ -26,6 +26,15 @@ def parse_args(
     )
 
     parser.add_argument(
+        "--yr",
+        "--y-label-rotation",
+        "--",
+        default=45,
+        type=int,
+        help="Amount to rotate the Y labels by.",
+    )
+
+    parser.add_argument(
         "-t", "--title", default=None, type=str, help="Title to place to the top"
     )
 
@@ -35,6 +44,10 @@ def parse_args(
 
     parser.add_argument(
         "--ylabel", default=None, type=str, help="Text to use for the Y axis label"
+    )
+
+    parser.add_argument(
+        "--dpi", default=200, type=int, help="The DPI to use in the resulting image"
     )
 
     return parser
@@ -55,6 +68,6 @@ def output_plot(plt, output_file, args):
     """Actually save the file and set some other plot defaults."""
 
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=args.yr)
     plt.tight_layout()
-    plt.savefig(output_file, dpi=200)
+    plt.savefig(output_file, dpi=args.dpi)
