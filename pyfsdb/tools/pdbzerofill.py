@@ -28,6 +28,15 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-o",
+        "--other-keys",
+        default=[],
+        nargs="*",
+        type=str,
+        help="Use this set of columns as other values to ensure are present per primary key column.",
+    )
+
+    parser.add_argument(
         "-b",
         "--bin-size",
         default=1,
@@ -63,12 +72,19 @@ def main():
 
     store_columns = fh.get_column_numbers(args.columns)
     time_column = fh.get_column_number(args.key_column)
+    other_columns = []
+    if args.other_keys:
+        other_columns = fh.get_column_numbers(args.other_keys)
     value = args.value
     bin_size = args.bin_size
 
     last_index = None
 
+    other_keys = set()
+
     for row in fh:
+        if args.other_keys:  # save the other set of unique keys
+            other_keys.add(tuple(row[x] for x in other_columns))
         if last_index is None:
             # first row, just store it
             last_index = int(row[time_column])
@@ -76,11 +92,22 @@ def main():
             for skipped_time in range(
                 last_index + bin_size, int(row[time_column]), bin_size
             ):
-                newrow = list(row)
-                newrow[time_column] = str(skipped_time)
-                for column in store_columns:
-                    newrow[column] = value
-                fh.append(newrow)
+                if len(args.other_keys) == 0:
+                    newrow = list(row)  # duplicate the current row
+                    newrow[time_column] = str(skipped_time)
+                    for column in store_columns:
+                        newrow[column] = value
+                    fh.append(newrow)
+                else:
+                    for key_set in other_keys:
+                        newrow = list(row)  # duplicate the current row
+                        for column_num, col_value in zip(other_columns, key_set):
+                            newrow[column_num] = col_value
+                        newrow[time_column] = str(skipped_time)
+                        for column in store_columns:
+                            newrow[column] = value
+                        fh.append(newrow)
+
             last_index = int(row[time_column])
         fh.append(row)
 
