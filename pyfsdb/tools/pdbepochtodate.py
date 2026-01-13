@@ -66,7 +66,7 @@ def main():
     colfmt = args.format
 
     for row in fh:
-        row[-1] = time.strftime(colfmt, time.localtime(row[timestamp_column]))
+        row.append(time.strftime(colfmt, time.localtime(row[timestamp_column])))
         fh.append(row)
 
 
