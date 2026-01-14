@@ -65,34 +65,51 @@ def parse_args():
     return args
 
 
-def main():
-    args = parse_args()
-
-    fh = pyfsdb.Fsdb(file_handle=args.input_file, out_file_handle=args.output_file)
-
-    store_columns = fh.get_column_numbers(args.columns)
-    time_column = fh.get_column_number(args.key_column)
+def fill_values(
+    fh: pyfsdb.Fsdb,
+    key_column: str = "timestamp",
+    columns: list[str] = [],
+    value: int | float | str = 0,
+    bin_size: int = 1,
+    other_keys: list[str] = [],
+):
+    store_columns = fh.get_column_numbers(columns)
+    time_column = fh.get_column_number(key_column)
     other_columns = []
-    if args.other_keys:
-        other_columns = fh.get_column_numbers(args.other_keys)
-    value = args.value
-    bin_size = args.bin_size
+    if other_keys:
+        other_columns = fh.get_column_numbers(other_keys)
+    value = value
+    bin_size = bin_size
 
     last_index = None
+    last_other_columns = set()
+    last_row = None
 
     other_keys = set()
 
     for row in fh:
-        if args.other_keys:  # save the other set of unique keys
+        if other_keys:  # save the other set of unique keys
             other_keys.add(tuple(row[x] for x in other_columns))
         if last_index is None:
             # first row, just store it
             last_index = int(row[time_column])
         elif last_index != int(row[time_column]):
+            # fill in previous time's other keys if needed
+            # TODO(hardaker): implement this
+            # for key_set in other_keys:
+            #     newrow = list(row)  # duplicate the current row
+            #     for column_num, col_value in zip(other_columns, key_set):
+            #         newrow[column_num] = col_value
+            #         newrow[time_column] = str(skipped_time)
+            #         for column in store_columns:
+            #             newrow[column] = value
+            #         fh.append(newrow)
+
+            # add any entirely missing time values
             for skipped_time in range(
                 last_index + bin_size, int(row[time_column]), bin_size
             ):
-                if len(args.other_keys) == 0:
+                if len(other_keys) == 0:
                     newrow = list(row)  # duplicate the current row
                     newrow[time_column] = str(skipped_time)
                     for column in store_columns:
@@ -109,9 +126,27 @@ def main():
                         fh.append(newrow)
 
             last_index = int(row[time_column])
+            last_other_columns = set()
+            last_row = row
+        else:
+            last_other_columns.add(tuple(row[x] for x in other_columns))
         fh.append(row)
 
     fh.close()
+
+
+def main():
+    args = parse_args()
+
+    fh = pyfsdb.Fsdb(file_handle=args.input_file, out_file_handle=args.output_file)
+    fill_values(
+        fh,
+        key_column=args.key_column,
+        columns=args.columns,
+        value=args.value,
+        bin_size=args.bin_size,
+        other_keys=args.other_keys,
+    )
 
 
 if __name__ == "__main__":
