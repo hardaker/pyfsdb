@@ -110,7 +110,8 @@ def fill_values(
                 last_index + bin_size, int(row[time_column]), bin_size
             ):
                 if len(other_keys) == 0:
-                    newrow = list(row)  # duplicate the current row
+                    # TODO(hardaker): make last/next row to copy selectable?
+                    newrow = list(last_row)  # duplicate the last_row row
                     newrow[time_column] = str(skipped_time)
                     for column in store_columns:
                         newrow[column] = value
