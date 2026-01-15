@@ -85,18 +85,18 @@ def fill_values(
     last_other_columns = set()
     last_row = None
 
-    other_keys = set()
+    other_key_values = set()
 
     for row in fh:
         if other_keys:  # save the other set of unique keys
-            other_keys.add(tuple(row[x] for x in other_columns))
+            other_key_values.add(tuple(row[x] for x in other_columns))
         if last_index is None:
             # first row, just store it
             last_index = int(row[time_column])
         elif last_index != int(row[time_column]):
             # fill in previous time's other keys if needed
             # TODO(hardaker): implement this
-            # for key_set in other_keys:
+            # for key_set in other_key_values:
             #     newrow = list(row)  # duplicate the current row
             #     for column_num, col_value in zip(other_columns, key_set):
             #         newrow[column_num] = col_value
@@ -117,7 +117,7 @@ def fill_values(
                         newrow[column] = value
                     fh.append(newrow)
                 else:
-                    for key_set in other_keys:
+                    for key_set in other_key_values:
                         newrow = list(row)  # duplicate the current row
                         for column_num, col_value in zip(other_columns, key_set):
                             newrow[column_num] = col_value
