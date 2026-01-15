@@ -20,10 +20,22 @@ def encode_to_fsdb(data: list[list], columns: list[str] = None) -> str:
     return encoded
 
 
+def extract_fsdb_data(contents: str) -> list[list]:
+    """Takes an fsdb string as if was a file and re-extract the contents as a list of rows"""
+    indata = StringIO(contents)
+    extracted = []
+    with pyfsdb.Fsdb(file_handle=indata) as fh:
+        extracted = fh.get_all()
+    return extracted
+
+
 def main():
     print(encode_to_fsdb([["a", 1, 2], ["b", 3, 4]]))
 
-    print(encode_to_fsdb([["a", 1, 2], ["b", 3, 4]], columns="x foo bar".split()))
+    bigger = encode_to_fsdb([["a", 1, 2], ["b", 3, 4]], columns="x foo bar".split())
+    print(bigger)
+
+    print(extract_fsdb_data(bigger))
 
 
 if __name__ == "__main__":
