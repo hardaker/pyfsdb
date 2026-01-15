@@ -1,15 +1,22 @@
 from io import StringIO
 import pyfsdb
 from pyfsdb.tools.pdbzerofill import fill_values
+from pyfsdb.tests.support import encode_to_fsdb, extract_fsdb_data
+
+try:
+    from rich import print
+except Exception:
+    pass
+
+
+def noop():
+    pass
 
 
 def test_fillempty_single_column():
     """Tests that proper bin-filling happens with empty columns"""
     indata = StringIO("#fsdb -F s a:a b:l\n60 1\n120 2\n240 4\n480 8")
     outdata = StringIO()
-
-    def noop():
-        pass
 
     results = None
     with pyfsdb.Fsdb(
@@ -96,3 +103,54 @@ def test_fillempty_copy_other_keys():
             ["420", 42, "cc"],
             ["480", 8, "dd"],
         ]
+
+
+def test_fillempty_with_only_some_keys():
+    starting_data = [
+        [60, "foo", 1],
+        [60, "bar", 2],
+        [120, "foo", 3],
+        # bar 120 missing
+        [180, "bar", 4],
+        # foo 180 missing
+        [240, "foo", 5],
+        [240, "bar", 5],
+        # foo 300 and beyond all missing
+        [480, "bar", 60],
+    ]
+    indata = StringIO(encode_to_fsdb(starting_data))
+    outdata = StringIO()
+    outdata.close = noop
+    with pyfsdb.Fsdb(
+        file_handle=indata,
+        out_file_handle=outdata,
+    ) as fh:
+        fill_values(
+            fh, key_column="a", columns="c", value=42, bin_size=60, other_keys=["b"]
+        )
+
+        filled_data = extract_fsdb_data(outdata.getvalue())
+
+        print(filled_data)
+        assert filled_data == [
+            [60, "foo", 1],
+            [60, "bar", 2],
+            [120, "foo", 3],
+            [120, "bar", 3],  # 2 or 3???
+            [180, "foo", 4],  # 2 or 4??
+            [180, "bar", 4],
+            [240, "foo", 5],
+            [240, "bar", 5],
+            [300, "foo", 5],
+            [300, "bar", 5],
+            [360, "foo", 5],
+            [360, "bar", 5],
+            [420, "foo", 5],
+            [420, "bar", 5],
+            [480, "foo", 60],
+            [480, "bar", 60],
+        ]
+
+        import pdb
+
+        pdb.set_trace()
