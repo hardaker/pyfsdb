@@ -2,7 +2,7 @@ from io import StringIO
 import pyfsdb
 
 
-def encode_to_fsdb(data: list[list], columns: list[str] = None) -> StringIO:
+def encode_to_fsdb(data: list[list], columns: list[str] = None) -> str:
     """Take a double array and encode it to an FSDB 'file' string.
 
     If columns aren't specified, then letters a..z will be used."""
