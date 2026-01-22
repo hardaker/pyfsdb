@@ -277,10 +277,11 @@ def test_fillempty_with_only_some_keys():
 
     Note: it also checks that negative values in time work."""
     starting_data = [
+        [-120, "foo", -120],
         [-60, "foo", -4],
         [-60, "bar", -3],
         # foo 0 is missing
-        [0, "bar", 0],
+        [0, "bar", -1],
         [60, "foo", 1],
         [60, "bar", 2],
         [120, "foo", 3],
@@ -289,47 +290,38 @@ def test_fillempty_with_only_some_keys():
         # foo 180 missing
         [240, "foo", 5],
         [240, "bar", 5],
-        # foo 300 and beyond all missing
+        # foo/bar 300 and beyond all missing, but bar returns at 480
         [480, "bar", 60],
     ]
-    indata = StringIO(encode_to_fsdb(starting_data))
-    outdata = StringIO()
-    outdata.close = noop
-    with pyfsdb.Fsdb(
-        file_handle=indata,
-        out_file_handle=outdata,
-    ) as fh:
-        fill_values(
-            fh, key_column="a", columns=["c"], value=42, bin_size=60, other_keys=["b"]
-        )
-
-        filled_data = extract_fsdb_data(outdata.getvalue())
-
-        print(filled_data)
-        assert filled_data == [
-            [-120, "foo", -120],
-            [-60, "foo", -4],
-            [-60, "bar", -3],
-            [0, "foo", 0],
-            [0, "bar", 0],
-            [60, "foo", 1],
-            [60, "bar", 2],
-            [120, "foo", 3],
-            [120, "bar", 3],  # 2 or 3???
-            [180, "foo", 4],  # 2 or 4??
-            [180, "bar", 4],
-            [240, "foo", 5],
-            [240, "bar", 5],
-            [300, "foo", 5],
-            [300, "bar", 5],
-            [360, "foo", 5],
-            [360, "bar", 5],
-            [420, "foo", 5],
-            [420, "bar", 5],
-            [480, "foo", 60],
-            [480, "bar", 60],
-        ]
-
-        import pdb
-
-        pdb.set_trace()
+    filled_data = perform_fill_test_with_data(
+        starting_data,
+        key_column="a",
+        columns=["c"],
+        value=42,
+        bin_size=60,
+        other_keys=["b"],
+    )
+    print(filled_data)
+    assert filled_data == [
+        [-120, "foo", -120],
+        [-60, "foo", -4],
+        [-60, "bar", -3],
+        [0, "bar", -1],
+        [0, "foo", 42],
+        [60, "foo", 1],
+        [60, "bar", 2],
+        [120, "foo", 3],
+        [120, "bar", 42],
+        [180, "bar", 4],
+        [180, "foo", 42],
+        [240, "foo", 5],
+        [240, "bar", 5],
+        [300, "bar", 42],
+        [300, "foo", 42],
+        [360, "bar", 42],
+        [360, "foo", 42],
+        [420, "bar", 42],
+        [420, "foo", 42],
+        [480, "bar", 60],
+        [480, "foo", 42],
+    ]
