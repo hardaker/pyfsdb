@@ -67,6 +67,7 @@ pdbzerofill = "pyfsdb.tools.pdbzerofill:main"
 pdbrelplot = "pyfsdb.tools.pdbrelplot:main"
 pdbsankey = "pyfsdb.tools.pdbsankey:main"
 pdbpathtrack = "pyfsdb.tools.pdbpathtrack:main"
+regex2fsdb = "pyfsdb.tools.regex2fsdb:main"
 
 [project.urls]
 Homepage = "https://github.com/hardaker/pyfsdb"
