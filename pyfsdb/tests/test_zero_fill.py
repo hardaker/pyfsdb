@@ -172,8 +172,8 @@ def test_skipping_all_keys():
         [60, "bar", 2],
         [60, "foo", 3],
         # 120 is filled:
-        [120, "foo", 42],  # sorting reorders for some reason
         [120, "bar", 42],
+        [120, "foo", 42],  # sorting reorders for some reason
         [180, "bar", 20],
         [180, "foo", 30],
     ]

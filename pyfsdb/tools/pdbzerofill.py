@@ -149,6 +149,17 @@ def fill_values(
         last_row = row
         fh.append(row)
 
+    # do a final fill for the last column
+    for key in last_rows:
+        if key not in last_other_columns:
+            newrow = list(last_rows[key])  # duplicate the last seen
+            for column_num, col_value in zip(other_columns, key):
+                newrow[column_num] = col_value
+            newrow[time_column] = str(last_index)
+            for column in store_columns:
+                newrow[column] = value
+            fh.append(newrow)
+
     fh.close()
 
 
