@@ -72,12 +72,18 @@ def fill_values(
     value: int | float | str = 0,
     bin_size: int = 1,
     other_keys: list[str] = [],
+    copy_keys: list[str] = [],
 ):
     store_columns = fh.get_column_numbers(columns)
     time_column = fh.get_column_number(key_column)
     other_columns = []
     if other_keys:
         other_columns = fh.get_column_numbers(other_keys)
+
+    copy_columns = []
+    if copy_keys:
+        copy_columns = fh.get_column_numbers(copy_keys)
+
     value = value
     bin_size = bin_size
 
@@ -87,24 +93,20 @@ def fill_values(
 
     other_key_values = set()
 
+    last_rows = {}
+
     for row in fh:
+        key_set = tuple(row[x] for x in other_columns)
+
         if other_keys:  # save the other set of unique keys
-            other_key_values.add(tuple(row[x] for x in other_columns))
+            other_key_values.add(key_set)
+
         if last_index is None:
             # first row, just store it
             last_index = int(row[time_column])
         elif last_index != int(row[time_column]):
             # fill in previous time's other keys if needed
             # TODO(hardaker): implement this
-            # for key_set in other_key_values:
-            #     newrow = list(row)  # duplicate the current row
-            #     for column_num, col_value in zip(other_columns, key_set):
-            #         newrow[column_num] = col_value
-            #         newrow[time_column] = str(skipped_time)
-            #         for column in store_columns:
-            #             newrow[column] = value
-            #         fh.append(newrow)
-
             # add any entirely missing time values
             for skipped_time in range(
                 last_index + bin_size, int(row[time_column]), bin_size
@@ -118,7 +120,7 @@ def fill_values(
                     fh.append(newrow)
                 else:
                     for key_set in other_key_values:
-                        newrow = list(row)  # duplicate the current row
+                        newrow = list(last_rows[key_set])  # duplicate the current row
                         for column_num, col_value in zip(other_columns, key_set):
                             newrow[column_num] = col_value
                         newrow[time_column] = str(skipped_time)
@@ -128,9 +130,11 @@ def fill_values(
 
             last_index = int(row[time_column])
             last_other_columns = set()
-            last_row = row
+            last_rows = {}
         else:
-            last_other_columns.add(tuple(row[x] for x in other_columns))
+            last_other_columns.add(key_set)
+        last_row = row
+        last_rows[key_set] = row
         fh.append(row)
 
     fh.close()
