@@ -180,7 +180,7 @@ def test_skipping_all_keys():
 
 
 def test_copying_of_other_columns():
-    """has multiple indexes and then skips them all to ensure they're filled."""
+    """Test copying of previous rows from previous other keysets"""
     starting_data = [
         [0, "bar", 0, "a"],
         [0, "foo", 1, "b"],
@@ -208,6 +208,35 @@ def test_copying_of_other_columns():
         [120, "bar", 42, "c"],
         [180, "bar", 20, "e"],
         [180, "foo", 30, "f"],
+    ]
+
+
+def test_copying_of_other_columns():
+    """Test partial filling."""
+    starting_data = [
+        [0, "bar", 0, "a"],
+        [0, "foo", 1, "b"],
+        [60, "bar", 2, "c"],
+        # 60 is skipped for foo only
+        [120, "bar", 20, "e"],
+        [120, "foo", 30, "f"],
+    ]
+    filled_data = perform_fill_test_with_data(
+        starting_data,
+        key_column="a",
+        columns=["c"],
+        value=42,
+        bin_size=60,
+        other_keys=["b"],
+    )
+    assert filled_data == [
+        [0, "bar", 0, "a"],
+        [0, "foo", 1, "b"],
+        [60, "bar", 2, "c"],
+        # 60/foo is filled with the last row's d and 42 in c:
+        [60, "foo", 42, "b"],
+        [120, "bar", 20, "e"],
+        [120, "foo", 30, "f"],
     ]
 
 

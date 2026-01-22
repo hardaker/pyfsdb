@@ -108,6 +108,19 @@ def fill_values(
             # fill in previous time's other keys if needed
             # TODO(hardaker): implement this
             # add any entirely missing time values
+
+            # check for partially filled rows
+            # TODO(hardaker): should this go after range skipping???
+            for key in last_rows:
+                if key not in last_other_columns:
+                    newrow = list(last_rows[key])  # duplicate the last seen
+                    for column_num, col_value in zip(other_columns, key):
+                        newrow[column_num] = col_value
+                    newrow[time_column] = str(last_index)
+                    for column in store_columns:
+                        newrow[column] = value
+                    fh.append(newrow)
+
             for skipped_time in range(
                 last_index + bin_size, int(row[time_column]), bin_size
             ):
@@ -130,11 +143,10 @@ def fill_values(
 
             last_index = int(row[time_column])
             last_other_columns = set()
-            last_rows = {}
-        else:
-            last_other_columns.add(key_set)
-        last_row = row
+
+        last_other_columns.add(key_set)
         last_rows[key_set] = row
+        last_row = row
         fh.append(row)
 
     fh.close()
