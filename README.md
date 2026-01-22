@@ -9,8 +9,8 @@ long list of [command line tools] that can be used to quickly process
 datasets using traditional unix pipeline processing.  There is also a
 [C implementation] and a Go implementation (ref needed) of FSDB.
 
-Getting started documentation is below, but also see the [full
-documentation] over on readthedocs.
+Below is just getting started documentation.  **see the
+[full documentation] over on readthedocs**.
 
 [FSDB]: https://www.isi.edu/~johnh/SOFTWARE/FSDB/
 [C implementation]: https://github.com/hardaker/fsdb-clib
@@ -19,20 +19,10 @@ documentation] over on readthedocs.
 
 # Installation
 
-Using pip (or pipx):
+Using pip (or uv or pipx):
 
 ```
 pip3 install pyfsdb
-```
-
-Or manually:
-
-```
-git clone git@github.com:hardaker/pyfsdb.git
-cd pyfsdb
-pip install hatch
-hatch build
-pip install dist/pyfsdb-*.whl
 ```
 
 # Example Usage
@@ -44,7 +34,15 @@ details).  The file also contains footers that trace all the piped
 commands that were used to create a file, thus documenting the history
 of its creation within the metadata in the file.
 
-## Example pyfsdb code for reading a file
+## Example FSDB file
+
+```
+#fsdb -F t col1 two andthree
+1	key1	42.0
+2	key2	123.0
+```
+
+## Example pyfsdb code for reading a FSDB file
 
 Reading in row by row:
 
@@ -56,15 +54,7 @@ for row in db:
     print(row)
 ```
 
-## Example FSDB file
-
-```
-#fsdb -F t col1 two andthree
-1	key1	42.0
-2	key2	123.0
-```
-
-## Example writing to an FSDB formatted file.
+## Example writing to a FSDB formatted file.
 
 ```
 import pyfsdb
@@ -75,12 +65,6 @@ db.close()
 ```
 
 Read below for further usage details.
-
-# Installation
-
-```
-pip3 install pyfsdb
-```
 
 # Additional Usage Details
 
