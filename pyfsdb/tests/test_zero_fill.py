@@ -13,6 +13,26 @@ def noop():
     pass
 
 
+def perform_fill_test_with_data(starting_data: list, *args, **kwargs):
+    """converts the start_data to fsdb, then calls fill data and
+    returns the decode results."""
+    indata = StringIO(encode_to_fsdb(starting_data))
+    outdata = StringIO()
+    outdata.close = noop
+
+    filled_data = None
+
+    with pyfsdb.Fsdb(
+        file_handle=indata,
+        out_file_handle=outdata,
+    ) as fh:
+        fill_values(fh, *args, **kwargs)
+
+        filled_data = extract_fsdb_data(outdata.getvalue())
+
+    return filled_data
+
+
 def test_fillempty_single_column():
     """Tests that proper bin-filling happens with empty columns"""
     indata = StringIO("#fsdb -F s a:a b:l\n60 1\n120 2\n240 4\n480 8")
@@ -24,7 +44,7 @@ def test_fillempty_single_column():
         out_file_handle=outdata,
     ) as fh:
         outdata.close = noop
-        fill_values(fh, key_column="a", columns="b", value=42, bin_size=60)
+        fill_values(fh, key_column="a", columns=["b"], value=42, bin_size=60)
         results = outdata.getvalue()
 
     with pyfsdb.Fsdb(file_handle=StringIO(results)) as fh:
@@ -73,7 +93,7 @@ def test_fillempty_multiple_columns():
 
 
 def test_fillempty_copy_other_keys():
-    """Check that multiple key filling is supported (copied from previous)"""
+    """Check that multiple other columns copying is supported (copied from previous)."""
     indata = StringIO("#fsdb -F s a:a b:l c:a\n60 1 aa\n120 2 bb\n240 4 cc\n480 8 dd")
     outdata = StringIO()
 
@@ -86,9 +106,7 @@ def test_fillempty_copy_other_keys():
         out_file_handle=outdata,
     ) as fh:
         outdata.close = noop
-        fill_values(
-            fh, key_column="a", columns="b", value=42, bin_size=60, other_keys="c"
-        )
+        fill_values(fh, key_column="a", columns=["b"], value=42, bin_size=60)
         results = outdata.getvalue()
 
     with pyfsdb.Fsdb(file_handle=StringIO(results)) as fh:
@@ -105,8 +123,71 @@ def test_fillempty_copy_other_keys():
         ]
 
 
-def test_fillempty_with_only_some_keys():
+def test_fillempty_ignore_initial_missing():
+    """Tests that we ignore keys we haven't seen yet."""
     starting_data = [
+        [-120, "foo", -120],
+        # bar -120 doesn't exist, but we don't know that yet which is ok
+        # thus it won't be filled
+        [-60, "foo", -4],
+        [-60, "bar", -3],
+    ]
+    filled_data = perform_fill_test_with_data(
+        starting_data,
+        key_column="a",
+        columns=["c"],
+        value=42,
+        bin_size=60,
+        other_keys=["b"],
+    )
+    assert filled_data == [
+        [-120, "foo", -120],
+        [-60, "foo", -4],
+        [-60, "bar", -3],
+    ]
+
+
+def test_skipping_all_keys():
+    """has multiple indexes and then skips them all to ensure they're filled."""
+    starting_data = [
+        [0, "bar", 0],
+        [0, "foo", 1],
+        [60, "bar", 2],
+        [60, "foo", 3],
+        # 120 is skipped
+        [180, "bar", 20],
+        [180, "foo", 30],
+    ]
+    filled_data = perform_fill_test_with_data(
+        starting_data,
+        key_column="a",
+        columns=["c"],
+        value=42,
+        bin_size=60,
+        other_keys=["b"],
+    )
+    assert filled_data == [
+        [0, "bar", 0],
+        [0, "foo", 1],
+        [60, "bar", 2],
+        [60, "foo", 3],
+        # 120 is filled:
+        [120, "foo", 42],  # sorting reorders for some reason
+        [120, "bar", 42],
+        [180, "bar", 20],
+        [180, "foo", 30],
+    ]
+
+
+def test_fillempty_with_only_some_keys():
+    """This tests multiple cases of missing other_keys column data.
+
+    Note: it also checks that negative values in time work."""
+    starting_data = [
+        [-60, "foo", -4],
+        [-60, "bar", -3],
+        # foo 0 is missing
+        [0, "bar", 0],
         [60, "foo", 1],
         [60, "bar", 2],
         [120, "foo", 3],
@@ -126,13 +207,18 @@ def test_fillempty_with_only_some_keys():
         out_file_handle=outdata,
     ) as fh:
         fill_values(
-            fh, key_column="a", columns="c", value=42, bin_size=60, other_keys=["b"]
+            fh, key_column="a", columns=["c"], value=42, bin_size=60, other_keys=["b"]
         )
 
         filled_data = extract_fsdb_data(outdata.getvalue())
 
         print(filled_data)
         assert filled_data == [
+            [-120, "foo", -120],
+            [-60, "foo", -4],
+            [-60, "bar", -3],
+            [0, "foo", 0],
+            [0, "bar", 0],
             [60, "foo", 1],
             [60, "bar", 2],
             [120, "foo", 3],
