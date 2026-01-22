@@ -38,12 +38,12 @@ Example output 2
 Example command usage 2
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The following creates a list of mount points from ext4 or swap from an
-/etc/fstab file:
+The following creates a list of mount points from ext4, swap or vfat
+mounts from an /etc/fstab file (ignoring case):
 
 ::
 
-   $ regex2fsdb -r '.*\s+([\w/]+)\s+(ext4|swap|vfat).*' -c point type -- /etc/fstab
+   $ regex2fsdb -i -r '.*\s+([\w/]+)\s+(ext4|swap|vfat).*' -c point type -- /etc/fstab
 
 Example output 2
 ^^^^^^^^^^^^^^^^

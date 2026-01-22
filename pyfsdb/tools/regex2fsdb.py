@@ -50,6 +50,13 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-i",
+        "--ignore-case",
+        action="store_true",
+        help="Ignore case when finding matches.",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -102,6 +109,10 @@ def main():
 
     columns = args.columns
     searcher = re.compile(args.regex)
+
+    flags = 0
+    if args.ignore_case:
+        flags |= re.IGNORECASE
 
     with pyfsdb.Fsdb(
         out_file_handle=args.output_file, out_column_names=columns
