@@ -31,6 +31,18 @@ Data filtering and modification tools
    pdbsum
    pdbzerofill
 
+Ingesting Data
+--------------
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   regex2fsdb
+   bro2fsdb
+   json2fsdb
+
+
 Data conversion tools
 ---------------------
 
