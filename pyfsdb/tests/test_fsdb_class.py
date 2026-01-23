@@ -1,3 +1,4 @@
+import pytest
 from unittest import TestCase
 from unittest.mock import Mock
 import pyfsdb
@@ -17,7 +18,7 @@ class FsdbTest(TestCase):
     EXPECTED_DATA = [["rowone", "info", "data"], ["rowtwo", "other", "stuff"]]
 
     def test_loaded_tests(self):
-        self.assertTrue(True)
+        assert True
 
     def test_read_header(self):
         HEADER_FILE = "pyfsdb/tests/tests.fsdb"
@@ -26,7 +27,7 @@ class FsdbTest(TestCase):
         line = next(fileh)
         headers = f.read_header(line)
 
-        self.assertTrue(headers[0] == 0, "header parse is 0 for success")
+        assert headers[0] == 0, "header parse is 0 for success"
 
         header_info = headers[1]
 
@@ -56,15 +57,15 @@ class FsdbTest(TestCase):
             counter += 1
 
     def check_data(self, rows):
-        self.assertTrue(len(rows) == 2, "There are two rows in the results")
+        assert len(rows) == 2, "There are two rows in the results"
 
-        self.assertTrue(rows[0][0] == "rowone")
-        self.assertTrue(rows[0][1] == "info")
-        self.assertTrue(rows[0][2] == "data")
+        assert rows[0][0] == "rowone"
+        assert rows[0][1] == "info"
+        assert rows[0][2] == "data"
 
-        self.assertTrue(rows[1][0] == "rowtwo")
-        self.assertTrue(rows[1][1] == "other")
-        self.assertTrue(rows[1][2] == "stuff")
+        assert rows[1][0] == "rowtwo"
+        assert rows[1][1] == "other"
+        assert rows[1][2] == "stuff"
 
     def test_broken_header(self):
         from io import StringIO
@@ -74,11 +75,11 @@ class FsdbTest(TestCase):
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
                 row = next(f)
-                self.assertTrue(False, "shouldn't have gotten here " + str(row))
+                assert False, "shouldn't have gotten here " + str(row)
         except ValueError:
-            self.assertTrue(True, "proper exception thrown")
+            assert True, "proper exception thrown"
         except Exception as e:
-            self.assertTrue(False, "wrong exception thrown: " + str(e))
+            assert False, "wrong exception thrown: " + str(e)
 
     def test_reading_as_iterator(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -86,12 +87,12 @@ class FsdbTest(TestCase):
 
         rows = []
         row = next(f)
-        self.assertTrue(row, "row one is returned")
+        assert row, "row one is returned"
         rows.append(row)
 
         row = next(f)
         rows.append(row)
-        self.assertTrue(row, "row two is returned")
+        assert row, "row two is returned"
 
         self.check_data(rows)
 
@@ -100,18 +101,18 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(DATA_FILE, return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
         row = next(f)
-        self.assertTrue(row, "row one is returned")
+        assert row, "row one is returned"
 
-        self.assertTrue(row["colone"] == "rowone")
-        self.assertTrue(row["coltwo"] == "info")
-        self.assertTrue(row["colthree"] == "data")
+        assert row["colone"] == "rowone"
+        assert row["coltwo"] == "info"
+        assert row["colthree"] == "data"
 
         row = next(f)
-        self.assertTrue(row, "row two is returned")
+        assert row, "row two is returned"
 
-        self.assertTrue(row["colone"] == "rowtwo")
-        self.assertTrue(row["coltwo"] == "other")
-        self.assertTrue(row["colthree"] == "stuff")
+        assert row["colone"] == "rowtwo"
+        assert row["coltwo"] == "other"
+        assert row["colthree"] == "stuff"
 
     def test_setting_fileh(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -120,23 +121,23 @@ class FsdbTest(TestCase):
         self.assertFalse(f.file_handle, "file_handle should not be available")
 
         fh = open(DATA_FILE, "r")
-        self.assertTrue(fh, "file opened manually")
+        assert fh, "file opened manually"
 
         f.file_handle = fh
-        self.assertTrue(f.file_handle == fh, "file_handle was set properly")
+        assert f.file_handle == fh, "file_handle was set properly"
 
         row = next(f)
-        self.assertTrue(f.__real_next__ == f._next_as_array, "read type was set")
-        self.assertTrue(row, "row one is returned")
-        self.assertTrue(row[0] == "rowone")
+        assert f.__real_next__ == f._next_as_array, "read type was set"
+        assert row, "row one is returned"
+        assert row[0] == "rowone"
 
         # create a new object instead
         fh = open(DATA_FILE, "r")
         f = pyfsdb.Fsdb(file_handle=fh)
 
         row = next(f)
-        self.assertTrue(row, "row one is returned")
-        self.assertTrue(row[0] == "rowone")
+        assert row, "row one is returned"
+        assert row[0] == "rowone"
 
         # check that it works as an iterator
         fh = open(DATA_FILE, "r")
@@ -146,7 +147,7 @@ class FsdbTest(TestCase):
         for row in f:
             count += 1
 
-        self.assertTrue(count > 0, "at least one row read")
+        assert count > 0, "at least one row read"
 
     def test_header_early_read(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -160,27 +161,27 @@ class FsdbTest(TestCase):
     def test_header_access(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         headers = f.headers
-        self.assertTrue(headers, "headers access exists")
+        assert headers, "headers access exists"
 
-        self.assertTrue(f.get_column_name(0) == "colone")
-        self.assertTrue(f.get_column_name(1) == "coltwo")
-        self.assertTrue(f.get_column_name(2) == "colthree")
-        self.assertTrue(f.get_column_number("colone") == 0)
-        self.assertTrue(f.get_column_number("coltwo") == 1)
-        self.assertTrue(f.get_column_number("colthree") == 2)
+        assert f.get_column_name(0) == "colone"
+        assert f.get_column_name(1) == "coltwo"
+        assert f.get_column_name(2) == "colthree"
+        assert f.get_column_number("colone") == 0
+        assert f.get_column_number("coltwo") == 1
+        assert f.get_column_number("colthree") == 2
 
-        self.assertTrue(f.header_line == "#fsdb -F t colone coltwo colthree\n")
+        assert f.header_line == "#fsdb -F t colone coltwo colthree\n"
 
         cols = f.column_names
-        self.assertTrue(len(cols) == 3, "There are two cloumns")
-        self.assertTrue(cols[0] == "colone", "column one ok")
-        self.assertTrue(cols[1] == "coltwo", "column two ok")
-        self.assertTrue(cols[2] == "colthree", "column three ok")
-        self.assertTrue(cols[2] == "colthree", "column three ok")
-        self.assertTrue(f.column_names[2] == "colthree", "column three ok")
+        assert len(cols) == 3, "There are two cloumns"
+        assert cols[0] == "colone", "column one ok"
+        assert cols[1] == "coltwo", "column two ok"
+        assert cols[2] == "colthree", "column three ok"
+        assert cols[2] == "colthree", "column three ok"
+        assert f.column_names[2] == "colthree", "column three ok"
 
     def test_basic_writing(self):
         outstring = StringIO()
@@ -192,7 +193,7 @@ class FsdbTest(TestCase):
     def test_output(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         expected = [
             "rowone	info	data\n",
@@ -208,55 +209,55 @@ class FsdbTest(TestCase):
 
     def test_setting_columns(self):
         f = pyfsdb.Fsdb()
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         testcols = ["colone", "coltwo", "col3"]
         f.column_names = testcols
-        self.assertTrue(f.column_names == testcols)
+        assert f.column_names == testcols
 
     def test_header(self):
         f = pyfsdb.Fsdb()
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         f.column_names = ["colone", "coltwo", "col3"]
-        self.assertTrue(f.header_line == "#fsdb -F t colone coltwo col3\n")
+        assert f.header_line == "#fsdb -F t colone coltwo col3\n"
 
         old = list(f.column_names)
         old.append("col4")
         f.column_names = old
-        self.assertTrue(f.header_line == "#fsdb -F t colone coltwo col3 col4\n")
+        assert f.header_line == "#fsdb -F t colone coltwo col3 col4\n"
 
         f.separator_token = "S"
-        self.assertTrue(f.header_line == "#fsdb -F S colone coltwo col3 col4\n")
+        assert f.header_line == "#fsdb -F S colone coltwo col3 col4\n"
 
         f.separator = " "
-        self.assertTrue(f.header_line == "#fsdb -F s colone coltwo col3 col4\n")
+        assert f.header_line == "#fsdb -F s colone coltwo col3 col4\n"
 
     def test_missing_header_support_file(self):
         DATA_FILE = "pyfsdb/tests/noheader.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         f.column_names = ["colone", "coltwo", "colthree"]
 
         headers = f.headers
-        self.assertTrue(headers, "headers access exists")
+        assert headers, "headers access exists"
 
-        self.assertTrue(f.get_column_name(0) == "colone")
-        self.assertTrue(f.get_column_name(1) == "coltwo")
-        self.assertTrue(f.get_column_name(2) == "colthree")
-        self.assertTrue(f.get_column_number("colone") == 0)
-        self.assertTrue(f.get_column_number("coltwo") == 1)
-        self.assertTrue(f.get_column_number("colthree") == 2)
+        assert f.get_column_name(0) == "colone"
+        assert f.get_column_name(1) == "coltwo"
+        assert f.get_column_name(2) == "colthree"
+        assert f.get_column_number("colone") == 0
+        assert f.get_column_number("coltwo") == 1
+        assert f.get_column_number("colthree") == 2
 
-        self.assertTrue(f.header_line == "#fsdb -F t colone coltwo colthree\n")
+        assert f.header_line == "#fsdb -F t colone coltwo colthree\n"
 
         cols = f.column_names
-        self.assertTrue(len(cols) == 3, "There are two cloumns")
-        self.assertTrue(cols[0] == "colone", "column one ok")
-        self.assertTrue(cols[1] == "coltwo", "column two ok")
-        self.assertTrue(cols[2] == "colthree", "column three ok")
-        self.assertTrue(cols[2] == "colthree", "column three ok")
-        self.assertTrue(f.column_names[2] == "colthree", "column three ok")
+        assert len(cols) == 3, "There are two cloumns"
+        assert cols[0] == "colone", "column one ok"
+        assert cols[1] == "coltwo", "column two ok"
+        assert cols[2] == "colthree", "column three ok"
+        assert cols[2] == "colthree", "column three ok"
+        assert f.column_names[2] == "colthree", "column three ok"
 
     def test_missing_header_support_filehandle(self):
         from io import StringIO
@@ -264,24 +265,24 @@ class FsdbTest(TestCase):
         data = "a	b	c\n"
         datah = StringIO(data)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         f.column_names = ["a", "b", "c"]
 
-        self.assertTrue(f.get_column_name(0) == "a")
-        self.assertTrue(f.get_column_name(1) == "b")
-        self.assertTrue(f.get_column_name(2) == "c")
-        self.assertTrue(f.get_column_number("a") == 0)
-        self.assertTrue(f.get_column_number("b") == 1)
-        self.assertTrue(f.get_column_number("c") == 2)
+        assert f.get_column_name(0) == "a"
+        assert f.get_column_name(1) == "b"
+        assert f.get_column_name(2) == "c"
+        assert f.get_column_number("a") == 0
+        assert f.get_column_number("b") == 1
+        assert f.get_column_number("c") == 2
 
-        self.assertTrue(f.header_line == "#fsdb -F t a b c\n")
+        assert f.header_line == "#fsdb -F t a b c\n"
 
     def test_write_out_fsdb(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         OUT_FILE = "pyfsdb/tests/testout.fsdb"
 
         f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         # read in all records
         records = []
@@ -308,7 +309,7 @@ class FsdbTest(TestCase):
         count = 1
 
         f.out_column_names = ["a", "b", "c", "new_count"]
-        self.assertTrue(len(f.out_column_names) == 4, "correct initial output count")
+        assert len(f.out_column_names) == 4, "correct initial output count"
         for row in rows:
             row.append(str(count))
             f.append(row)
@@ -321,14 +322,14 @@ class FsdbTest(TestCase):
         for row in g:
             rows.append(row)
         self.check_data(rows)
-        self.assertTrue(rows[0][3] == "1", "new rowone col is correct")
-        self.assertTrue(rows[1][3] == "2", "new rowtwo col is correct")
+        assert rows[0][3] == "1", "new rowone col is correct"
+        assert rows[1][3] == "2", "new rowtwo col is correct"
 
         # check the output token switch
         f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         f.out_separator_token = "s"
-        self.assertTrue(f.out_separator == " ", "new separator is space")
+        assert f.out_separator == " ", "new separator is space"
         for row in f:
             f.append(row)
         f.close()
@@ -343,14 +344,14 @@ class FsdbTest(TestCase):
                 wasLast = True
             else:
                 wasLast = False
-        self.assertTrue(foundIt, "saved output command")
-        self.assertTrue(wasLast, "saved command was last")
+        assert foundIt, "saved output command"
+        assert wasLast, "saved command was last"
 
     def test_out_command_line(self):
 
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
         f.out_column_names = ["bogus"]
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         f.out_command_line = "test command"
         f.close()
@@ -360,7 +361,7 @@ class FsdbTest(TestCase):
     def test_save_out_command_on_del(self):
         f = pyfsdb.Fsdb(self.DATA_FILE, out_file=self.OUT_FILE)
         f.out_column_names = ["bogus"]
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         f.out_command_line = "test command on del"
         del f
@@ -380,7 +381,7 @@ class FsdbTest(TestCase):
             self.DATA_FILE, out_file=self.OUT_FILE, out_command_line="test command init"
         )
         f.out_column_names = ["bogus"]
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         del f
 
         self.check_last_line(self.OUT_FILE, "#  | test command init\n")
@@ -391,7 +392,7 @@ class FsdbTest(TestCase):
             self.DATA_FILE, out_file=out_file, out_command_line="test command init"
         )
         f.comment("top comment")
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         did_one = False
         for row in f:
             f.append(row)
@@ -422,7 +423,7 @@ class FsdbTest(TestCase):
             out_command_line="test command init",
             pass_comments="e",
         )
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
         f.comment("top comment")
 
         did_one = False
@@ -448,7 +449,7 @@ class FsdbTest(TestCase):
 
     def test_array_generator(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         all = []
         for r in f.next_as_array():
@@ -458,7 +459,7 @@ class FsdbTest(TestCase):
 
     def test_dict_generator(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         # this generally shouldn't be called as is, so we need to self-init
         # just to bootstrap the header reading
@@ -500,37 +501,37 @@ class FsdbTest(TestCase):
 
     def test_get_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         all = f.get_pandas()
         self.check_data(all.values.tolist())
 
     def test_get_pandas2(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         all = f.get_pandas(usecols=["coltwo"])
         rows = all.values.tolist()
-        self.assertTrue(len(rows) == 2)
-        self.assertTrue(len(rows[0]) == 1)
-        self.assertTrue(len(rows[1]) == 1)
-        self.assertTrue(rows[0][0] == "info")
-        self.assertTrue(rows[1][0] == "other")
+        assert len(rows) == 2
+        assert len(rows[0]) == 1
+        assert len(rows[1]) == 1
+        assert rows[0][0] == "info"
+        assert rows[1][0] == "other"
 
     def test_get_pandas_with_data_comments(self):
         fake = StringIO("#fsdb -F t one two\n1\ta\n# comment\n2\t#b\n")
 
         f = pyfsdb.Fsdb(file_handle=fake)
-        self.assertTrue(f, "opened ok")
+        assert f, "opened ok"
 
         all = f.get_pandas(data_has_comment_chars=True)
 
         rows = all.values.tolist()
-        self.assertTrue(len(rows) == 2)
-        self.assertTrue(rows[0][0] == 1)
-        self.assertTrue(rows[1][0] == 2)
-        self.assertTrue(rows[0][1] == "a")
-        self.assertTrue(rows[1][1] == "#b")
+        assert len(rows) == 2
+        assert rows[0][0] == 1
+        assert rows[1][0] == 2
+        assert rows[0][1] == "a"
+        assert rows[1][1] == "#b"
 
     def test_put_pandas(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
@@ -571,7 +572,7 @@ class FsdbTest(TestCase):
         f.close()
 
         # the headers should fail
-        self.assertTrue(True, "got here")
+        assert True, "got here"
 
         # load both files fully
         file1 = ""
@@ -591,11 +592,11 @@ class FsdbTest(TestCase):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         with pyfsdb.Fsdb(DATA_FILE) as f:
             row = next(f)
-            self.assertTrue(row, "row one is returned")
+            assert row, "row one is returned"
 
-            self.assertTrue(row[0] == "rowone")
-            self.assertTrue(row[1] == "info")
-            self.assertTrue(row[2] == "data")
+            assert row[0] == "rowone"
+            assert row[1] == "info"
+            assert row[2] == "data"
 
     def test_missing_columns(self):
         from io import StringIO
@@ -619,11 +620,11 @@ class FsdbTest(TestCase):
         try:
             with pyfsdb.Fsdb(file_handle=datah) as f:
                 next(f)
-                self.assertTrue(False, "shouldn't have gotten here")
+                assert False, "shouldn't have gotten here"
         except ValueError:
-            self.assertTrue(True, "proper exception thrown")
+            assert True, "proper exception thrown"
         except Exception as e:
-            self.assertTrue(False, "wrong exception thrown: " + str(e))
+            assert False, "wrong exception thrown: " + str(e)
 
     def test_foreach(self):
         from io import StringIO
@@ -813,13 +814,13 @@ class FsdbTest(TestCase):
 
         datah = StringIO(data)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # same data, but with dabs in the header
         datatabs = data.replace(" ", "\t")
         datah = StringIO(datatabs)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
     def test_separators(self):
         from io import StringIO
@@ -830,21 +831,21 @@ class FsdbTest(TestCase):
         # test tabs
         datah = StringIO(data)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # convert to spaces
         datas = data.replace("\t", " ").replace("-F t", "-F s")
 
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # convert to double spaces
         datas = data.replace("\t", "  ").replace("-F t", "-F S")
 
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # trying arbitrary char
         for testchar in ["Z", "|", "$"]:
@@ -854,28 +855,28 @@ class FsdbTest(TestCase):
 
                 datah = StringIO(datas)
                 f = pyfsdb.Fsdb(file_handle=datah)
-                self.assertEqual(f.get_all(), expected)
+                assert f.get_all() == expected
 
         # mixed tabs and spaces with a (D)efault whitespace
         datas = data.replace("\t", "  ", 2).replace("-F t", "-F D")
 
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # hex-specified character (0x41 = 'A')
         datas = data.replace("\t", "A").replace("-F t", "-F X41")
 
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
         # use a lower case x too
         datas = data.replace("\t", "A").replace("-F t", "-F x41")
 
         datah = StringIO(datas)
         f = pyfsdb.Fsdb(file_handle=datah)
-        self.assertEqual(f.get_all(), expected)
+        assert f.get_all() == expected
 
     def test_in_out_same_handle(self):
         from io import StringIO
@@ -965,7 +966,7 @@ class FsdbTest(TestCase):
 
         # ignore headers
         result = outdata.getvalue()
-        self.assertTrue(result.startswith(expected), "set columns on init")
+        assert result.startswith(expected), "set columns on init"
 
     def test_datatype_columns(self):
         from io import StringIO
@@ -976,7 +977,7 @@ class FsdbTest(TestCase):
             file_handle=input_data, return_type=pyfsdb.RETURN_AS_DICTIONARY
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": "1", "b": "2", "c": "3"})
+            assert row == {"a": "1", "b": "2", "c": "3"}
 
         # manual conversions:
         input_data = StringIO("#fsdb -F t a b c\n1\t2\t3\n")
@@ -986,7 +987,7 @@ class FsdbTest(TestCase):
             return_type=pyfsdb.RETURN_AS_DICTIONARY,
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": "1", "b": 2, "c": "3"})
+            assert row == {"a": "1", "b": 2, "c": "3"}
 
         # column-specified conversions:
         input_data = StringIO("#fsdb -F t a b:i c\n1\t2\t3\n")
@@ -994,7 +995,7 @@ class FsdbTest(TestCase):
             file_handle=input_data, return_type=pyfsdb.RETURN_AS_DICTIONARY
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": "1", "b": 2, "c": "3"})
+            assert row == {"a": "1", "b": 2, "c": "3"}
 
         # column-specified conversions with float:
         input_data = StringIO("#fsdb -F t a b:f c\n1\t2.1\t3\n")
@@ -1002,7 +1003,7 @@ class FsdbTest(TestCase):
             file_handle=input_data, return_type=pyfsdb.RETURN_AS_DICTIONARY
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": "1", "b": 2.1, "c": "3"})
+            assert row == {"a": "1", "b": 2.1, "c": "3"}
 
         # column-specified conversions with float:
         input_data = StringIO("#fsdb -F t a b c\n1\t2.1\t3\n")
@@ -1012,7 +1013,7 @@ class FsdbTest(TestCase):
             return_type=pyfsdb.RETURN_AS_DICTIONARY,
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": "1", "b": "2.1", "c": "3"})
+            assert row == {"a": "1", "b": "2.1", "c": "3"}
 
     def test_auto_datatype_column_checks(self):
         from io import StringIO
@@ -1023,7 +1024,7 @@ class FsdbTest(TestCase):
             f.out_column_names = ["a", "b", "c"]
             f.append(["str", 10, 20.5])
         result = truncate_comments(outh.getvalue())
-        self.assertEqual(result, "#fsdb -F t a:a b:l c:d\nstr\t10\t20.5\n")
+        assert result == "#fsdb -F t a:a b:l c:d\nstr\t10\t20.5\n"
 
     def test_failed_converter(self):
         # note: fails float conversion to an int
@@ -1033,7 +1034,7 @@ class FsdbTest(TestCase):
             return_type=pyfsdb.RETURN_AS_DICTIONARY,
         ) as f:
             row = next(f)
-            self.assertEqual(row, {"a": 1, "b": None, "c": 3})
+            assert row == {"a": 1, "b": None, "c": 3}
 
     def test_columns_still_with_empty_data(self):
         # note: fails float conversion to an int
@@ -1044,7 +1045,7 @@ class FsdbTest(TestCase):
         ) as f:
             for row in f:
                 pass
-            self.assertTrue(True, "got to end")
+            assert True, "got to end"
 
     def test_input_output_separator_match(self):
         input_contents = "#fsdb -F s a:l b:l c:l\n1 2 3\n"
@@ -1057,12 +1058,9 @@ class FsdbTest(TestCase):
         ) as f:
             for row in f:
                 f.append(row)
-            self.assertEqual(
-                f.separator,
-                f.out_separator,
-                "Input and output separators are the same by default",
-            )
-            self.assertEqual(input_contents, output_data.getvalue())
+            assert f.separator == f.out_separator, "Input and output separators are the same by default"
+            
+            assert input_contents == output_data.getvalue()
 
 
 if __name__ == "__main__":
