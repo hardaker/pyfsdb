@@ -108,7 +108,7 @@ class FsdbTest(TestCase):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb()
 
-        self.assertFalse(f.file_handle, "file_handle should not be available")
+        assert not f.file_handle, "file_handle should not be available"
 
         fh = open(DATA_FILE, "r")
         assert fh, "file opened manually"
@@ -142,11 +142,7 @@ class FsdbTest(TestCase):
     def test_header_early_read(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
         f = pyfsdb.Fsdb(DATA_FILE)
-        self.assertEqual(
-            f.headers,
-            ["#fsdb -F t colone coltwo colthree\n"],
-            "properly early-read headers",
-        )
+        assert f.headers == ["#fsdb -F t colone coltwo colthree\n"], "properly early-read headers"
 
     def test_header_access(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -178,7 +174,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(out_file_handle=outstring, converters={"a": int})
         f.out_column_names = ["a"]
         f.append([1])
-        self.assertEqual(outstring.getvalue(), "#fsdb -F t a:l\n1\n")
+        assert outstring.getvalue() == "#fsdb -F t a:l\n1\n"
 
     def test_output(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -392,14 +388,14 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertEqual(lines[0], "#fsdb -F t colone:a coltwo:a colthree:a\n")
-        self.assertEqual(lines[1], "# top comment\n")
-        self.assertEqual(lines[3], "# after row 1\n")
-        self.assertEqual(lines[len(lines) - 1], "#  | test command init\n")
-        self.assertEqual(lines[len(lines) - 2], "#   | command2\n")
-        self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
-        self.assertEqual(lines[len(lines) - 4], "rowtwo	other	stuff\n")
-        self.assertEqual(lines[len(lines) - 5], "# middle comment\n")
+        assert lines[0] == "#fsdb -F t colone:a coltwo:a colthree:a\n"
+        assert lines[1] == "# top comment\n"
+        assert lines[3] == "# after row 1\n"
+        assert lines[len(lines) - 1] == "#  | test command init\n"
+        assert lines[len(lines) - 2] == "#   | command2\n"
+        assert lines[len(lines) - 3] == "#  | command1\n"
+        assert lines[len(lines) - 4] == "rowtwo	other	stuff\n"
+        assert lines[len(lines) - 5] == "# middle comment\n"
 
     def test_comments_passed_at_end(self):
         out_file = self.OUT_FILE
@@ -425,13 +421,13 @@ class FsdbTest(TestCase):
         for line in f:
             lines.append(line)
 
-        self.assertEqual(lines[len(lines) - 1], "#  | test command init\n")
-        self.assertEqual(lines[len(lines) - 2], "#   | command2\n")
-        self.assertEqual(lines[len(lines) - 3], "#  | command1\n")
-        self.assertEqual(lines[len(lines) - 4], "# middle comment\n")
-        self.assertEqual(lines[len(lines) - 5], "# after row 1\n")
-        self.assertEqual(lines[len(lines) - 6], "# top comment\n")
-        self.assertEqual(lines[len(lines) - 7], "rowtwo	other	stuff\n")
+        assert lines[len(lines) - 1] == "#  | test command init\n"
+        assert lines[len(lines) - 2] == "#   | command2\n"
+        assert lines[len(lines) - 3] == "#  | command1\n"
+        assert lines[len(lines) - 4] == "# middle comment\n"
+        assert lines[len(lines) - 5] == "# after row 1\n"
+        assert lines[len(lines) - 6] == "# top comment\n"
+        assert lines[len(lines) - 7] == "rowtwo	other	stuff\n"
 
     def test_array_generator(self):
         f = pyfsdb.Fsdb(self.DATA_FILE)
@@ -466,7 +462,7 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(self.DATA_FILE)
         data = f.get_all()
 
-        self.assertEqual(data, self.EXPECTED_DATA, "get_all returned correct results")
+        assert data == self.EXPECTED_DATA, "get_all returned correct results"
 
     def test_put_all(self):
         oh = StringIO()
@@ -478,11 +474,8 @@ class FsdbTest(TestCase):
 
         result = oh.getvalue()
 
-        self.assertEqual(
-            truncate_comments(result),
-            "#fsdb -F t a:l b:l c:l\n1\t2\t3\n4\t5\t6\n",
-            "get_all returned correct results",
-        )
+        assert truncate_comments(result) == "#fsdb -F t a:l b:l c:l\n1\t2\t3\n4\t5\t6\n", "get_all returned correct results"
+        
         of.close()
 
     def test_get_pandas(self):
@@ -547,7 +540,7 @@ class FsdbTest(TestCase):
         results = out.getvalue()
 
         sys.stderr.write(results)
-        self.assertEqual(results[0 : len(outstr)], outstr, "put_pandas worked")
+        assert results[0 : len(outstr)] == outstr, "put_pandas worked"
 
     def test_comment_ordering(self):
         HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"
@@ -590,11 +583,11 @@ class FsdbTest(TestCase):
         with pyfsdb.Fsdb(file_handle=datah) as f:
             r1 = next(f)
 
-            self.assertEqual(f.column_names, ["a", "b", "c"], "column names are right")
-            self.assertEqual(r1, ["1", "2", "3"], "column values for row 1 are correct")
+            assert f.column_names == ["a", "b", "c"], "column names are right"
+            assert r1 == ["1", "2", "3"], "column values for row 1 are correct"
 
             r2 = next(f)
-            self.assertEqual(r2, ["4", "5", ""], "column values for row 2 are correct")
+            assert r2 == ["4", "5", ""], "column values for row 2 are correct"
 
     def test_broken_data(self):
         from io import StringIO
@@ -619,7 +612,7 @@ class FsdbTest(TestCase):
             file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY
         ) as f:
             ret = f.foreach(lambda x: x["b"])
-            self.assertEqual(ret, ["2", "5"], "foreach response data is correct")
+            assert ret == ["2", "5"], "foreach response data is correct"
 
     def test_foreach_with_args(self):
         from io import StringIO
@@ -634,7 +627,7 @@ class FsdbTest(TestCase):
             file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY
         ) as f:
             ret = f.foreach(mult_middle, args=[2])
-            self.assertEqual(ret, [4, 10], "foreach response with args data is correct")
+            assert ret == [4, 10], "foreach response with args data is correct"
 
     def test_filter(self):
         from io import StringIO
@@ -650,11 +643,8 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah, out_file_handle=outh)
         f.filter(double_middle)
 
-        self.assertEqual(
-            outh.getvalue(),
-            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
-            "filter properly double the middle column",
-        )
+        assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
+        
 
         f.close()
 
@@ -672,11 +662,8 @@ class FsdbTest(TestCase):
         f = pyfsdb.Fsdb(file_handle=datah, out_file_handle=outh)
         f.filter(double_middle, args=[2])
 
-        self.assertEqual(
-            outh.getvalue(),
-            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
-            "filter properly double the middle column",
-        )
+        assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
+        
 
         f.close()
 
@@ -700,11 +687,8 @@ class FsdbTest(TestCase):
         )
         f.filter(double_middle_dict)
 
-        self.assertEqual(
-            outh.getvalue(),
-            "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n",
-            "filter properly double the middle column",
-        )
+        assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
+        
 
         f.close()
 
@@ -718,7 +702,7 @@ class FsdbTest(TestCase):
 
         for row in f:
             for value in row:
-                self.assertIsInstance(value, str, "value is a string")
+                assert isinstance(value, str), "value is a string"
 
         # convert all to an int
         datah = StringIO(data)
@@ -726,7 +710,7 @@ class FsdbTest(TestCase):
 
         for row in f:
             for value in row:
-                self.assertIsInstance(value, int, "value is converted to an int")
+                assert isinstance(value, int), "value is converted to an int"
 
         # partial converters
         datah = StringIO(data)
@@ -734,9 +718,9 @@ class FsdbTest(TestCase):
         for row in f:
             for (col, value) in enumerate(row):
                 if col == 1:
-                    self.assertIsInstance(value, str, "value is left as a str")
+                    assert isinstance(value, str), "value is left as a str"
                 else:
-                    self.assertIsInstance(value, int, "value is converted to an int")
+                    assert isinstance(value, int), "value is converted to an int"
 
         # dict based converters
         datah = StringIO(data)
@@ -750,9 +734,9 @@ class FsdbTest(TestCase):
             for key in row:
                 value = row[key]
                 if key == "a":
-                    self.assertIsInstance(value, int, "value is converted to an int")
+                    assert isinstance(value, int), "value is converted to an int"
                 else:
-                    self.assertIsInstance(value, str, "value is left as a str")
+                    assert isinstance(value, str), "value is left as a str"
 
         # dict based converters, with array output
         datah = StringIO(data)
@@ -761,9 +745,9 @@ class FsdbTest(TestCase):
         for row in f:
             for (col, value) in enumerate(row):
                 if col == 0:
-                    self.assertIsInstance(value, int, "value is converted to an int")
+                    assert isinstance(value, int), "value is converted to an int"
                 else:
-                    self.assertIsInstance(value, str, "value is left as a str")
+                    assert isinstance(value, str), "value is left as a str"
 
         # array based converters, with dict output
         datah = StringIO(data)
@@ -777,17 +761,16 @@ class FsdbTest(TestCase):
             for key in row:
                 value = row[key]
                 if key == "a":
-                    self.assertIsInstance(value, int, "value is converted to an int")
+                    assert isinstance(value, int), "value is converted to an int"
                 else:
-                    self.assertIsInstance(value, str, "value is left as a str")
+                    assert isinstance(value, str), "value is left as a str"
 
     def test_pass_comment_error(self):
         try:
             pyfsdb.Fsdb(pass_comments="z")
         except Exception as e:
-            self.assertIsInstance(
-                e, ValueError, "properly errored on illegal pass_comments"
-            )
+            assert isinstance(e, ValueError), "properly errored on illegal pass_comments"
+            
 
     def test_whitespaces_in_format_line(self):
         from io import StringIO
