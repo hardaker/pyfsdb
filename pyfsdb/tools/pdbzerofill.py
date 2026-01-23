@@ -113,6 +113,8 @@ def fill_values(
             # TODO(hardaker): should this go after range skipping???
             for key in last_rows:
                 if key not in last_other_columns:
+                    if key not in last_rows:
+                        continue
                     newrow = list(last_rows[key])  # duplicate the last seen
                     for column_num, col_value in zip(other_columns, key):
                         newrow[column_num] = col_value
@@ -133,6 +135,8 @@ def fill_values(
                     fh.append(newrow)
                 else:
                     for key_set in other_key_values:
+                        if key_set not in last_rows:
+                            continue
                         newrow = list(last_rows[key_set])  # duplicate the current row
                         for column_num, col_value in zip(other_columns, key_set):
                             newrow[column_num] = col_value
