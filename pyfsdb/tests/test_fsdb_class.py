@@ -25,7 +25,10 @@ rowtwo	other	stuff
     return tmpfile
 
 
-OUT_FILE = "pyfsdb/tests/testout.fsdb"
+@pytest.fixture
+def OUT_FILE(tmp_path):
+    return tmp_path / "testout.fsdb"
+
 EXPECTED_DATA = [["rowone", "info", "data"], ["rowtwo", "other", "stuff"]]
 
 
@@ -286,9 +289,7 @@ def test_missing_header_support_filehandle():
     assert f.header_line == "#fsdb -F t a b c\n"
 
 
-def test_write_out_fsdb(DATA_FILE):
-    OUT_FILE = "pyfsdb/tests/testout.fsdb"
-
+def test_write_out_fsdb(DATA_FILE, OUT_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     assert f, "opened ok"
 
@@ -355,7 +356,7 @@ def check_last_line(outfile, lastline):
     assert wasLast, "saved command was last"
 
 
-def test_out_command_line(DATA_FILE):
+def test_out_command_line(DATA_FILE, OUT_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -366,7 +367,7 @@ def test_out_command_line(DATA_FILE):
     check_last_line(OUT_FILE, "#  | test command\n")
 
 
-def test_save_out_command_on_del(DATA_FILE):
+def test_save_out_command_on_del(DATA_FILE, OUT_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -377,7 +378,7 @@ def test_save_out_command_on_del(DATA_FILE):
     check_last_line(OUT_FILE, "#  | test command on del\n")
 
 
-def test_dont_save_command():
+def test_dont_save_command(OUT_FILE):
     f = pyfsdb.Fsdb(out_file=OUT_FILE)
     f.out_command_line = None
     f.out_file_handle.write("#  | test nowrite\n")
@@ -386,7 +387,7 @@ def test_dont_save_command():
     check_last_line(OUT_FILE, "#  | test nowrite\n")
 
 
-def test_save_out_command_from_init(DATA_FILE):
+def test_save_out_command_from_init(DATA_FILE, OUT_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE, out_command_line="test command init")
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -395,7 +396,7 @@ def test_save_out_command_from_init(DATA_FILE):
     check_last_line(OUT_FILE, "#  | test command init\n")
 
 
-def test_comments_passed_inline(DATA_FILE):
+def test_comments_passed_inline(DATA_FILE, OUT_FILE):
     out_file = OUT_FILE
     f = pyfsdb.Fsdb(DATA_FILE, out_file=out_file, out_command_line="test command init")
     f.comment("top comment")
@@ -423,7 +424,7 @@ def test_comments_passed_inline(DATA_FILE):
     assert lines[len(lines) - 5] == "# middle comment\n"
 
 
-def test_comments_passed_at_end(DATA_FILE):
+def test_comments_passed_at_end(DATA_FILE, OUT_FILE):
     out_file = OUT_FILE
     f = pyfsdb.Fsdb(
         DATA_FILE,
