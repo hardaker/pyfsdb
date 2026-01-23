@@ -45,6 +45,7 @@ test_data = "#fsdb -f s a b c\n1 2 3\n4 5 6\n# | command one"
 ROW1 = ["rowone", "info", "data"]
 ROW2 = ["rowtwo", "other", "stuff"]
 
+
 def test_history_from_stringio_fails():
     test_file = StringIO(test_data)
     fh = pyfsdb.Fsdb(file_handle=test_file)
@@ -52,11 +53,13 @@ def test_history_from_stringio_fails():
     history_data = fh.commands
     assert history_data is None
 
+
 def test_get_commands_at_end(DATA_FILE):
     fh = pyfsdb.Fsdb(DATA_FILE)
     fh.get_all()
     read_commands = fh.commands
     assert commands == read_commands
+
 
 def test_get_commands_before_end(DATA_FILE):
     fh = pyfsdb.Fsdb(DATA_FILE)
@@ -66,6 +69,7 @@ def test_get_commands_before_end(DATA_FILE):
 
     # make sure we can read data too even after reading ahead
     assert next(fh) == ROW2
+
 
 def test_compressed_files(COMP_FILE):
     # ensure we can test thsi
@@ -77,6 +81,7 @@ def test_compressed_files(COMP_FILE):
     fh = pyfsdb.Fsdb(COMP_FILE)
     row = next(fh)
     assert row == ROW1
+
 
 def test_command_gathering_in_compressed(COMP_FILE):
     # ensure we can test thsi
