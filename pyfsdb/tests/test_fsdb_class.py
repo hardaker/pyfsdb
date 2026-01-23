@@ -1,5 +1,4 @@
 import pytest
-from unittest import TestCase
 from unittest.mock import Mock
 import pyfsdb
 import sys
@@ -16,8 +15,10 @@ DATA_FILE = "pyfsdb/tests/tests.fsdb"
 OUT_FILE = "pyfsdb/tests/testout.fsdb"
 EXPECTED_DATA = [["rowone", "info", "data"], ["rowtwo", "other", "stuff"]]
 
+
 def test_loaded_tests():
     assert True
+
 
 def test_read_header():
     HEADER_FILE = "pyfsdb/tests/tests.fsdb"
@@ -39,11 +40,16 @@ def test_read_header():
     counter = 0
     for column in ("colone", "coltwo", "colthree"):
         assert column in names_info, "column info contains data on " + column
-        assert names_info[column] == counter, "column " + column + " is number " + str(counter)
+        assert names_info[column] == counter, (
+            "column " + column + " is number " + str(counter)
+        )
 
-        assert numbers_info[counter] == column, "column number " + str(counter) + " is labeled " + column
+        assert numbers_info[counter] == column, (
+            "column number " + str(counter) + " is labeled " + column
+        )
 
         counter += 1
+
 
 def check_data(rows):
     assert len(rows) == 2, "There are two rows in the results"
@@ -56,6 +62,7 @@ def check_data(rows):
     assert rows[1][1] == "other"
     assert rows[1][2] == "stuff"
 
+
 def test_broken_header():
     from io import StringIO
 
@@ -64,11 +71,12 @@ def test_broken_header():
     try:
         with pyfsdb.Fsdb(file_handle=datah) as f:
             row = next(f)
-            assert False, "shouldn't have gotten here " + str(row)
+            assert r, "shouldn't have gotten here " + str(row)
     except ValueError:
         assert True, "proper exception thrown"
     except Exception as e:
         assert False, "wrong exception thrown: " + str(e)
+
 
 def test_reading_as_iterator():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -84,6 +92,7 @@ def test_reading_as_iterator():
     assert row, "row two is returned"
 
     check_data(rows)
+
 
 def test_reading_as_dict_with_next():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -102,6 +111,7 @@ def test_reading_as_dict_with_next():
     assert row["colone"] == "rowtwo"
     assert row["coltwo"] == "other"
     assert row["colthree"] == "stuff"
+
 
 def test_setting_fileh():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -138,10 +148,14 @@ def test_setting_fileh():
 
     assert count > 0, "at least one row read"
 
+
 def test_header_early_read():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
     f = pyfsdb.Fsdb(DATA_FILE)
-    assert f.headers == ["#fsdb -F t colone coltwo colthree\n"], "properly early-read headers"
+    assert f.headers == [
+        "#fsdb -F t colone coltwo colthree\n"
+    ], "properly early-read headers"
+
 
 def test_header_access():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -168,12 +182,14 @@ def test_header_access():
     assert cols[2] == "colthree", "column three ok"
     assert f.column_names[2] == "colthree", "column three ok"
 
+
 def test_basic_writing():
     outstring = StringIO()
     f = pyfsdb.Fsdb(out_file_handle=outstring, converters={"a": int})
     f.out_column_names = ["a"]
     f.append([1])
     assert outstring.getvalue() == "#fsdb -F t a:l\n1\n"
+
 
 def test_output():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -190,6 +206,7 @@ def test_output():
         assert expected[0] == output_string, "output string " + output_string + " ok"
         expected = expected[1:]
 
+
 def test_setting_columns():
     f = pyfsdb.Fsdb()
     assert f, "opened ok"
@@ -197,6 +214,7 @@ def test_setting_columns():
     testcols = ["colone", "coltwo", "col3"]
     f.column_names = testcols
     assert f.column_names == testcols
+
 
 def test_header():
     f = pyfsdb.Fsdb()
@@ -215,6 +233,7 @@ def test_header():
 
     f.separator = " "
     assert f.header_line == "#fsdb -F s colone coltwo col3 col4\n"
+
 
 def test_missing_header_support_file():
     DATA_FILE = "pyfsdb/tests/noheader.fsdb"
@@ -242,6 +261,7 @@ def test_missing_header_support_file():
     assert cols[2] == "colthree", "column three ok"
     assert f.column_names[2] == "colthree", "column three ok"
 
+
 def test_missing_header_support_filehandle():
     from io import StringIO
 
@@ -259,6 +279,7 @@ def test_missing_header_support_filehandle():
     assert f.get_column_number("c") == 2
 
     assert f.header_line == "#fsdb -F t a b c\n"
+
 
 def test_write_out_fsdb():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -315,6 +336,7 @@ def test_write_out_fsdb():
         f.append(row)
     f.close()
 
+
 def check_last_line(outfile, lastline):
     saved = open(outfile, "r")
     foundIt = False
@@ -328,8 +350,8 @@ def check_last_line(outfile, lastline):
     assert foundIt, "saved output command"
     assert wasLast, "saved command was last"
 
-def test_out_command_line():
 
+def test_out_command_line():
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -338,6 +360,7 @@ def test_out_command_line():
     f.close()
 
     check_last_line(OUT_FILE, "#  | test command\n")
+
 
 def test_save_out_command_on_del():
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
@@ -349,6 +372,7 @@ def test_save_out_command_on_del():
 
     check_last_line(OUT_FILE, "#  | test command on del\n")
 
+
 def test_dont_save_command():
     f = pyfsdb.Fsdb(out_file=OUT_FILE)
     f.out_command_line = None
@@ -357,21 +381,19 @@ def test_dont_save_command():
 
     check_last_line(OUT_FILE, "#  | test nowrite\n")
 
+
 def test_save_out_command_from_init():
-    f = pyfsdb.Fsdb(
-        DATA_FILE, out_file=OUT_FILE, out_command_line="test command init"
-    )
+    f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE, out_command_line="test command init")
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
     del f
 
     check_last_line(OUT_FILE, "#  | test command init\n")
 
+
 def test_comments_passed_inline():
     out_file = OUT_FILE
-    f = pyfsdb.Fsdb(
-        DATA_FILE, out_file=out_file, out_command_line="test command init"
-    )
+    f = pyfsdb.Fsdb(DATA_FILE, out_file=out_file, out_command_line="test command init")
     f.comment("top comment")
     assert f, "opened ok"
     did_one = False
@@ -395,6 +417,7 @@ def test_comments_passed_inline():
     assert lines[len(lines) - 3] == "#  | command1\n"
     assert lines[len(lines) - 4] == "rowtwo	other	stuff\n"
     assert lines[len(lines) - 5] == "# middle comment\n"
+
 
 def test_comments_passed_at_end():
     out_file = OUT_FILE
@@ -428,6 +451,7 @@ def test_comments_passed_at_end():
     assert lines[len(lines) - 6] == "# top comment\n"
     assert lines[len(lines) - 7] == "rowtwo	other	stuff\n"
 
+
 def test_array_generator():
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
@@ -437,6 +461,7 @@ def test_array_generator():
         all.append(r)
 
     check_data(all)
+
 
 def test_dict_generator():
     f = pyfsdb.Fsdb(DATA_FILE)
@@ -457,11 +482,13 @@ def test_dict_generator():
         ]
     )
 
+
 def test_get_all():
     f = pyfsdb.Fsdb(DATA_FILE)
     data = f.get_all()
 
     assert data == EXPECTED_DATA, "get_all returned correct results"
+
 
 def test_put_all():
     oh = StringIO()
@@ -473,9 +500,12 @@ def test_put_all():
 
     result = oh.getvalue()
 
-    assert truncate_comments(result) == "#fsdb -F t a:l b:l c:l\n1\t2\t3\n4\t5\t6\n", "get_all returned correct results"
-    
+    assert (
+        truncate_comments(result) == "#fsdb -F t a:l b:l c:l\n1\t2\t3\n4\t5\t6\n"
+    ), "get_all returned correct results"
+
     of.close()
+
 
 def test_get_pandas():
     f = pyfsdb.Fsdb(DATA_FILE)
@@ -483,6 +513,7 @@ def test_get_pandas():
 
     all = f.get_pandas()
     check_data(all.values.tolist())
+
 
 def test_get_pandas2():
     f = pyfsdb.Fsdb(DATA_FILE)
@@ -495,6 +526,7 @@ def test_get_pandas2():
     assert len(rows[1]) == 1
     assert rows[0][0] == "info"
     assert rows[1][0] == "other"
+
 
 def test_get_pandas_with_data_comments():
     fake = StringIO("#fsdb -F t one two\n1\ta\n# comment\n2\t#b\n")
@@ -510,6 +542,7 @@ def test_get_pandas_with_data_comments():
     assert rows[1][0] == 2
     assert rows[0][1] == "a"
     assert rows[1][1] == "#b"
+
 
 def test_put_pandas():
     f = pyfsdb.Fsdb(DATA_FILE)
@@ -541,6 +574,7 @@ def test_put_pandas():
     sys.stderr.write(results)
     assert results[0 : len(outstr)] == outstr, "put_pandas worked"
 
+
 def test_comment_ordering():
     HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"
     OUTPUT_FILE = "pyfsdb/tests/test_comments_at_top.test.fsdb"
@@ -564,6 +598,7 @@ def test_comment_ordering():
     # ignore added trailers
     assert file2.startswith(file1), "file contents with headers are the same"
 
+
 def test_with_usage():
     DATA_FILE = "pyfsdb/tests/tests.fsdb"
     with pyfsdb.Fsdb(DATA_FILE) as f:
@@ -573,6 +608,7 @@ def test_with_usage():
         assert row[0] == "rowone"
         assert row[1] == "info"
         assert row[2] == "data"
+
 
 def test_missing_columns():
     from io import StringIO
@@ -588,6 +624,7 @@ def test_missing_columns():
         r2 = next(f)
         assert r2 == ["4", "5", ""], "column values for row 2 are correct"
 
+
 def test_broken_data():
     from io import StringIO
 
@@ -602,16 +639,16 @@ def test_broken_data():
     except Exception as e:
         assert False, "wrong exception thrown: " + str(e)
 
+
 def test_foreach():
     from io import StringIO
 
     data = "#fsdb -F t a b c\n1\t2\t3\n4\t5\t6\n"
     datah = StringIO(data)
-    with pyfsdb.Fsdb(
-        file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY
-    ) as f:
+    with pyfsdb.Fsdb(file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
         ret = f.foreach(lambda x: x["b"])
         assert ret == ["2", "5"], "foreach response data is correct"
+
 
 def test_foreach_with_args():
     from io import StringIO
@@ -622,11 +659,10 @@ def test_foreach_with_args():
     def mult_middle(row, by):
         return int(row["b"]) * by
 
-    with pyfsdb.Fsdb(
-        file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY
-    ) as f:
+    with pyfsdb.Fsdb(file_handle=datah, return_type=pyfsdb.RETURN_AS_DICTIONARY) as f:
         ret = f.foreach(mult_middle, args=[2])
         assert ret == [4, 10], "foreach response with args data is correct"
+
 
 def test_filter():
     from io import StringIO
@@ -642,10 +678,12 @@ def test_filter():
     f = pyfsdb.Fsdb(file_handle=datah, out_file_handle=outh)
     f.filter(double_middle)
 
-    assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
-    
+    assert (
+        outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n"
+    ), "filter properly double the middle column"
 
     f.close()
+
 
 def test_filter_with_args():
     from io import StringIO
@@ -661,10 +699,12 @@ def test_filter_with_args():
     f = pyfsdb.Fsdb(file_handle=datah, out_file_handle=outh)
     f.filter(double_middle, args=[2])
 
-    assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
-    
+    assert (
+        outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n"
+    ), "filter properly double the middle column"
 
     f.close()
+
 
 def test_filter_with_writing_dictionaries():
     from io import StringIO
@@ -686,10 +726,12 @@ def test_filter_with_writing_dictionaries():
     )
     f.filter(double_middle_dict)
 
-    assert outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n", "filter properly double the middle column"
-    
+    assert (
+        outh.getvalue() == "#fsdb -F t a:a b:l c:a\n1\t4\t3\n4\t10\t6\n"
+    ), "filter properly double the middle column"
 
     f.close()
+
 
 def test_converters():
     from io import StringIO
@@ -715,7 +757,7 @@ def test_converters():
     datah = StringIO(data)
     f = pyfsdb.Fsdb(file_handle=datah, converters=[int, None, int])
     for row in f:
-        for (col, value) in enumerate(row):
+        for col, value in enumerate(row):
             if col == 1:
                 assert isinstance(value, str), "value is left as a str"
             else:
@@ -742,7 +784,7 @@ def test_converters():
     f = pyfsdb.Fsdb(file_handle=datah, converters={"a": int, "b": None})
 
     for row in f:
-        for (col, value) in enumerate(row):
+        for col, value in enumerate(row):
             if col == 0:
                 assert isinstance(value, int), "value is converted to an int"
             else:
@@ -764,12 +806,13 @@ def test_converters():
             else:
                 assert isinstance(value, str), "value is left as a str"
 
+
 def test_pass_comment_error():
     try:
         pyfsdb.Fsdb(pass_comments="z")
     except Exception as e:
         assert isinstance(e, ValueError), "properly errored on illegal pass_comments"
-        
+
 
 def test_whitespaces_in_format_line():
     from io import StringIO
@@ -787,6 +830,7 @@ def test_whitespaces_in_format_line():
     datah = StringIO(datatabs)
     f = pyfsdb.Fsdb(file_handle=datah)
     assert f.get_all() == expected
+
 
 def test_separators():
     from io import StringIO
@@ -844,6 +888,7 @@ def test_separators():
     f = pyfsdb.Fsdb(file_handle=datah)
     assert f.get_all() == expected
 
+
 def test_in_out_same_handle():
     from io import StringIO
 
@@ -874,6 +919,7 @@ def test_in_out_same_handle():
     assert output.startswith(expected), "read and write to the same handle"
 
     outdata.close.assert_called()
+
 
 def test_in_out_same_handle_add_col():
     from io import StringIO
@@ -911,6 +957,7 @@ def test_in_out_same_handle_add_col():
 
     outdata.close.assert_called()
 
+
 def test_changing_columns_on_init():
     from io import StringIO
 
@@ -929,6 +976,7 @@ def test_changing_columns_on_init():
     # ignore headers
     result = outdata.getvalue()
     assert result.startswith(expected), "set columns on init"
+
 
 def test_datatype_columns():
     from io import StringIO
@@ -977,6 +1025,7 @@ def test_datatype_columns():
         row = next(f)
         assert row == {"a": "1", "b": "2.1", "c": "3"}
 
+
 def test_auto_datatype_column_checks():
     from io import StringIO
 
@@ -988,6 +1037,7 @@ def test_auto_datatype_column_checks():
     result = truncate_comments(outh.getvalue())
     assert result == "#fsdb -F t a:a b:l c:d\nstr\t10\t20.5\n"
 
+
 def test_failed_converter():
     # note: fails float conversion to an int
     input_data = StringIO("#fsdb -F t a:l b:l c:l\n1\t2.1\t3\n")
@@ -997,6 +1047,7 @@ def test_failed_converter():
     ) as f:
         row = next(f)
         assert row == {"a": 1, "b": None, "c": 3}
+
 
 def test_columns_still_with_empty_data():
     # note: fails float conversion to an int
@@ -1009,6 +1060,7 @@ def test_columns_still_with_empty_data():
             pass
         assert True, "got to end"
 
+
 def test_input_output_separator_match():
     input_contents = "#fsdb -F s a:l b:l c:l\n1 2 3\n"
     input_data = StringIO(input_contents)
@@ -1020,8 +1072,10 @@ def test_input_output_separator_match():
     ) as f:
         for row in f:
             f.append(row)
-        assert f.separator == f.out_separator, "Input and output separators are the same by default"
-        
+        assert (
+            f.separator == f.out_separator
+        ), "Input and output separators are the same by default"
+
         assert input_contents == output_data.getvalue()
 
 
