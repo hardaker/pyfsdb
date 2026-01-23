@@ -580,9 +580,14 @@ def test_put_pandas(DATA_FILE):
     assert results[0 : len(outstr)] == outstr, "put_pandas worked"
 
 
-def test_comment_ordering():
-    HEADER_FILE = "pyfsdb/tests/test_comments_at_top.fsdb"
-    OUTPUT_FILE = "pyfsdb/tests/test_comments_at_top.test.fsdb"
+def test_comment_ordering(tmp_path):
+    HEADER_FILE = tmp_path / "test_comments_at_top.fsdb"
+    HEADER_FILE.write_text("""#fsdb -F t one:a two:a
+# another comment
+1	2
+# done
+""")
+    OUTPUT_FILE = tmp_path / "test_comments_at_top.test.fsdb"
     f = pyfsdb.Fsdb(filename=HEADER_FILE, out_file=OUTPUT_FILE)
     for row in f:
         f.append(row)

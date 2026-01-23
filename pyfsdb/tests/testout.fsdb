@@ -1,7 +1,0 @@
-#fsdb -F s colone coltwo colthree
-rowone info data
-# middle comment
-rowtwo other stuff
-#  | command1
-#   | command2
-#  | /usr/bin/pytest-3
