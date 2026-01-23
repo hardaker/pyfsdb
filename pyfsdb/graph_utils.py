@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
 from matplotlib.axes import Axes
 from seaborn.axisgrid import FacetGrid
+import seaborn as sns
 
 
 def parse_args(
@@ -50,11 +51,37 @@ def parse_args(
         "--dpi", default=200, type=int, help="The DPI to use in the resulting image"
     )
 
+    parser.add_argument(
+        "--legend-location",
+        default=None,
+        type=str,
+        help="Location of the legend (ul, lr, ...)",
+    )
+
     return parser
 
 
 def set_graph_parameters(control: Axes | FacetGrid, args: Namespace):
     """Set titles, labels, etc according to arguments passed."""
+
+    keyword_maps = {
+        "ul": "upper left",
+        "ur": "upper right",
+        "ll": "lower left",
+        "lr": "lower right",
+        "cl": "center left",
+        "cr": "center right",
+        "c": "center",
+        "uc": "upper center",
+        "lc": "lower center",
+    }
+
+    if args.legend_location:
+        sns.move_legend(
+            # maybe translate the brief name to a full one
+            control,
+            keyword_maps.get(args.legend_location, args.legend_location),
+        )
 
     if args.title:
         control.set(title=args.title)
