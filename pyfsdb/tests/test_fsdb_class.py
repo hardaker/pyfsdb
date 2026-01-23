@@ -32,27 +32,17 @@ class FsdbTest(TestCase):
         header_info = headers[1]
 
         for colname in ("names", "numbers", "header"):
-            self.assertTrue(
-                colname in header_info, "header structure contains " + colname
-            )
+            assert colname in header_info, "header structure contains " + colname
 
         names_info = header_info["names"]
         numbers_info = header_info["numbers"]
 
         counter = 0
         for column in ("colone", "coltwo", "colthree"):
-            self.assertTrue(
-                column in names_info, "column info contains data on " + column
-            )
-            self.assertTrue(
-                names_info[column] == counter,
-                "column " + column + " is number " + str(counter),
-            )
+            assert column in names_info, "column info contains data on " + column
+            assert names_info[column] == counter, "column " + column + " is number " + str(counter)
 
-            self.assertTrue(
-                numbers_info[counter] == column,
-                "column number " + str(counter) + " is labeled " + column,
-            )
+            assert numbers_info[counter] == column, "column number " + str(counter) + " is labeled " + column
 
             counter += 1
 
@@ -202,9 +192,7 @@ class FsdbTest(TestCase):
 
         for row in f:
             output_string = f.row_as_string()
-            self.assertTrue(
-                expected[0] == output_string, "output string " + output_string + " ok"
-            )
+            assert expected[0] == output_string, "output string " + output_string + " ok"
             expected = expected[1:]
 
     def test_setting_columns(self):
@@ -289,9 +277,7 @@ class FsdbTest(TestCase):
         for record in f:
             records.append(record)
 
-        self.assertTrue(
-            records[0][0] == "rowone", "init record " + records[0][0] + " is correct"
-        )
+        assert records[0][0] == "rowone", "init record " + records[0][0] + " is correct"
 
         for record in records:
             f.append(record)
@@ -583,10 +569,8 @@ class FsdbTest(TestCase):
         with open(OUTPUT_FILE, "r") as fh:
             file2 = fh.read(8192)
 
-        self.assertTrue(
-            file2.startswith(file1),  # ignore added trailers
-            "file contents with headers are the same",
-        )
+        # ignore added trailers
+        assert file2.startswith(file1), "file contents with headers are the same"
 
     def test_with_usage(self):
         DATA_FILE = "pyfsdb/tests/tests.fsdb"
@@ -905,9 +889,7 @@ class FsdbTest(TestCase):
         output = outdata.getvalue()
         print(output)
         print(expected)
-        self.assertTrue(
-            output.startswith(expected), "read and write to the same handle"
-        )
+        assert output.startswith(expected), "read and write to the same handle"
 
         outdata.close.assert_called()
 
@@ -943,9 +925,7 @@ class FsdbTest(TestCase):
 
         # ignore headers
         result = outdata.getvalue()
-        self.assertTrue(
-            result.startswith(expected), "read and write to the same handle adding one"
-        )
+        assert result.startswith(expected), "read and write to the same handle adding one"
 
         outdata.close.assert_called()
 
