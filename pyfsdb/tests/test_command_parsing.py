@@ -19,8 +19,28 @@ rowtwo	other	stuff
     return tmpfile
 
 
+@pytest.fixture
+def COMP_FILE(tmp_path):
+    try:
+        import lzma
+    except Exception:
+        return
+
+    content = """#fsdb -F t colone coltwo colthree
+rowone\tinfo\tdata
+# middle comment
+rowtwo\tother\tstuff
+#  | command1
+#  | command2
+"""
+    tmpfile = tmp_path / "testcomp.fsdb.xz"
+    fh = lzma.open(tmpfile, "wb")
+    fh.write(content.encode("utf-8"))
+    fh.close()
+    return tmpfile
+
+
 commands = ["command1", "command2"]
-COMP_FILE = "pyfsdb/tests/testscomp.fsdb.xz"
 test_data = "#fsdb -f s a b c\n1 2 3\n4 5 6\n# | command one"
 ROW1 = ["rowone", "info", "data"]
 ROW2 = ["rowtwo", "other", "stuff"]
@@ -47,7 +67,7 @@ def test_get_commands_before_end(DATA_FILE):
     # make sure we can read data too even after reading ahead
     assert next(fh) == ROW2
 
-def test_compressed_files():
+def test_compressed_files(COMP_FILE):
     # ensure we can test thsi
     try:
         import lzma
@@ -58,7 +78,7 @@ def test_compressed_files():
     row = next(fh)
     assert row == ROW1
 
-def test_command_gathering_in_compressed():
+def test_command_gathering_in_compressed(COMP_FILE):
     # ensure we can test thsi
     try:
         import lzma
