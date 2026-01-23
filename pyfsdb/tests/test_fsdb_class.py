@@ -11,7 +11,20 @@ def truncate_comments(value):
     return value
 
 
-DATA_FILE = "pyfsdb/tests/tests.fsdb"
+@pytest.fixture
+def DATA_FILE(tmp_path):
+    content = """#fsdb -F t colone coltwo colthree
+rowone	info	data
+# middle comment
+rowtwo	other	stuff
+#  | command1
+#   | command2
+"""
+    tmpfile = tmp_path / "test.fsdb"
+    tmpfile.write_text(content, encoding="utf-8")
+    return tmpfile
+
+
 OUT_FILE = "pyfsdb/tests/testout.fsdb"
 EXPECTED_DATA = [["rowone", "info", "data"], ["rowtwo", "other", "stuff"]]
 
@@ -20,10 +33,9 @@ def test_loaded_tests():
     assert True
 
 
-def test_read_header():
-    HEADER_FILE = "pyfsdb/tests/tests.fsdb"
+def test_read_header(DATA_FILE):
     f = pyfsdb.Fsdb()
-    fileh = open(HEADER_FILE, "r")
+    fileh = open(DATA_FILE, "r")
     line = next(fileh)
     headers = f.read_header(line)
 
@@ -78,8 +90,7 @@ def test_broken_header():
         assert False, "wrong exception thrown: " + str(e)
 
 
-def test_reading_as_iterator():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_reading_as_iterator(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
 
     rows = []
@@ -94,8 +105,7 @@ def test_reading_as_iterator():
     check_data(rows)
 
 
-def test_reading_as_dict_with_next():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_reading_as_dict_with_next(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, return_type=pyfsdb.RETURN_AS_DICTIONARY)
 
     row = next(f)
@@ -113,8 +123,7 @@ def test_reading_as_dict_with_next():
     assert row["colthree"] == "stuff"
 
 
-def test_setting_fileh():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_setting_fileh(DATA_FILE):
     f = pyfsdb.Fsdb()
 
     assert not f.file_handle, "file_handle should not be available"
@@ -149,16 +158,14 @@ def test_setting_fileh():
     assert count > 0, "at least one row read"
 
 
-def test_header_early_read():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_header_early_read(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f.headers == [
         "#fsdb -F t colone coltwo colthree\n"
     ], "properly early-read headers"
 
 
-def test_header_access():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_header_access(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -191,8 +198,7 @@ def test_basic_writing():
     assert outstring.getvalue() == "#fsdb -F t a:l\n1\n"
 
 
-def test_output():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_output(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -235,8 +241,7 @@ def test_header():
     assert f.header_line == "#fsdb -F s colone coltwo col3 col4\n"
 
 
-def test_missing_header_support_file():
-    DATA_FILE = "pyfsdb/tests/noheader.fsdb"
+def test_missing_header_support_file(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
     f.column_names = ["colone", "coltwo", "colthree"]
@@ -281,8 +286,7 @@ def test_missing_header_support_filehandle():
     assert f.header_line == "#fsdb -F t a b c\n"
 
 
-def test_write_out_fsdb():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_write_out_fsdb(DATA_FILE):
     OUT_FILE = "pyfsdb/tests/testout.fsdb"
 
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
@@ -351,7 +355,7 @@ def check_last_line(outfile, lastline):
     assert wasLast, "saved command was last"
 
 
-def test_out_command_line():
+def test_out_command_line(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -362,7 +366,7 @@ def test_out_command_line():
     check_last_line(OUT_FILE, "#  | test command\n")
 
 
-def test_save_out_command_on_del():
+def test_save_out_command_on_del(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE)
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -382,7 +386,7 @@ def test_dont_save_command():
     check_last_line(OUT_FILE, "#  | test nowrite\n")
 
 
-def test_save_out_command_from_init():
+def test_save_out_command_from_init(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE, out_file=OUT_FILE, out_command_line="test command init")
     f.out_column_names = ["bogus"]
     assert f, "opened ok"
@@ -391,7 +395,7 @@ def test_save_out_command_from_init():
     check_last_line(OUT_FILE, "#  | test command init\n")
 
 
-def test_comments_passed_inline():
+def test_comments_passed_inline(DATA_FILE):
     out_file = OUT_FILE
     f = pyfsdb.Fsdb(DATA_FILE, out_file=out_file, out_command_line="test command init")
     f.comment("top comment")
@@ -419,7 +423,7 @@ def test_comments_passed_inline():
     assert lines[len(lines) - 5] == "# middle comment\n"
 
 
-def test_comments_passed_at_end():
+def test_comments_passed_at_end(DATA_FILE):
     out_file = OUT_FILE
     f = pyfsdb.Fsdb(
         DATA_FILE,
@@ -452,7 +456,7 @@ def test_comments_passed_at_end():
     assert lines[len(lines) - 7] == "rowtwo	other	stuff\n"
 
 
-def test_array_generator():
+def test_array_generator(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -463,7 +467,7 @@ def test_array_generator():
     check_data(all)
 
 
-def test_dict_generator():
+def test_dict_generator(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -483,7 +487,7 @@ def test_dict_generator():
     )
 
 
-def test_get_all():
+def test_get_all(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     data = f.get_all()
 
@@ -507,7 +511,7 @@ def test_put_all():
     of.close()
 
 
-def test_get_pandas():
+def test_get_pandas(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -515,7 +519,7 @@ def test_get_pandas():
     check_data(all.values.tolist())
 
 
-def test_get_pandas2():
+def test_get_pandas2(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     assert f, "opened ok"
 
@@ -544,7 +548,7 @@ def test_get_pandas_with_data_comments():
     assert rows[1][1] == "#b"
 
 
-def test_put_pandas():
+def test_put_pandas(DATA_FILE):
     f = pyfsdb.Fsdb(DATA_FILE)
     df = f.get_pandas()
 
@@ -599,8 +603,7 @@ def test_comment_ordering():
     assert file2.startswith(file1), "file contents with headers are the same"
 
 
-def test_with_usage():
-    DATA_FILE = "pyfsdb/tests/tests.fsdb"
+def test_with_usage(DATA_FILE):
     with pyfsdb.Fsdb(DATA_FILE) as f:
         row = next(f)
         assert row, "row one is returned"

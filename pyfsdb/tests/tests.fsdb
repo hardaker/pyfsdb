@@ -1,6 +1,0 @@
-#fsdb -F t colone coltwo colthree
-rowone	info	data
-# middle comment
-rowtwo	other	stuff
-#  | command1
-#   | command2
