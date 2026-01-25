@@ -166,6 +166,9 @@ def test_skipping_all_keys():
         bin_size=60,
         other_keys=["b"],
     )
+    # sort the data because pulling keys out of sets/dicts is not
+    # deterministic when filling
+    filled_data = sorted(filled_data, key=lambda row: (row[0], row[1]))
     assert filled_data == [
         [0, "bar", 0],
         [0, "foo", 1],
@@ -204,14 +207,14 @@ def test_copying_of_other_columns():
         [60, "bar", 2, "c"],
         [60, "foo", 3, "d"],
         # 120 is filled:
-        [120, "foo", 42, "d"],  # sorting reorders for some reason
         [120, "bar", 42, "c"],
+        [120, "foo", 42, "d"],  # sorting reorders for some reason
         [180, "bar", 20, "e"],
         [180, "foo", 30, "f"],
     ]
 
 
-def test_copying_of_other_columns():
+def test_partial_filling():
     """Test partial filling."""
     starting_data = [
         [0, "bar", 0, "a"],
@@ -301,8 +304,8 @@ def test_fillempty_with_only_some_keys():
         bin_size=60,
         other_keys=["b"],
     )
-    print(filled_data)
-    assert filled_data == [
+
+    expected_data = [
         [-120, "foo", -120],
         [-60, "foo", -4],
         [-60, "bar", -3],
@@ -310,8 +313,8 @@ def test_fillempty_with_only_some_keys():
         [0, "foo", 42],
         [60, "foo", 1],
         [60, "bar", 2],
-        [120, "foo", 3],
         [120, "bar", 42],
+        [120, "foo", 3],
         [180, "bar", 4],
         [180, "foo", 42],
         [240, "foo", 5],
@@ -325,3 +328,13 @@ def test_fillempty_with_only_some_keys():
         [480, "bar", 60],
         [480, "foo", 42],
     ]
+
+    # sort the data because pulling keys out of sets/dicts is not
+    # deterministic when filling
+    filled_data = sorted(filled_data, key=lambda row: (row[0], row[1]))
+    expected_data = sorted(expected_data, key=lambda row: (row[0], row[1]))
+
+    print(filled_data)
+    print(expected_data)
+
+    assert filled_data == expected_data
